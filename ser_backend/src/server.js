@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 // Import routes
 import authRoutes from "./routes/authRoutes.js"; 
 import userRoutes from "./routes/userRoutes.js";
-// import adminRoutes from "./routes/adminRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ app.get("/api/ping", (req, res) => {
     // Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/users", userRoutes);
-    // app.use("/api/admin", adminRoutes);
+    app.use("/api/admin", adminRoutes);
 
     // Start server
     const port = process.env.PORT || 4000;
