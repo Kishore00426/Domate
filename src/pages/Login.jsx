@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { login } from '../api/auth';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -32,12 +33,19 @@ const Login = () => {
         return Object.keys(tempErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (validate()) {
-            const payload = { ...formData, role };
-            console.log('Logged in successfully', payload);
-            navigate('/home');
+            try {
+                const data = await login({ email: formData.email, password: formData.password });
+                console.log('Logged in successfully', data);
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                navigate('/home');
+            } catch (err) {
+                console.error("Login failed", err);
+                setErrors({ ...errors, form: err.response?.data?.error || 'Login failed. Please try again.' });
+            }
         }
     };
 
@@ -68,6 +76,7 @@ const Login = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
+                        {errors.form && <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{errors.form}</div>}
                         <div>
                             <label className="block text-sm font-semibold text-soft-black mb-2">Email Address</label>
                             <input

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { register } from '../api/auth';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -117,7 +118,7 @@ const Register = () => {
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         let isValid = false;
 
@@ -129,10 +130,24 @@ const Register = () => {
         }
 
         if (isValid) {
-            // Mock registration success
-            const payload = { ...formData, role };
-            console.log('Registered successfully', payload);
-            navigate('/home');
+            try {
+                // Map frontend fields to backend requirements
+                // Backend expects: username, email, password, role
+                const payload = {
+                    username: formData.name,
+                    email: formData.email,
+                    password: formData.password,
+                    role: role
+                };
+
+                const data = await register(payload);
+                console.log('Registered successfully', data);
+                // Optionally auto-login or redirect to login
+                navigate('/login?registered=true');
+            } catch (err) {
+                console.error("Registration failed", err);
+                setErrors({ ...errors, form: err.response?.data?.error || 'Registration failed. Please try again.' });
+            }
         }
     };
 
@@ -158,6 +173,7 @@ const Register = () => {
                 </Link>
 
                 <form onSubmit={handleSubmit}>
+                    {errors.form && <div className="p-3 mb-4 bg-red-100 text-red-700 rounded-lg text-sm">{errors.form}</div>}
                     <div className={`flex flex-col ${showAddress && !isProvider ? 'md:flex-row' : ''} transition-all duration-500 ease-in-out items-center`}>
                         {/* Main Form Content */}
                         <div className={`p-6 md:p-8 w-full ${showAddress && !isProvider ? 'md:w-1/2' : 'w-full'} transition-all duration-500`}>
