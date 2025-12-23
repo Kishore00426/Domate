@@ -1,7 +1,7 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-
+import path from "path";
 // Import routes
 import authRoutes from "./routes/authRoutes.js"; 
 import userRoutes from "./routes/userRoutes.js";
@@ -24,7 +24,7 @@ app.get("/api/ping", (req, res) => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
-
+    app.use("/uploads", express.static("uploads"));
     // Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/users", userRoutes);
