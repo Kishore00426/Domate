@@ -242,7 +242,7 @@ const Account = () => {
                                             <h3 className="font-semibold text-soft-black">Saved Addresses</h3>
                                             <p className="text-xs text-gray-500">Manage your service locations</p>
                                         </div>
-                                    </div>
+                                    </div>  
                                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                                 </div>
 

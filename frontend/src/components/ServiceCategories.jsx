@@ -2,39 +2,31 @@ import React from 'react';
 
 const categories = [
   {
-    image: "/icons/women makeup.png",
-    title: "Salon Prime"
+    image: "/icons/women spa saloon makeup.png",
+    title: "Salon & Spa"
   },
   {
-    image: "/icons/house cleaning.png",
+    image: "/icons/cleaning.png",
     title: "Cleaning"
   },
   {
-    image: "/icons/driller &hammer.png",
-    title: "Electricians & Carpenters"
+    image: "/icons/engineer.png",
+    title: "Handyman Services"
   },
   {
     image: "/icons/ac.png",
     title: "AC & Appliance Repair"
   },
   {
-    image: "/icons/water purifier.png",
-    title: "Water Purifier Service & Fix"
+    image: "/icons/mosquito.png",
+    title: "Mosquito & Safety nets"
   },
   {
     image: "/icons/painting.png",
     title: "Painting & Waterproofing"
   },
   {
-    image: "/icons/gent's massage.png",
-    title: "Men's Salon & Massage"
-  },
-  {
-    image: "/icons/bulb & switches.png",
-    title: "Smart Home Installation"
-  },
-  {
-    image: "/icons/disinfectant.png",
+    image: "/icons/disinfectant spray.png",
     title: "Disinfection Services"
   },
   {
@@ -60,7 +52,7 @@ const ServiceCategories = () => {
               className="flex flex-row items-center justify-start text-left p-4 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full gap-4"
             >
               <div className="w-16 h-16 shrink-0 relative">
-                <div className="absolute inset-0 bg-gray-50 rounded-full scale-0 group-hover:scale-110 transition-transform duration-300 -z-10"></div>
+                <div className="absolute inset-0 bg-beige rounded-full scale-0 group-hover:scale-110 transition-transform duration-300 -z-10"></div>
                 <img
                   src={category.image}
                   alt={category.title}

@@ -6,8 +6,10 @@ const Footer = () => {
             <div className="max-w-6xl mx-auto px-6">
                 <div className="grid md:grid-cols-4 gap-12 mb-12">
                     <div className="col-span-1 md:col-span-2">
-                        <h2 className="text-2xl font-bold mb-4">DoMate</h2>
-                        <p className="text-gray-400 max-w-sm">Making home services reliable, affordable, and accessible for everyone.</p>
+                        <div className="flex items-center gap-2 mb-4">
+                            <img src="/logo.png" alt="DoMate" className="h-8 w-auto" />
+                        </div>
+                        <p className="text-gray-400 max-w-sm">Making home services reliable, affordable and accessible for everyone.</p>
                     </div>
 
                     <div>
