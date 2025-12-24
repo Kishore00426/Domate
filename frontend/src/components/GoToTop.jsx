@@ -30,7 +30,7 @@ const GoToTop = () => {
         <div className={`fixed bottom-8 right-8 z-50 transition-all duration-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'}`}>
             <button
                 onClick={scrollToTop}
-                className="p-3 bg-soft-black text-white rounded-full shadow-lg hover:bg-black transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
+                className="p-3 bg-soft-black border-2 border-white text-white rounded-full shadow-lg hover:bg-black transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
                 aria-label="Go to top"
             >
                 <ArrowUp className="w-6 h-6" />

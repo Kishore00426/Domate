@@ -20,6 +20,7 @@ const Navbar = ({ variant = 'landing', user }) => {
         navigate('/home');
     };
     const isHomeActive = location.pathname === '/home';
+    const isServicesActive = location.pathname === '/services';
     const isCartActive = location.pathname === '/cart';
     const isAccountPage = location.pathname === '/account';
 
@@ -113,7 +114,7 @@ const Navbar = ({ variant = 'landing', user }) => {
 
                             <Link
                                 to="/services"
-                                className="p-2 rounded-full transition-all text-gray-600 hover:text-soft-black hover:bg-gray-100"
+                                className={`p-2 rounded-full transition-all ${isServicesActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
                                 title="Services"
                             >
                                 <LayoutGrid className="w-5 h-5" />
