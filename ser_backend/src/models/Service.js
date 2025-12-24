@@ -1,12 +1,17 @@
 import mongoose from "mongoose";
 
 const serviceSchema = new mongoose.Schema({
-  name: { type: String, required: true, unique: true },
-  description: { type: String },
+  title: { type: String, required: true },
+  detailedDescription: { type: String },
   price: { type: Number, required: true },
-  imageUrl: { type: String }, // ✅ store image path or URL
-  isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
-});
+  whatIsCovered: { type: String },
+  whatIsNotCovered: { type: String },
+  neededEquipment: { type: String },
+  warranty: { type: String },
+  imageUrl: { type: String },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
+  subcategory: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" }
+}, { timestamps: true });
 
-export default mongoose.model("Service", serviceSchema);
+export default mongoose.models.Service ||
+  mongoose.model("Service", serviceSchema);
