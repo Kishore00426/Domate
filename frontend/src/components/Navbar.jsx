@@ -20,6 +20,7 @@ const Navbar = ({ variant = 'landing', user }) => {
         navigate('/home');
     };
     const isHomeActive = location.pathname === '/home';
+    const isServicesActive = location.pathname === '/services';
     const isCartActive = location.pathname === '/cart';
     const isAccountPage = location.pathname === '/account';
 
@@ -45,8 +46,9 @@ const Navbar = ({ variant = 'landing', user }) => {
 
                 <div className="flex items-center gap-8">
 
-                    <Link to={isDashboard ? "/home" : "/"} className="text-2xl font-bold tracking-tight text-soft-black">
-                        DoMate
+                    <Link to={isDashboard ? "/home" : "/"} className="flex items-center gap-2">
+                        <img src="/logo.png" alt="DoMate" className="h-8 w-auto" />
+                        <span className="text-2xl font-bold tracking-tight text-soft-black">DoMate</span>
                     </Link>
 
 
@@ -112,26 +114,39 @@ const Navbar = ({ variant = 'landing', user }) => {
 
                             <Link
                                 to="/services"
-                                className="p-2 rounded-full transition-all text-gray-600 hover:text-soft-black hover:bg-gray-100"
+                                className={`p-2 rounded-full transition-all ${isServicesActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
                                 title="Services"
                             >
                                 <LayoutGrid className="w-5 h-5" />
                             </Link>
 
-                            <Link to="/cart" className={`relative p-2 rounded-full transition-all ${isCartActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}>
+                            <Link
+                                to="/cart"
+                                className={`relative p-2 rounded-full transition-all ${isCartActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
+                                title="Cart"
+                            >
                                 <ShoppingCart className="w-5 h-5" />
                                 <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                             </Link>
 
 
                             {isAccountPage ? (
-                                <button
-                                    onClick={handleLogout}
-                                    className="flex items-center gap-2 py-2 px-4 ml-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-colors font-medium text-sm"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                    <span>Logout</span>
-                                </button>
+                                user?.name && user.name.toLowerCase() !== 'guest' ? (
+                                    <button
+                                        onClick={handleLogout}
+                                        className="flex items-center gap-2 py-2 px-4 ml-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-colors font-medium text-sm"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        <span>Logout</span>
+                                    </button>
+                                ) : (
+                                    <Link
+                                        to="/login"
+                                        className="flex items-center gap-2 py-2 px-4 ml-2 bg-soft-black text-white hover:bg-black rounded-full transition-colors font-medium text-sm"
+                                    >
+                                        <span>Login</span>
+                                    </Link>
+                                )
                             ) : (
                                 <Link to="/account" className="flex items-center gap-3 pl-2 border-l border-gray-200 cursor-pointer hover:bg-gray-50 rounded-lg p-1 transition-colors">
                                     <div className="w-9 h-9 bg-beige rounded-full flex items-center justify-center text-soft-black font-semibold">

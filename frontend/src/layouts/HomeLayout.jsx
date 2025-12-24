@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import GoToTop from '../components/GoToTop';
 import { getMe } from '../api/auth';
 
 const HomeLayout = ({ children }) => {
@@ -35,6 +36,7 @@ const HomeLayout = ({ children }) => {
                 {children}
             </main>
             <Footer />
+            <GoToTop />
         </div>
     );
 };
