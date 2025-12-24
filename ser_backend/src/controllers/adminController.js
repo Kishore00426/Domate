@@ -174,13 +174,18 @@ export const deleteSubcategory = async (req, res) => {
 // Link subcategory to category
 export const linkSubcategoryToCategory = async (req, res) => {
   try {
-    const { categoryId, subcategoryId } = req.body;
+    const { categoryId, subcategoryIds } = req.body; // expect array
     const category = await Category.findById(categoryId);
     if (!category) return res.status(404).json({ success: false, error: "Category not found" });
-    if (!category.subcategories.includes(subcategoryId)) {
-      category.subcategories.push(subcategoryId);
-      await category.save();
-    }
+
+    // Add only new subcategories
+    subcategoryIds.forEach(id => {
+      if (!category.subcategories.includes(id)) {
+        category.subcategories.push(id);
+      }
+    });
+
+    await category.save();
     res.json({ success: true, category });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
