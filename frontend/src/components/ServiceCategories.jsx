@@ -35,7 +35,7 @@ const categories = [
   }
 ];
 
-const ServiceCategories = () => {
+const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
   return (
     <section className="py-8 px-8 md:mt-5" >
       <div className="max-w-6xl mx-auto">
@@ -47,7 +47,8 @@ const ServiceCategories = () => {
           {categories.map((category, index) => (
             <div
               key={index}
-              className="flex flex-row items-center justify-start text-left p-4 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full gap-4"
+              onClick={() => onCategorySelect && onCategorySelect(category.title)}
+              className={`flex flex-row items-center justify-start text-left p-4 bg-white rounded-2xl shadow-sm border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full gap-4 ${selectedCategory === category.title ? 'border-black ring-2 ring-black bg-gray-50' : 'border-gray-100'}`}
             >
               <div className="w-16 h-16 shrink-0 relative">
                 <div className="absolute inset-0 bg-beige rounded-full scale-0 group-hover:scale-110 transition-transform duration-300 -z-10"></div>

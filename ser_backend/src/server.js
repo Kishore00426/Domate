@@ -3,9 +3,10 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
 // Import routes
-import authRoutes from "./routes/authRoutes.js"; 
+import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import serviceRoutes from "./routes/serviceRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.get("/api/ping", (req, res) => {
     app.use("/api/auth", authRoutes);
     app.use("/api/users", userRoutes);
     app.use("/api/admin", adminRoutes);
+    app.use("/api/services", serviceRoutes);
 
     // Start server
     const port = process.env.PORT || 4000;
