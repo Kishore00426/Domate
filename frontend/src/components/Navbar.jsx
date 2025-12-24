@@ -6,7 +6,7 @@ import { openSearchModal, closeSearchModal } from '../store/uiSlice';
 import SearchModal from './SearchModal';
 // import SearchBar from './SearchBar'; // No longer needed directly here if we replace it
 
-const Navbar = ({ variant = 'landing', user }) => {
+const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const location = useLocation();
@@ -130,11 +130,19 @@ const Navbar = ({ variant = 'landing', user }) => {
                             </Link>
 
 
-                            {isAccountPage ? (
+                            {loading ? (
+                                <div className="flex items-center gap-3 pl-2 border-l border-gray-200 p-1">
+                                    <div className="w-9 h-9 bg-gray-200 rounded-full animate-pulse"></div>
+                                    <div className="hidden lg:block space-y-1">
+                                        <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
+                                        <div className="w-16 h-3 bg-gray-200 rounded animate-pulse"></div>
+                                    </div>
+                                </div>
+                            ) : isAccountPage ? (
                                 user?.name && user.name.toLowerCase() !== 'guest' ? (
                                     <button
                                         onClick={handleLogout}
-                                        className="flex items-center gap-2 py-2 px-4 ml-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-full transition-colors font-medium text-sm"
+                                        className="flex items-center gap-2 py-2 px-4 ml-2 bg-black text-white hover:bg-black/80 rounded-full transition-colors font-medium text-sm"
                                     >
                                         <LogOut className="w-4 h-4" />
                                         <span>Logout</span>

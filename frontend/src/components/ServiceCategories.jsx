@@ -39,10 +39,8 @@ const ServiceCategories = () => {
   return (
     <section className="py-8 px-8 md:mt-5" >
       <div className="max-w-6xl mx-auto">
-        <div className="mb-6 pl-2">
-          <h2 className="text-2xl font-bold text-soft-black">
-            What are you looking for?
-          </h2>
+        <div className="my-2 mb-10  ">
+          <h2 className="text-2xl md:text-3xl font-bold text-soft-black"> What are you looking for?</h2>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
