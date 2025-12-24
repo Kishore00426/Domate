@@ -1,6 +1,6 @@
 import React from 'react';
 import HomeLayout from '../layouts/HomeLayout';
-import { User, MapPin, Mail, Phone, Calendar, Shield } from 'lucide-react';
+import { User, MapPin, Mail, Phone, Calendar, Shield, CreditCard, Settings, HelpCircle, Info } from 'lucide-react';
 
 import { getMe, updateProfile } from '../api/auth';
 
@@ -88,8 +88,12 @@ const Account = () => {
                         {/* Profile Card */}
                         <div className="md:col-span-1">
                             <div className="bg-white rounded-3xl shadow-lg p-6 text-center sticky top-24">
-                                <div className="w-24 h-24 bg-beige rounded-full flex items-center justify-center text-soft-black mx-auto mb-4">
-                                    <User className="w-10 h-10" />
+                                <div className="w-24 h-24 bg-beige rounded-full flex items-center justify-center text-soft-black mx-auto mb-4 text-3xl font-bold">
+                                    {user.name && user.name.toLowerCase() !== 'guest' ? (
+                                        user.name.charAt(0).toUpperCase()
+                                    ) : (
+                                        <User className="w-10 h-10" />
+                                    )}
                                 </div>
 
                                 {isEditing ? (
@@ -199,14 +203,19 @@ const Account = () => {
                         {/* Main Content Area */}
                         <div className="md:col-span-2 space-y-6">
                             {/* Stats/Quick Actions */}
-                            <div className="grid grid-cols-2 gap-4">
+                            {/* Stats/Quick Actions */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
                                     <h3 className="text-2xl font-bold text-soft-black mb-1">0</h3>
                                     <p className="text-gray-500 text-sm">Active Bookings</p>
                                 </div>
-                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
-                                    <h3 className="text-2xl font-bold text-soft-black mb-1">0</h3>
-                                    <p className="text-gray-500 text-sm">Completed Services</p>
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center gap-2">
+                                    <Settings className="w-6 h-6 text-soft-black" />
+                                    <p className="text-gray-500 text-sm font-medium">Settings</p>
+                                </div>
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center gap-2">
+                                    <HelpCircle className="w-6 h-6 text-soft-black" />
+                                    <p className="text-gray-500 text-sm font-medium">Help & Support</p>
                                 </div>
                             </div>
 
@@ -240,12 +249,24 @@ const Account = () => {
 
                                 <div className="p-6 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                                            <Shield className="w-5 h-5" />
+                                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                                            <CreditCard className="w-5 h-5" />
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-soft-black">Privacy & Security</h3>
-                                            <p className="text-xs text-gray-500">Change password and settings</p>
+                                            <h3 className="font-semibold text-soft-black">Payment Methods</h3>
+                                            <p className="text-xs text-gray-500">Manage saved cards and wallets</p>
+                                        </div>
+                                    </div>
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                </div>
+                                <div className="p-6 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-2 bg-gray-50 text-gray-600 rounded-lg">
+                                            <Info className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-soft-black">About Us</h3>
+                                            <p className="text-xs text-gray-500">Learn more about Domate</p>
                                         </div>
                                     </div>
                                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>

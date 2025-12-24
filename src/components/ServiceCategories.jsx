@@ -2,43 +2,43 @@ import React from 'react';
 
 const categories = [
   {
-    image: "https://cdn-icons-png.flaticon.com/512/4807/4807695.png", // Salon (3D/High Quality)
+    image: "/icons/women makeup.png",
     title: "Salon Prime"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/9563/9563066.png", // Cleaning (3D Vacuum)
+    image: "/icons/house cleaning.png",
     title: "Cleaning"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/8919/8919213.png", // Electrician (3D Tools)
+    image: "/icons/driller &hammer.png",
     title: "Electricians & Carpenters"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/4213/4213502.png", // AC Repair (3D AC)
+    image: "/icons/ac.png",
     title: "AC & Appliance Repair"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/4140/4140047.png", // Water Purifier (3D Water)
-    title: "Native Water Purifier"
+    image: "/icons/water purifier.png",
+    title: "Water Purifier Service & Fix"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/9384/9384892.png", // Painting (3D Roller)
+    image: "/icons/painting.png",
     title: "Painting & Waterproofing"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/6569/6569259.png", // Men's Salon (3D Barber)
+    image: "/icons/gent's massage.png",
     title: "Men's Salon & Massage"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/3659/3659898.png", // Smart Home (3D Home)
+    image: "/icons/bulb & switches.png",
     title: "Smart Home Installation"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/2913/2913494.png", // Disinfection (3D Spray)
+    image: "/icons/disinfectant.png",
     title: "Disinfection Services"
   },
   {
-    image: "https://cdn-icons-png.flaticon.com/512/6786/6786378.png", // Packers (3D Box/Truck)
+    image: "/icons/delhivery truck.png",
     title: "Packers & Movers"
   }
 ];
@@ -57,9 +57,9 @@ const ServiceCategories = () => {
           {categories.map((category, index) => (
             <div
               key={index}
-              className="flex flex-col items-center justify-center text-center p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full"
+              className="flex flex-row items-center justify-start text-left p-4 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full gap-4"
             >
-              <div className="w-20 h-20 mb-4 relative">
+              <div className="w-16 h-16 shrink-0 relative">
                 <div className="absolute inset-0 bg-gray-50 rounded-full scale-0 group-hover:scale-110 transition-transform duration-300 -z-10"></div>
                 <img
                   src={category.image}
