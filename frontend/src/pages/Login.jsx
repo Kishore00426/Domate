@@ -85,7 +85,7 @@ const Login = () => {
                                 value={formData.email}
                                 onChange={handleChange}
                                 placeholder="name@example.com"
-                                className={`w-full px-4 py-3 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 ${errors.email ? 'border-red-500' : ''}`}
+                                className={`w-full px-4 py-3 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-soft-black ${errors.email ? 'border-red-500' : ''}`}
                             />
                             {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email}</p>}
                         </div>
@@ -99,7 +99,7 @@ const Login = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     placeholder="••••••••"
-                                    className={`w-full px-4 py-3 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 ${errors.password ? 'border-red-500' : ''}`}
+                                    className={`w-full px-4 py-3 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-soft-black ${errors.password ? 'border-red-500' : ''}`}
                                 />
                                 <button
                                     type="button"

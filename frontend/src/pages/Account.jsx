@@ -102,7 +102,7 @@ const Account = () => {
                                             name="name"
                                             value={tempData.name}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5"
+                                            className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-soft-black"
                                             placeholder="Full Name"
                                         />
                                         <div className="flex gap-2">
@@ -111,14 +111,14 @@ const Account = () => {
                                                 name="location"
                                                 value={tempData.location}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5"
+                                                className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-soft-black"
                                                 placeholder="Location"
                                             />
                                             <select
                                                 name="addressTag"
                                                 value={tempData.addressTag}
                                                 onChange={handleChange}
-                                                className="px-2 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-sm bg-white"
+                                                className="px-2 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-sm bg-white text-soft-black"
                                             >
                                                 {addressTags.map(tag => (
                                                     <option key={tag} value={tag}>{tag}</option>
@@ -147,7 +147,7 @@ const Account = () => {
                                                 name="email"
                                                 value={tempData.email}
                                                 onChange={handleChange}
-                                                className="w-full px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5"
+                                                className="w-full px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5 text-soft-black"
                                             />
                                         ) : (
                                             user.email
@@ -161,7 +161,7 @@ const Account = () => {
                                                 name="phone"
                                                 value={tempData.phone}
                                                 onChange={handleChange}
-                                                className="w-full px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5"
+                                                className="w-full px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5 text-soft-black"
                                             />
                                         ) : (
                                             user.phone
@@ -242,11 +242,11 @@ const Account = () => {
                                             <h3 className="font-semibold text-soft-black">Saved Addresses</h3>
                                             <p className="text-xs text-gray-500">Manage your service locations</p>
                                         </div>
-                                    </div>  
+                                    </div>
                                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                                 </div>
 
-                                <div className="p-6 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                                <div className="p-6 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
                                             <CreditCard className="w-5 h-5" />
@@ -258,6 +258,21 @@ const Account = () => {
                                     </div>
                                     <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                                 </div>
+
+                                {/* Settings Section */}
+                                <div className="p-6 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                                            <Settings className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-semibold text-soft-black">Settings</h3>
+                                            <p className="text-xs text-gray-500">Notifications, Password, & Account</p>
+                                        </div>
+                                    </div>
+                                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                </div>
+
                                 <div className="p-6 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
                                     <div className="flex items-center gap-4">
                                         <div className="p-2 bg-gray-50 text-gray-600 rounded-lg">

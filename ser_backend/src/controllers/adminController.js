@@ -186,9 +186,25 @@ export const deleteCategory = async (req, res) => {
 // ---------------- SUBCATEGORY CRUD (single image) ----------------
 export const createSubcategory = async (req, res) => {
   try {
-    const { name, process } = req.body;
+    const { name, process, parentCategory } = req.body;
     const imageUrl = req.file ? `/uploads/subcategories/${req.file.filename}` : null;
-    const subcategory = await Subcategory.create({ name, process, imageUrl });
+
+    // Create subcategory with parent reference
+    const subcategory = await Subcategory.create({
+      name,
+      process,
+      imageUrl,
+      parentCategory: parentCategory || null
+    });
+
+    // If parent category is specified, add this subcategory to it
+    if (parentCategory) {
+      await Category.findByIdAndUpdate(
+        parentCategory,
+        { $addToSet: { subcategories: subcategory._id } }
+      );
+    }
+
     res.status(201).json({ success: true, subcategory });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -206,10 +222,30 @@ export const getSubcategories = async (req, res) => {
 
 export const updateSubcategory = async (req, res) => {
   try {
-    const updates = { ...req.body };
-    if (req.file) updates.imageUrl = `/uploads/subcategories/${req.file.filename}`;
+    const { name, process, parentCategory } = req.body;
+    const updates = { name, process };
+    if (req.file) {
+      updates.imageUrl = `/uploads/subcategories/${req.file.filename}`;
+    }
+
+    // Retrieve current subcategory to check for parent change
+    const currentSub = await Subcategory.findById(req.params.id);
+    if (!currentSub) return res.status(404).json({ success: false, error: "Subcategory not found" });
+
+    // Handle Parent Category Change
+    if (parentCategory && currentSub.parentCategory && currentSub.parentCategory.toString() !== parentCategory) {
+      // Remove from old parent
+      await Category.findByIdAndUpdate(currentSub.parentCategory, { $pull: { subcategories: currentSub._id } });
+      // Add to new parent
+      await Category.findByIdAndUpdate(parentCategory, { $addToSet: { subcategories: currentSub._id } });
+      updates.parentCategory = parentCategory;
+    } else if (parentCategory && !currentSub.parentCategory) {
+      // Add to new parent
+      await Category.findByIdAndUpdate(parentCategory, { $addToSet: { subcategories: currentSub._id } });
+      updates.parentCategory = parentCategory;
+    }
+
     const subcategory = await Subcategory.findByIdAndUpdate(req.params.id, updates, { new: true });
-    if (!subcategory) return res.status(404).json({ success: false, error: "Subcategory not found" });
     res.json({ success: true, subcategory });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });

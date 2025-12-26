@@ -8,6 +8,8 @@ const AdminLayout = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [isLoading, setIsLoading] = useState(true);
+
     const menuItems = [
         { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/admin/verification', label: 'Provider Verification', icon: CheckSquare },
@@ -18,20 +20,31 @@ const AdminLayout = () => {
     ];
 
     React.useEffect(() => {
-        // Simple client-side protection
-        const token = localStorage.getItem('adminToken');
-        const user = localStorage.getItem('adminUser');
+        const checkAuth = () => {
+            const token = localStorage.getItem('adminToken');
+            const user = localStorage.getItem('adminUser');
 
-        if (!token) {
-            navigate('/admin/login');
-        } else if (user) {
+            if (!token || !user) {
+                navigate('/admin/login');
+                return;
+            }
+
             try {
                 const parsedUser = JSON.parse(user);
+                // Optional: Check if user role is actually admin if stored in localstorage
+                if (parsedUser.role && parsedUser.role.name && parsedUser.role.name !== 'admin') {
+                    navigate('/admin/login'); // Or unauthorized page
+                    return;
+                }
                 setAdminName(parsedUser.username || parsedUser.name || 'Admin');
+                setIsLoading(false);
             } catch (e) {
                 console.error("Failed to parse admin user", e);
+                navigate('/admin/login');
             }
-        }
+        };
+
+        checkAuth();
     }, [navigate]);
 
     const handleLogout = () => {
@@ -39,6 +52,10 @@ const AdminLayout = () => {
         localStorage.removeItem('adminUser');
         navigate('/admin/login');
     };
+
+    if (isLoading) {
+        return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500">Loading...</div>;
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 flex font-sans">

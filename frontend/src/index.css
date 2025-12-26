@@ -20,6 +20,12 @@ body {
   /* IE and Edge */
 }
 
+input,
+textarea,
+select {
+  color: var(--color-soft-black) !important;
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {

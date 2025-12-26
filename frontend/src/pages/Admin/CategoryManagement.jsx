@@ -196,7 +196,7 @@ const CategoryManagement = () => {
                         <input
                             type="text"
                             placeholder={`Search ${activeTab}...`}
-                            className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-soft-black outline-none w-full text-sm"
+                            className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-soft-black outline-none w-full text-sm text-soft-black"
                         />
                         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     </div>
@@ -286,7 +286,7 @@ const CategoryManagement = () => {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all text-soft-black"
                                     placeholder="e.g. Plumbing"
                                     required
                                 />
@@ -299,7 +299,7 @@ const CategoryManagement = () => {
                                         name="parentCategory"
                                         value={formData.parentCategory}
                                         onChange={handleInputChange}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all bg-white"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all bg-white text-soft-black"
                                         required
                                     >
                                         <option value="" disabled>Select Category</option>
@@ -317,7 +317,7 @@ const CategoryManagement = () => {
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     rows="3"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all resize-none"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all resize-none text-soft-black"
                                     placeholder="Brief description..."
                                 />
                             </div>
