@@ -30,11 +30,14 @@ const Register = () => {
         // Provider Specific
         serviceCategory: '',
         workLocation: '',
+        pincode: '',
+        radius: '',
         agreedToTerms: false,
         experience: '',
         // Files (stored as objects or dummy for now)
         idProof: null,
         addressProof: null,
+        profilePhoto: null,
         certificates: null
     });
     const [errors, setErrors] = useState({});
@@ -95,17 +98,25 @@ const Register = () => {
     const validateStep2 = () => {
         let tempErrors = {};
         if (!formData.serviceCategory) tempErrors.serviceCategory = 'Service Category is required';
-        if (!formData.workLocation) tempErrors.workLocation = 'Work Location is required';
-        if (!formData.agreedToTerms) tempErrors.agreedToTerms = 'You must agree to the terms';
+        if (!formData.experience) tempErrors.experience = 'Experience is required';
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     };
 
     const validateStep3 = () => {
         let tempErrors = {};
+        if (!formData.workLocation) tempErrors.workLocation = 'Work Location (City) is required';
+        if (!formData.pincode) tempErrors.pincode = 'Pincode is required';
+        setErrors(tempErrors);
+        return Object.keys(tempErrors).length === 0;
+    };
+
+    const validateStep4 = () => {
+        let tempErrors = {};
         if (!formData.idProof) tempErrors.idProof = 'ID Proof is required';
         if (!formData.addressProof) tempErrors.addressProof = 'Address Proof is required';
-        if (!formData.experience) tempErrors.experience = 'Experience is required';
+        if (!formData.profilePhoto) tempErrors.profilePhoto = 'Profile Photo is required';
+        if (!formData.agreedToTerms) tempErrors.agreedToTerms = 'You must agree to the terms';
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     };
@@ -115,6 +126,8 @@ const Register = () => {
             if (validateStep1()) setStep(2);
         } else if (step === 2) {
             if (validateStep2()) setStep(3);
+        } else if (step === 3) {
+            if (validateStep3()) setStep(4);
         }
     };
 
@@ -123,7 +136,7 @@ const Register = () => {
         let isValid = false;
 
         if (isProvider) {
-            if (step === 3 && validateStep3()) isValid = true;
+            if (step === 4 && validateStep4()) isValid = true;
         } else {
             // User flow
             if (validateStep1()) isValid = true;
@@ -182,7 +195,7 @@ const Register = () => {
                                     {isProvider ? 'Professional Registration' : 'Join DoMate'}
                                 </h2>
                                 <p className="text-gray-500 text-sm">
-                                    {isProvider ? `Step ${step} of 3: ${step === 1 ? 'Basic Info' : step === 2 ? 'Professional Details' : 'Documents'}` : 'Create an account to book professionals.'}
+                                    {isProvider ? `Step ${step} of 4: ${step === 1 ? 'Basic Info' : step === 2 ? 'Skills & Exp' : step === 3 ? 'Service Area' : 'Documents'}` : 'Create an account to book professionals.'}
                                 </p>
                             </div>
 
@@ -295,11 +308,11 @@ const Register = () => {
                                 </div>
                             )}
 
-                            {/* Step 2: Provider Details */}
+                            {/* Step 2: Skills & Experience */}
                             {isProvider && step === 2 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">What work do you do?</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">Service Category</label>
                                         <div className="relative">
                                             <select
                                                 name="serviceCategory"
@@ -318,7 +331,26 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Where do you live?</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">Experience (Years)</label>
+                                        <input
+                                            type="number"
+                                            name="experience"
+                                            value={formData.experience}
+                                            onChange={handleChange}
+                                            placeholder="e.g. 2"
+                                            min="0"
+                                            className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-sm text-black ${errors.experience ? 'border-red-500' : ''}`}
+                                        />
+                                        {errors.experience && <p className="text-red-500 text-xs mt-1 ml-1">{errors.experience}</p>}
+                                    </div>
+                                </div>
+                            )}
+
+                             {/* Step 3: Service Area */}
+                             {isProvider && step === 3 && (
+                                <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
+                                     <div>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">Work City</label>
                                         <div className="relative">
                                             <select
                                                 name="workLocation"
@@ -336,24 +368,35 @@ const Register = () => {
                                         {errors.workLocation && <p className="text-red-500 text-xs mt-1 ml-1">{errors.workLocation}</p>}
                                     </div>
 
-                                    <div className="pt-2">
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                name="agreedToTerms"
-                                                checked={formData.agreedToTerms}
-                                                onChange={handleChange}
-                                                className="w-4 h-4 rounded text-soft-black focus:ring-soft-black"
-                                            />
-                                            <span className="text-xs text-gray-600">I agree to the Terms and Conditions</span>
-                                        </label>
-                                        {errors.agreedToTerms && <p className="text-red-500 text-xs mt-1 ml-1">{errors.agreedToTerms}</p>}
+                                    <div>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">Pincode</label>
+                                        <input
+                                            type="text"
+                                            name="pincode"
+                                            value={formData.pincode}
+                                            onChange={handleChange}
+                                            placeholder="e.g. 600001"
+                                            className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-sm text-black ${errors.pincode ? 'border-red-500' : ''}`}
+                                        />
+                                        {errors.pincode && <p className="text-red-500 text-xs mt-1 ml-1">{errors.pincode}</p>}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">Radius (km) <span className="text-gray-400 font-normal">(Optional)</span></label>
+                                        <input
+                                            type="number"
+                                            name="radius"
+                                            value={formData.radius}
+                                            onChange={handleChange}
+                                            placeholder="e.g. 10"
+                                            className="w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-sm text-black"
+                                        />
                                     </div>
                                 </div>
                             )}
 
-                            {/* Step 3: Provider Documents */}
-                            {isProvider && step === 3 && (
+                            {/* Step 4: Provider Documents */}
+                            {isProvider && step === 4 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
                                         <label className="block text-xs font-semibold text-soft-black mb-1">ID Proof</label>
@@ -377,6 +420,17 @@ const Register = () => {
                                         {errors.addressProof && <p className="text-red-500 text-xs mt-1 ml-1">{errors.addressProof}</p>}
                                     </div>
 
+                                     <div>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">Profile Photo</label>
+                                        <input
+                                            type="file"
+                                            name="profilePhoto"
+                                            onChange={handleChange}
+                                            className={`w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gray-100 file:text-soft-black hover:file:bg-gray-200 ${errors.profilePhoto ? 'border-red-500' : ''}`}
+                                        />
+                                        {errors.profilePhoto && <p className="text-red-500 text-xs mt-1 ml-1">{errors.profilePhoto}</p>}
+                                    </div>
+
                                     <div>
                                         <label className="block text-xs font-semibold text-soft-black mb-1">Certificates <span className="text-gray-400 font-normal">(Optional)</span></label>
                                         <input
@@ -387,18 +441,18 @@ const Register = () => {
                                         />
                                     </div>
 
-                                    <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Experience (Years)</label>
-                                        <input
-                                            type="number"
-                                            name="experience"
-                                            value={formData.experience}
-                                            onChange={handleChange}
-                                            placeholder="e.g. 2"
-                                            min="0"
-                                            className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-sm text-black ${errors.experience ? 'border-red-500' : ''}`}
-                                        />
-                                        {errors.experience && <p className="text-red-500 text-xs mt-1 ml-1">{errors.experience}</p>}
+                                     <div className="pt-2">
+                                        <label className="flex items-center gap-2 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="agreedToTerms"
+                                                checked={formData.agreedToTerms}
+                                                onChange={handleChange}
+                                                className="w-4 h-4 rounded text-soft-black focus:ring-soft-black"
+                                            />
+                                            <span className="text-xs text-gray-600">I agree to the Terms and Conditions</span>
+                                        </label>
+                                        {errors.agreedToTerms && <p className="text-red-500 text-xs mt-1 ml-1">{errors.agreedToTerms}</p>}
                                     </div>
                                 </div>
                             )}
@@ -407,7 +461,7 @@ const Register = () => {
                             <div className="mt-6 flex flex-col gap-3">
                                 {isProvider ? (
                                     <>
-                                        {step < 3 ? (
+                                        {step < 4 ? (
                                             <button
                                                 type="button"
                                                 onClick={handleNext}
