@@ -29,7 +29,13 @@ import {
   getServices,
   getService,
   updateService,
-  deleteService
+  deleteService,
+
+  // Users & Providers
+  getUsers,
+  deleteUser,
+  getPendingProviders,
+  verifyProvider
 } from "../controllers/adminController.js";
 
 import { authenticate } from "../middleware/authenticate.js";
@@ -79,5 +85,13 @@ router.get("/services", getServices);
 router.get("/services/:id", getService);
 router.put("/services/:id", upload.single("image"), updateService);
 router.delete("/services/:id", deleteService);
+
+// ---------------- USER MANAGEMENT ----------------
+router.get("/users", getUsers);
+router.delete("/users/:id", deleteUser);
+
+// ---------------- PROVIDER VERIFICATION ----------------
+router.get("/providers/pending", getPendingProviders);
+router.post("/providers/:id/verify", verifyProvider);
 
 export default router;

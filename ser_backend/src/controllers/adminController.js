@@ -85,6 +85,61 @@ export const getRolePrivileges = async (req, res) => {
   }
 };
 
+// ---------------- USER MANAGEMENT ----------------
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find().populate("role");
+    res.json({ success: true, users });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
+    res.json({ success: true, message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- PROVIDER VERIFICATION ----------------
+export const getPendingProviders = async (req, res) => {
+  try {
+    // Determine provider role ID if needed, or just filter by providerStatus='pending'
+    // Assuming providers have providerStatus='pending'
+    const providers = await User.find({ providerStatus: 'pending' }).populate("role");
+    res.json({ success: true, providers });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const verifyProvider = async (req, res) => {
+  try {
+    const { action } = req.body; // 'approve' or 'reject'
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ success: false, error: "Invalid action" });
+    }
+
+    const status = action === 'approve' ? 'approved' : 'rejected';
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { providerStatus: status },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ success: false, error: "Provider not found" });
+    res.json({ success: true, message: `Provider ${status}`, user });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- ROLE PRIVILEGE MANAGEMENT ----------------
+
 // ---------------- CATEGORY CRUD ----------------
 export const createCategory = async (req, res) => {
   try {

@@ -10,6 +10,11 @@ import Services from './pages/Services';
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ProviderVerification from './pages/Admin/ProviderVerification';
+import AdminLogin from './pages/Admin/AdminLogin';
+import AdminRegister from './pages/Admin/AdminRegister';
+import CategoryManagement from './pages/Admin/CategoryManagement';
+import ServiceManagement from './pages/Admin/ServiceManagement';
+import UserManagement from './pages/Admin/UserManagement';
 
 function App() {
   return (
@@ -24,10 +29,18 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/account" element={<Account />} />
 
+
+          {/* Admin Auth Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
+
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="verification" element={<ProviderVerification />} />
+            <Route path="categories" element={<CategoryManagement />} />
+            <Route path="services" element={<ServiceManagement />} />
+            <Route path="users" element={<UserManagement />} />
             {/* Add other admin routes here */}
           </Route>
         </Routes>

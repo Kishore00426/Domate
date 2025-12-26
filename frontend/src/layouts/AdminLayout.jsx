@@ -1,23 +1,43 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Menu, X, LayoutGrid, FileText } from 'lucide-react';
 
 const AdminLayout = () => {
     const [isSidebarOpen, setSidebarOpen] = useState(true);
+    const [adminName, setAdminName] = useState('Admin'); // Default
     const location = useLocation();
     const navigate = useNavigate();
 
     const menuItems = [
         { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/admin/verification', label: 'Provider Verification', icon: CheckSquare },
+        { path: '/admin/categories', label: 'Category Management', icon: LayoutGrid },
+        { path: '/admin/services', label: 'Service Management', icon: FileText },
         { path: '/admin/users', label: 'User Management', icon: Users },
         { path: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 
+    React.useEffect(() => {
+        // Simple client-side protection
+        const token = localStorage.getItem('adminToken');
+        const user = localStorage.getItem('adminUser');
+
+        if (!token) {
+            navigate('/admin/login');
+        } else if (user) {
+            try {
+                const parsedUser = JSON.parse(user);
+                setAdminName(parsedUser.username || parsedUser.name || 'Admin');
+            } catch (e) {
+                console.error("Failed to parse admin user", e);
+            }
+        }
+    }, [navigate]);
+
     const handleLogout = () => {
-        // Clear token logic here
-        localStorage.removeItem('token');
-        navigate('/login');
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        navigate('/admin/login');
     };
 
     return (
@@ -26,8 +46,9 @@ const AdminLayout = () => {
             <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-soft-black text-white transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0`}>
                 <div className="h-full flex flex-col">
                     <div className="p-6 border-b border-gray-800 flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xl font-bold tracking-tight">DoMate Admin</span>
+                        <div className="flex items-center gap-3">
+                            <img src="/logo.png" alt="Logo" className="h-8 w-auto bg-white rounded-full " />
+                            <span className="text-xl font-bold tracking-tight">DoMate</span>
                         </div>
                         <button className="md:hidden" onClick={() => setSidebarOpen(false)}>
                             <X className="w-5 h-5" />
@@ -63,13 +84,18 @@ const AdminLayout = () => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-screen overflow-hidden">
                 <header className="bg-white shadow-sm h-16 flex items-center justify-between px-6 z-40">
-                    <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
-                        <Menu className="w-6 h-6" />
-                    </button>
+                    <div className="flex items-center gap-4">
+                        <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
+                            <Menu className="w-6 h-6" />
+                        </button>
+                        <h2 className="text-xl font-bold text-soft-black">Admin Panel</h2>
+                    </div>
                     <div className="flex items-center gap-4 ml-auto">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-beige flex items-center justify-center text-soft-black font-bold text-sm">A</div>
-                            <span className="text-sm font-medium text-gray-700">Admin</span>
+                            <div className="w-8 h-8 rounded-full bg-beige flex items-center justify-center text-soft-black font-bold text-sm">
+                                {adminName.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">{adminName}</span>
                         </div>
                     </div>
                 </header>
