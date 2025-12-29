@@ -101,6 +101,7 @@ const Services = () => {
                                 subcategories={categoryDetails.subcategories}
                                 selectedSubcategory={selectedSubcategory}
                                 onSubcategorySelect={handleSubcategorySelect}
+                                categoryName={categoryDetails.name} // Pass the main category name
                             />
                         )}
 

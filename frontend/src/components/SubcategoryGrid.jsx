@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySelect }) => {
+const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySelect, categoryName }) => {
     const navigate = useNavigate();
 
     const handleSelect = (sub) => {
@@ -14,7 +14,7 @@ const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySele
 
     return (
         <div className="max-w-6xl mx-auto mb-12">
-            <h3 className="text-xl font-bold text-soft-black mb-6">What service do you need?</h3>
+            <h3 className="text-xl font-bold text-soft-black mb-6">What {categoryName || 'service'} do you need?</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {subcategories.map((sub) => (
                     <div
