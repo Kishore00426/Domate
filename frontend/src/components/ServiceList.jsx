@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { Loader } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
+    const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -85,7 +87,10 @@ const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
                             <p className="text-gray-500 text-sm mb-4 line-clamp-2">{service.detailedDescription}</p>
                             <div className="flex items-center justify-between">
                                 <span className="text-xl font-bold text-soft-black">₹{service.price}</span>
-                                <button className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors">
+                                <button
+                                    onClick={() => navigate(`/services/${service._id}`)}
+                                    className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
+                                >
                                     View Details
                                 </button>
                             </div>

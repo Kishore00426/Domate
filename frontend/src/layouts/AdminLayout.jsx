@@ -13,9 +13,9 @@ const AdminLayout = () => {
     const menuItems = [
         { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { path: '/admin/verification', label: 'Provider Verification', icon: CheckSquare },
-        { path: '/admin/categories', label: 'Category Management', icon: LayoutGrid },
-        { path: '/admin/services', label: 'Service Management', icon: FileText },
-        { path: '/admin/users', label: 'User Management', icon: Users },
+        { path: '/admin/categories', label: 'Category', icon: LayoutGrid },
+        { path: '/admin/services', label: 'Service', icon: FileText },
+        { path: '/admin/users', label: 'Users', icon: Users },
         { path: '/admin/settings', label: 'Settings', icon: Settings },
     ];
 

@@ -9,3 +9,13 @@ export const getCategoryDetails = async (name) => {
         return { success: false, error: error.message };
     }
 };
+
+export const getServiceById = async (id) => {
+    try {
+        const response = await api.get(`/services/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching service details:", error);
+        return { success: false, error: error.message };
+    }
+};

@@ -8,6 +8,7 @@ import Cart from './pages/Cart';
 import Account from './pages/Account';
 import Services from './pages/Services';
 import AdminLayout from './layouts/AdminLayout';
+import ServiceDetail from './pages/ServiceDetail';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ProviderVerification from './pages/Admin/ProviderVerification';
 import AdminLogin from './pages/Admin/AdminLogin';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/services" element={<Services />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/services/:id" element={<ServiceDetail />} />
 
 
           {/* Admin Auth Routes */}
