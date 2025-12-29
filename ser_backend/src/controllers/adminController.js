@@ -186,7 +186,7 @@ export const deleteCategory = async (req, res) => {
 // ---------------- SUBCATEGORY CRUD (single image) ----------------
 export const createSubcategory = async (req, res) => {
   try {
-    const { name, process, parentCategory } = req.body;
+    const { name, process, category } = req.body;
     const imageUrl = req.file ? `/uploads/subcategories/${req.file.filename}` : null;
 
     // Create subcategory with parent reference
@@ -194,13 +194,13 @@ export const createSubcategory = async (req, res) => {
       name,
       process,
       imageUrl,
-      parentCategory: parentCategory || null
+      category: category || null
     });
 
     // If parent category is specified, add this subcategory to it
-    if (parentCategory) {
+    if (category) {
       await Category.findByIdAndUpdate(
-        parentCategory,
+        category,
         { $addToSet: { subcategories: subcategory._id } }
       );
     }
@@ -222,7 +222,7 @@ export const getSubcategories = async (req, res) => {
 
 export const updateSubcategory = async (req, res) => {
   try {
-    const { name, process, parentCategory } = req.body;
+    const { name, process, category } = req.body;
     const updates = { name, process };
     if (req.file) {
       updates.imageUrl = `/uploads/subcategories/${req.file.filename}`;
@@ -233,16 +233,16 @@ export const updateSubcategory = async (req, res) => {
     if (!currentSub) return res.status(404).json({ success: false, error: "Subcategory not found" });
 
     // Handle Parent Category Change
-    if (parentCategory && currentSub.parentCategory && currentSub.parentCategory.toString() !== parentCategory) {
+    if (category && currentSub.category && currentSub.category.toString() !== category) {
       // Remove from old parent
-      await Category.findByIdAndUpdate(currentSub.parentCategory, { $pull: { subcategories: currentSub._id } });
+      await Category.findByIdAndUpdate(currentSub.category, { $pull: { subcategories: currentSub._id } });
       // Add to new parent
-      await Category.findByIdAndUpdate(parentCategory, { $addToSet: { subcategories: currentSub._id } });
-      updates.parentCategory = parentCategory;
-    } else if (parentCategory && !currentSub.parentCategory) {
+      await Category.findByIdAndUpdate(category, { $addToSet: { subcategories: currentSub._id } });
+      updates.category = category;
+    } else if (category && !currentSub.category) {
       // Add to new parent
-      await Category.findByIdAndUpdate(parentCategory, { $addToSet: { subcategories: currentSub._id } });
-      updates.parentCategory = parentCategory;
+      await Category.findByIdAndUpdate(category, { $addToSet: { subcategories: currentSub._id } });
+      updates.category = category;
     }
 
     const subcategory = await Subcategory.findByIdAndUpdate(req.params.id, updates, { new: true });
@@ -351,6 +351,28 @@ export const deleteService = async (req, res) => {
     const service = await Service.findByIdAndDelete(req.params.id);
     if (!service) return res.status(404).json({ success: false, error: "Service not found" });
     res.json({ success: true, message: "Service deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- DASHBOARD STATS ----------------
+export const getDashboardStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activeProviders = await User.countDocuments({ providerStatus: "approved" });
+    const pendingVerifications = await User.countDocuments({ providerStatus: "pending" });
+    const totalRevenue = 0; // Placeholder
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        activeProviders,
+        pendingVerifications,
+        totalRevenue
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

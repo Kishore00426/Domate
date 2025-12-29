@@ -35,7 +35,8 @@ import {
   getUsers,
   deleteUser,
   getPendingProviders,
-  verifyProvider
+  verifyProvider,
+  getDashboardStats
 } from "../controllers/adminController.js";
 
 import { authenticate } from "../middleware/authenticate.js";
@@ -93,5 +94,8 @@ router.delete("/users/:id", deleteUser);
 // ---------------- PROVIDER VERIFICATION ----------------
 router.get("/providers/pending", getPendingProviders);
 router.post("/providers/:id/verify", verifyProvider);
+
+// ---------------- DASHBOARD STATS ----------------
+router.get("/stats", getDashboardStats);
 
 export default router;

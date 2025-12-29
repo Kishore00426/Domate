@@ -19,7 +19,7 @@ const CategoryManagement = () => {
     const [formData, setFormData] = useState({
         name: '',
         description: '',
-        parentCategory: '', // For subcategories
+        category: '', // For subcategories
         image: null // File object
     });
 
@@ -48,14 +48,14 @@ const CategoryManagement = () => {
             setFormData({
                 name: item.name,
                 description: item.description || '',
-                parentCategory: item.parentCategory || '',
+                category: item.category || item.parentCategory || '',
                 image: null
             });
         } else {
             setFormData({
                 name: '',
                 description: '',
-                parentCategory: categories.length > 0 ? categories[0]._id : '',
+                category: categories.length > 0 ? categories[0]._id : '',
                 image: null
             });
         }
@@ -65,7 +65,7 @@ const CategoryManagement = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingItem(null);
-        setFormData({ name: '', description: '', parentCategory: '', image: null });
+        setFormData({ name: '', description: '', category: '', image: null });
     };
 
     const handleInputChange = (e) => {
@@ -88,7 +88,7 @@ const CategoryManagement = () => {
             if (formData.image) data.append('image', formData.image);
 
             if (activeTab === 'subcategories') {
-                if (formData.parentCategory) data.append('parentCategory', formData.parentCategory);
+                if (formData.category) data.append('category', formData.category);
             }
 
             let response;
@@ -249,7 +249,7 @@ const CategoryManagement = () => {
                                             </td>
                                             <td className="px-6 py-4 text-gray-500 truncate max-w-xs">{item.description}</td>
                                             <td className="px-6 py-4 text-gray-600">
-                                                <span className="bg-gray-100 px-2 py-1 rounded text-xs">{getCategoryName(item.parentCategory)}</span>
+                                                <span className="bg-gray-100 px-2 py-1 rounded text-xs">{getCategoryName(item.category || item.parentCategory)}</span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">
@@ -296,8 +296,8 @@ const CategoryManagement = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
                                     <select
-                                        name="parentCategory"
-                                        value={formData.parentCategory}
+                                        name="category"
+                                        value={formData.category}
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all bg-white text-soft-black"
                                         required
