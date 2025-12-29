@@ -221,7 +221,7 @@ const CategoryManagement = () => {
                                         <tr key={item._id} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
                                                 {item.image ? (
-                                                    <img src={item.image} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
+                                                    <img src={`http://localhost:4000${item.image}`} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
                                                 ) : (
                                                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">N/A</div>
                                                 )}
@@ -241,7 +241,7 @@ const CategoryManagement = () => {
                                         <tr key={item._id} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
                                                 {item.image ? (
-                                                    <img src={item.image} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
+                                                    <img src={`http://localhost:4000${item.image}`} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
                                                 ) : (
                                                     <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">N/A</div>
                                                 )}

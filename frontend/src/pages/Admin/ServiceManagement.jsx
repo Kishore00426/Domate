@@ -220,7 +220,7 @@ const ServiceManagement = () => {
                                     <tr key={service._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
                                             {service.image ? (
-                                                <img src={service.image} alt={service.title} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
+                                                <img src={`http://localhost:4000${service.image}`} alt={service.title} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
                                             ) : (
                                                 <div className="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
                                                     <FileText className="w-4 h-4" />

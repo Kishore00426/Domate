@@ -3,6 +3,7 @@ import Role from "../models/Role.js";
 import Service from "../models/Service.js";
 import Category from "../models/Category.js";
 import Subcategory from "../models/Subcategory.js";
+import User from "../models/User.js";
 
 // ---------------- PRIVILEGE CRUD ----------------
 export const createPrivilege = async (req, res) => {
