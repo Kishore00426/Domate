@@ -76,9 +76,23 @@ const Services = () => {
                     <>
                         {categoryDetails && (
                             <ServiceBanner
-                                name={categoryDetails.name}
-                                description={categoryDetails.description}
-                                imageUrl={categoryDetails.imageUrl}
+                                // If a subcategory is selected, find it and use its details
+                                // Otherwise fall back to the main category details
+                                name={
+                                    selectedSubcategory
+                                        ? categoryDetails.subcategories?.find(s => s.name === selectedSubcategory)?.name
+                                        : categoryDetails.name
+                                }
+                                description={
+                                    selectedSubcategory
+                                        ? categoryDetails.subcategories?.find(s => s.name === selectedSubcategory)?.description
+                                        : categoryDetails.description
+                                }
+                                imageUrl={
+                                    selectedSubcategory
+                                        ? categoryDetails.subcategories?.find(s => s.name === selectedSubcategory)?.imageUrl
+                                        : categoryDetails.imageUrl
+                                }
                             />
                         )}
 
