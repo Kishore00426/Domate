@@ -29,7 +29,14 @@ import {
   getServices,
   getService,
   updateService,
-  deleteService
+  deleteService,
+
+  // Users & Providers
+  getUsers,
+  deleteUser,
+  getPendingProviders,
+  verifyProvider,
+  getDashboardStats
 } from "../controllers/adminController.js";
 
 import {
@@ -38,7 +45,7 @@ import {
   rejectProvider
 } from "../controllers/serviceProviderController.js";
 
-import { authenticate } from "../middleware/authenticate.js";
+import { authenticate } from "../middleware/Authenticate.js";
 import { upload } from "../middleware/upload.js";
 
 const router = express.Router();
@@ -90,5 +97,16 @@ router.delete("/services/:id", deleteService);
 router.get("/providers", getAllProviders);
 router.put("/providers/:id/approve", approveProvider);
 router.put("/providers/:id/reject", rejectProvider);
+
+// ---------------- USER MANAGEMENT ----------------
+router.get("/users", getUsers);
+router.delete("/users/:id", deleteUser);
+
+// ---------------- PROVIDER VERIFICATION ----------------
+router.get("/providers/pending", getPendingProviders);
+router.post("/providers/:id/verify", verifyProvider);
+
+// ---------------- DASHBOARD STATS ----------------
+router.get("/stats", getDashboardStats);
 
 export default router;

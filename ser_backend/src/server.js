@@ -14,8 +14,13 @@ import serviceProviderRoutes from "./routes/serviceProviderRoutes.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+import cors from "cors";
+
+// ...
+
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // Health check route (optional)
@@ -28,7 +33,8 @@ app.get("/api/ping", (req, res) => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
-    app.use("/uploads", express.static("uploads"));
+    // Use absolute path for uploads to avoid CWD issues
+    app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
     // Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/users", userRoutes);

@@ -3,6 +3,7 @@ import Role from "../models/Role.js";
 import Service from "../models/Service.js";
 import Category from "../models/Category.js";
 import Subcategory from "../models/Subcategory.js";
+import User from "../models/User.js";
 
 // ---------------- PRIVILEGE CRUD ----------------
 export const createPrivilege = async (req, res) => {
@@ -85,6 +86,61 @@ export const getRolePrivileges = async (req, res) => {
   }
 };
 
+// ---------------- USER MANAGEMENT ----------------
+export const getUsers = async (req, res) => {
+  try {
+    const users = await User.find().populate("role");
+    res.json({ success: true, users });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
+    res.json({ success: true, message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- PROVIDER VERIFICATION ----------------
+export const getPendingProviders = async (req, res) => {
+  try {
+    // Determine provider role ID if needed, or just filter by providerStatus='pending'
+    // Assuming providers have providerStatus='pending'
+    const providers = await User.find({ providerStatus: 'pending' }).populate("role");
+    res.json({ success: true, providers });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const verifyProvider = async (req, res) => {
+  try {
+    const { action } = req.body; // 'approve' or 'reject'
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({ success: false, error: "Invalid action" });
+    }
+
+    const status = action === 'approve' ? 'approved' : 'rejected';
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { providerStatus: status },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ success: false, error: "Provider not found" });
+    res.json({ success: true, message: `Provider ${status}`, user });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- ROLE PRIVILEGE MANAGEMENT ----------------
+
 // ---------------- CATEGORY CRUD ----------------
 export const createCategory = async (req, res) => {
   try {
@@ -131,9 +187,25 @@ export const deleteCategory = async (req, res) => {
 // ---------------- SUBCATEGORY CRUD (single image) ----------------
 export const createSubcategory = async (req, res) => {
   try {
-    const { name, process } = req.body;
+    const { name, process, category } = req.body;
     const imageUrl = req.file ? `/uploads/subcategories/${req.file.filename}` : null;
-    const subcategory = await Subcategory.create({ name, process, imageUrl });
+
+    // Create subcategory with parent reference
+    const subcategory = await Subcategory.create({
+      name,
+      process,
+      imageUrl,
+      category: category || null
+    });
+
+    // If parent category is specified, add this subcategory to it
+    if (category) {
+      await Category.findByIdAndUpdate(
+        category,
+        { $addToSet: { subcategories: subcategory._id } }
+      );
+    }
+
     res.status(201).json({ success: true, subcategory });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -151,10 +223,30 @@ export const getSubcategories = async (req, res) => {
 
 export const updateSubcategory = async (req, res) => {
   try {
-    const updates = { ...req.body };
-    if (req.file) updates.imageUrl = `/uploads/subcategories/${req.file.filename}`;
+    const { name, process, category } = req.body;
+    const updates = { name, process };
+    if (req.file) {
+      updates.imageUrl = `/uploads/subcategories/${req.file.filename}`;
+    }
+
+    // Retrieve current subcategory to check for parent change
+    const currentSub = await Subcategory.findById(req.params.id);
+    if (!currentSub) return res.status(404).json({ success: false, error: "Subcategory not found" });
+
+    // Handle Parent Category Change
+    if (category && currentSub.category && currentSub.category.toString() !== category) {
+      // Remove from old parent
+      await Category.findByIdAndUpdate(currentSub.category, { $pull: { subcategories: currentSub._id } });
+      // Add to new parent
+      await Category.findByIdAndUpdate(category, { $addToSet: { subcategories: currentSub._id } });
+      updates.category = category;
+    } else if (category && !currentSub.category) {
+      // Add to new parent
+      await Category.findByIdAndUpdate(category, { $addToSet: { subcategories: currentSub._id } });
+      updates.category = category;
+    }
+
     const subcategory = await Subcategory.findByIdAndUpdate(req.params.id, updates, { new: true });
-    if (!subcategory) return res.status(404).json({ success: false, error: "Subcategory not found" });
     res.json({ success: true, subcategory });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -260,6 +352,28 @@ export const deleteService = async (req, res) => {
     const service = await Service.findByIdAndDelete(req.params.id);
     if (!service) return res.status(404).json({ success: false, error: "Service not found" });
     res.json({ success: true, message: "Service deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- DASHBOARD STATS ----------------
+export const getDashboardStats = async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const activeProviders = await User.countDocuments({ providerStatus: "approved" });
+    const pendingVerifications = await User.countDocuments({ providerStatus: "pending" });
+    const totalRevenue = 0; // Placeholder
+
+    res.json({
+      success: true,
+      data: {
+        totalUsers,
+        activeProviders,
+        pendingVerifications,
+        totalRevenue
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

@@ -7,6 +7,18 @@ import Login from './pages/Login';
 import Cart from './pages/Cart';
 import Account from './pages/Account';
 import Services from './pages/Services';
+import AdminLayout from './layouts/AdminLayout';
+import ServiceDetail from './pages/ServiceDetail';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import ProviderVerification from './pages/Admin/ProviderVerification';
+import AdminLogin from './pages/Admin/AdminLogin';
+import AdminRegister from './pages/Admin/AdminRegister';
+import CategoryManagement from './pages/Admin/CategoryManagement';
+import ServiceManagement from './pages/Admin/ServiceManagement';
+import UserManagement from './pages/Admin/UserManagement';
+import AdminSettings from './pages/Admin/AdminSettings';
+import PrivilegeManagement from './pages/Admin/PrivilegeManagement';
+
 
 function App() {
   return (
@@ -20,6 +32,24 @@ function App() {
           <Route path="/cart" element={<Cart />} />
           <Route path="/services" element={<Services />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/services/:id" element={<ServiceDetail />} />
+
+
+          {/* Admin Auth Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/register" element={<AdminRegister />} />
+
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="verification" element={<ProviderVerification />} />
+            <Route path="categories" element={<CategoryManagement />} />
+            <Route path="services" element={<ServiceManagement />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="privileges" element={<PrivilegeManagement />} />
+            <Route path="settings" element={<AdminSettings />} />
+            {/* Add other admin routes here */}
+          </Route>
         </Routes>
       </div>
     </BrowserRouter>
