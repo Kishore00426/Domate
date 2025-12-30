@@ -1,4 +1,4 @@
-  import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Plus, Edit2, Trash2, Save, X, Check } from 'lucide-react';
 
 const PrivilegeManagement = () => {
@@ -13,7 +13,7 @@ const PrivilegeManagement = () => {
     const [editingPrivilege, setEditingPrivilege] = useState(null);
     const [formData, setFormData] = useState({ name: '', description: '' });
 
-    // Role-Privilege Assignment states
+    // Role-Privilege Assignment states  
     const [selectedRole, setSelectedRole] = useState('admin');
     const [rolePrivileges, setRolePrivileges] = useState([]);
     const [selectedPrivileges, setSelectedPrivileges] = useState([]);
