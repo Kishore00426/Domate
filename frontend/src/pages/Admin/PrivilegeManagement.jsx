@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+  import React, { useState, useEffect } from 'react';
 import { Shield, Plus, Edit2, Trash2, Save, X, Check } from 'lucide-react';
 
 const PrivilegeManagement = () => {
@@ -19,7 +19,7 @@ const PrivilegeManagement = () => {
     const [selectedPrivileges, setSelectedPrivileges] = useState([]);
     const [assignmentLoading, setAssignmentLoading] = useState(false);
 
-    const API_BASE = 'http://localhost:5000/api/admin';
+    const API_BASE = 'http://localhost:4000/api/admin';
 
     useEffect(() => {
         fetchPrivileges();
