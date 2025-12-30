@@ -17,7 +17,7 @@ export const authenticate = async (req, res, next) => {
       return res.status(401).json({ success: false, error: "Invalid or expired token" });
     }
 
-    const user = await User.findById(decoded.id).populate("role");
+    const user = await User.findById(decoded._id).populate("role");
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
@@ -27,4 +27,5 @@ export const authenticate = async (req, res, next) => {
   } catch (err) {
     res.status(500).json({ success: false, error: "Server error" });
   }
+  console.log("Authenticated user:", req.user._id);
 };

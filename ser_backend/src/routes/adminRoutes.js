@@ -32,6 +32,12 @@ import {
   deleteService
 } from "../controllers/adminController.js";
 
+import {
+  getAllProviders,
+  approveProvider,
+  rejectProvider
+} from "../controllers/serviceProviderController.js";
+
 import { authenticate } from "../middleware/authenticate.js";
 import { upload } from "../middleware/upload.js";
 
@@ -79,5 +85,10 @@ router.get("/services", getServices);
 router.get("/services/:id", getService);
 router.put("/services/:id", upload.single("image"), updateService);
 router.delete("/services/:id", deleteService);
+
+// ---------------- SERVICE PROVIDER MANAGEMENT (Admin only) ----------------
+router.get("/providers", getAllProviders);
+router.put("/providers/:id/approve", approveProvider);
+router.put("/providers/:id/reject", rejectProvider);
 
 export default router;

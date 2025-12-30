@@ -8,22 +8,18 @@ export const register = async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
 
-    // Check if email already exists
     const existing = await User.findOne({ email });
     if (existing) {
       return res.status(400).json({ success: false, error: "Email already registered" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Resolve role (default = "user")
     const roleDoc = await Role.findOne({ name: role || "user" });
     if (!roleDoc) {
       return res.status(400).json({ success: false, error: "Role not found" });
     }
 
-    // Create user
     const user = await User.create({
       username,
       email,
@@ -56,12 +52,16 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ success: false, error: "Invalid credentials" });
 
-    // ✅ Generate a real JWT instead of hardcoding "authToken"
-    const token = jwt.sign(
-      { id: user._id, role: user.role?.name },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    // ✅ Include full role object in token
+    const tokenPayload = {
+      _id: user._id,
+      role: {
+        _id: user.role._id,
+        name: user.role.name
+      }
+    };
+
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     res.json({
       success: true,
@@ -71,14 +71,13 @@ export const login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role?.name
+        role: user.role.name
       }
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
-
 
 // Get logged-in user
 export const getMe = async (req, res) => {
@@ -94,7 +93,7 @@ export const getMe = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role?.name
+        role: user.role.name
       }
     });
   } catch (err) {

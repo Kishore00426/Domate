@@ -2,16 +2,19 @@ import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import path from "path";
+import cors from "cors";
+
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
+import serviceProviderRoutes from "./routes/serviceProviderRoutes.js";
 
 dotenv.config();
 
 const app = express();
-
+app.use(cors());
 // Middleware
 app.use(express.json());
 
@@ -31,6 +34,7 @@ app.get("/api/ping", (req, res) => {
     app.use("/api/users", userRoutes);
     app.use("/api/admin", adminRoutes);
     app.use("/api/services", serviceRoutes);
+    app.use("/api/service-providers", serviceProviderRoutes);
 
     // Start server
     const port = process.env.PORT || 4000;
