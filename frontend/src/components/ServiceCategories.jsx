@@ -38,8 +38,8 @@ const categories = [
 ];
 
 const handymanSubcategories = [
-  { id: 'electrician', title: 'Electrician', image: '/icons/electrician.png' }, // Ensure these icons exist or use placeholders
-  { id: 'plumber', title: 'Plumber', image: '/icons/plumber.png' },
+  { id: 'plumbing', title: 'Plumbing', image: '/icons/plumber.png' },
+  { id: 'electrician', title: 'Electrician', image: '/icons/electrician.png' },
   { id: 'carpenter', title: 'Carpenter', image: '/icons/carpenter.png' }
 ];
 
@@ -61,7 +61,9 @@ const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
 
   const handleSubcategoryClick = (subcategoryTitle) => {
     setIsModalOpen(false);
-    navigate(`/services?category=Handyman Services&subcategory=${subcategoryTitle}`);
+    // As per requirement: "These are existing individual categories"
+    // So we navigate to the main category page for them.
+    navigate(`/services?category=${encodeURIComponent(subcategoryTitle)}`);
   };
 
   return (

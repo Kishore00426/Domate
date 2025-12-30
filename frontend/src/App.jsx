@@ -17,6 +17,8 @@ import CategoryManagement from './pages/Admin/CategoryManagement';
 import ServiceManagement from './pages/Admin/ServiceManagement';
 import UserManagement from './pages/Admin/UserManagement';
 import AdminSettings from './pages/Admin/AdminSettings';
+import PrivilegeManagement from './pages/Admin/PrivilegeManagement';
+
 
 function App() {
   return (
@@ -44,6 +46,7 @@ function App() {
             <Route path="categories" element={<CategoryManagement />} />
             <Route path="services" element={<ServiceManagement />} />
             <Route path="users" element={<UserManagement />} />
+            <Route path="privileges" element={<PrivilegeManagement />} />
             <Route path="settings" element={<AdminSettings />} />
             {/* Add other admin routes here */}
           </Route>
