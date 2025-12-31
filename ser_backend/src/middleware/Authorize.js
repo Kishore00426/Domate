@@ -1,6 +1,7 @@
 // Middleware to check if user has one of the allowed roles
 export const authorize = (allowedRoles = []) => {
   return (req, res, next) => {
+    // Ensure user and role exist
     if (!req.user || !req.user.role) {
       return res.status(403).json({ success: false, error: "No role assigned" });
     }
@@ -20,15 +21,18 @@ export const authorize = (allowedRoles = []) => {
       return res.status(403).json({ success: false, error: "Access denied" });
     }
 
-    // Optional: prevent providers from updating other providers
+    // Extra safeguard: prevent service providers from modifying other providers
     if (
       userRole === "service_provider" &&
       req.params.id &&
       req.user._id.toString() !== req.params.id
     ) {
-      return res.status(403).json({ success: false, error: "Access denied: cannot modify other provider" });
+      return res.status(403).json({
+        success: false,
+        error: "Access denied: cannot modify another provider"
+      });
     }
-
+    // ✅ Passed all checks
     next();
   };
 };

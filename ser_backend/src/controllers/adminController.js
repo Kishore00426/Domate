@@ -118,28 +118,43 @@ export const getPendingProviders = async (req, res) => {
   }
 };
 
+// Admin approves or rejects a provider
 export const verifyProvider = async (req, res) => {
   try {
-    const { action } = req.body; // 'approve' or 'reject'
-    if (!['approve', 'reject'].includes(action)) {
+    const { action } = req.body; // "approve" or "reject"
+
+    if (!["approve", "reject"].includes(action)) {
       return res.status(400).json({ success: false, error: "Invalid action" });
     }
 
-    const status = action === 'approve' ? 'approved' : 'rejected';
+    const status = action === "approve" ? "approved" : "rejected";
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
       { providerStatus: status },
       { new: true }
-    );
+    ).populate("role");
 
-    if (!user) return res.status(404).json({ success: false, error: "Provider not found" });
-    res.json({ success: true, message: `Provider ${status}`, user });
+    if (!user || user.role.name !== "service_provider") {
+      return res.status(404).json({ success: false, error: "Service provider not found" });
+    }
+
+    res.json({
+      success: true,
+      message: `Provider ${status}`,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role.name,
+        providerStatus: user.providerStatus
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
 
-// ---------------- ROLE PRIVILEGE MANAGEMENT ----------------
 
 // ---------------- CATEGORY CRUD ----------------
 export const createCategory = async (req, res) => {

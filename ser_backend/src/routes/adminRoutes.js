@@ -47,7 +47,7 @@ import {
 
 import { authenticate } from "../middleware/Authenticate.js";
 import { upload } from "../middleware/upload.js";
-
+import { authorize } from "../middleware/Authorize.js";
 const router = express.Router();
 
 // Middleware: only allow admins
@@ -103,8 +103,8 @@ router.get("/users", getUsers);
 router.delete("/users/:id", deleteUser);
 
 // ---------------- PROVIDER VERIFICATION ----------------
-router.get("/providers/pending", getPendingProviders);
-router.post("/providers/:id/verify", verifyProvider);
+router.get("/providers/pending", authenticate, authorize(["admin"]), getPendingProviders);
+router.post("/providers/:id/verify", authenticate, authorize(["admin"]), verifyProvider);
 
 // ---------------- DASHBOARD STATS ----------------
 router.get("/stats", getDashboardStats);
