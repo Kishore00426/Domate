@@ -41,7 +41,7 @@ app.get("/api/ping", (req, res) => {
     app.use("/api/users", userRoutes);
     app.use("/api/admin", adminRoutes);
     app.use("/api/services", serviceRoutes);
-    app.use("/api/service-providers", serviceProviderRoutes);
+    app.use("/api/providers", serviceProviderRoutes);
 
     // Start server
     const port = process.env.PORT || 4000;
