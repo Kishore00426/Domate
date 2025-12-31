@@ -39,15 +39,9 @@ import {
   getDashboardStats
 } from "../controllers/adminController.js";
 
-import {
-  getAllProviders,
-  approveProvider,
-  rejectProvider
-} from "../controllers/serviceProviderController.js";
-
 import { authenticate } from "../middleware/Authenticate.js";
 import { upload } from "../middleware/upload.js";
-import { authorize } from "../middleware/Authorize.js";
+
 const router = express.Router();
 
 // Middleware: only allow admins
@@ -94,17 +88,12 @@ router.put("/services/:id", upload.single("image"), updateService);
 router.delete("/services/:id", deleteService);
 
 // ---------------- SERVICE PROVIDER MANAGEMENT (Admin only) ----------------
-router.get("/providers", getAllProviders);
-router.put("/providers/:id/approve", approveProvider);
-router.put("/providers/:id/reject", rejectProvider);
+router.get("/providers/pending", getPendingProviders);
+router.post("/providers/:id/verify", verifyProvider);
 
 // ---------------- USER MANAGEMENT ----------------
 router.get("/users", getUsers);
 router.delete("/users/:id", deleteUser);
-
-// ---------------- PROVIDER VERIFICATION ----------------
-router.get("/providers/pending", authenticate, authorize(["admin"]), getPendingProviders);
-router.post("/providers/:id/verify", authenticate, authorize(["admin"]), verifyProvider);
 
 // ---------------- DASHBOARD STATS ----------------
 router.get("/stats", getDashboardStats);

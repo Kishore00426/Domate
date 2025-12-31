@@ -4,6 +4,7 @@ import Service from "../models/Service.js";
 import Category from "../models/Category.js";
 import Subcategory from "../models/Subcategory.js";
 import User from "../models/User.js";
+import ServiceProvider from "../models/ServiceProvider.js";
 
 // ---------------- PRIVILEGE CRUD ----------------
 export const createPrivilege = async (req, res) => {
@@ -106,12 +107,22 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// ---------------- PROVIDER VERIFICATION ----------------
+
+
+
+
+// Get all pending providers (admin use)
 export const getPendingProviders = async (req, res) => {
   try {
-    // Determine provider role ID if needed, or just filter by providerStatus='pending'
-    // Assuming providers have providerStatus='pending'
-    const providers = await User.find({ providerStatus: 'pending' }).populate("role");
+    // Fetch providers with approvalStatus = 'pending'
+    const providers = await ServiceProvider.find({ approvalStatus: "pending" })
+      .populate({
+        path: "user",
+        select: "username email role providerStatus", // only return useful fields
+        populate: { path: "role", select: "name" }
+      })
+      .populate("services"); // optional: populate services if you want
+
     res.json({ success: true, providers });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -129,15 +140,21 @@ export const verifyProvider = async (req, res) => {
 
     const status = action === "approve" ? "approved" : "rejected";
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { providerStatus: status },
-      { new: true }
-    ).populate("role");
-
+    // Update User collection
+    const user = await User.findById(req.params.id).populate("role");
     if (!user || user.role.name !== "service_provider") {
       return res.status(404).json({ success: false, error: "Service provider not found" });
     }
+
+    user.providerStatus = status;
+    await user.save();
+
+    // Update ServiceProvider collection linked to this user
+    await ServiceProvider.findOneAndUpdate(
+      { user: user._id },
+      { approvalStatus: status },
+      { new: true }
+    );
 
     res.json({
       success: true,
@@ -154,7 +171,6 @@ export const verifyProvider = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
-
 
 // ---------------- CATEGORY CRUD ----------------
 export const createCategory = async (req, res) => {

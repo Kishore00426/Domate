@@ -59,7 +59,7 @@ export const upsertProviderDetails = async (req, res) => {
       certificates: certificateFiles.map(file => file.path),
       addressProofs: addressProofFiles.map(file => file.path),
       idProofs: idProofFiles.map(file => file.path),
-      approvalStatus: "pending"
+      approvalStatus: "pending" // always pending until admin verifies
     };
 
     const provider = await ServiceProvider.findOneAndUpdate(
@@ -96,48 +96,6 @@ export const getMyProviderProfile = async (req, res) => {
     if (!provider) {
       return res.status(404).json({ success: false, error: "Provider profile not found" });
     }
-    res.json({ success: true, provider });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-// Get all providers (admin use)
-export const getAllProviders = async (req, res) => {
-  try {
-    const providers = await ServiceProvider.find().populate("user services");
-    res.json({ success: true, providers });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-// Admin approval
-export const approveProvider = async (req, res) => {
-  try {
-    const provider = await ServiceProvider.findById(req.params.id);
-    if (!provider) {
-      return res.status(404).json({ success: false, error: "Provider not found" });
-    }
-
-    provider.approvalStatus = "approved";
-    await provider.save();
-    res.json({ success: true, provider });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-// Admin rejection
-export const rejectProvider = async (req, res) => {
-  try {
-    const provider = await ServiceProvider.findById(req.params.id);
-    if (!provider) {
-      return res.status(404).json({ success: false, error: "Provider not found" });
-    }
-
-    provider.approvalStatus = "rejected";
-    await provider.save();
     res.json({ success: true, provider });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
