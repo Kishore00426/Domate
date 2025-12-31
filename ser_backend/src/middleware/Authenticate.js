@@ -17,15 +17,17 @@ export const authenticate = async (req, res, next) => {
       return res.status(401).json({ success: false, error: "Invalid or expired token" });
     }
 
-    const user = await User.findById(decoded._id).populate("role");
+    // ✅ Use decoded.id (not decoded._id)
+    const user = await User.findById(decoded.id).populate("role");
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
     req.user = user; // attach user object to request
+    console.log("Authenticated user:", req.user._id);
+
     next();
   } catch (err) {
     res.status(500).json({ success: false, error: "Server error" });
   }
-  console.log("Authenticated user:", req.user._id);
 };

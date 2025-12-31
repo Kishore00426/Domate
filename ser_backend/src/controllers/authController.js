@@ -46,23 +46,23 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Find user and populate role
     const user = await User.findOne({ email }).populate("role");
-    if (!user) return res.status(400).json({ success: false, error: "Invalid credentials" });
+    if (!user) {
+      return res.status(400).json({ success: false, error: "Invalid credentials" });
+    }
 
+    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ success: false, error: "Invalid credentials" });
+    if (!isMatch) {
+      return res.status(400).json({ success: false, error: "Invalid credentials" });
+    }
 
-    // ✅ Include full role object in token
-    const tokenPayload = {
-      _id: user._id,
-      role: {
-        _id: user.role._id,
-        name: user.role.name
-      }
-    };
+    // ✅ Token only contains user ID
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
+    // Return token + user info (including role name for client convenience)
     res.json({
       success: true,
       message: "Login successful",
@@ -71,13 +71,14 @@ export const login = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role.name
+        role: user.role?.name || null
       }
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
 
 // Get logged-in user
 export const getMe = async (req, res) => {
