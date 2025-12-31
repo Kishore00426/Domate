@@ -140,21 +140,24 @@ export const verifyProvider = async (req, res) => {
 
     const status = action === "approve" ? "approved" : "rejected";
 
-    // Update User collection
-    const user = await User.findById(req.params.id).populate("role");
-    if (!user || user.role.name !== "service_provider") {
-      return res.status(404).json({ success: false, error: "Service provider not found" });
+    // 1. Find the Service Provider document first
+    const serviceProvider = await ServiceProvider.findById(req.params.id).populate("user");
+    if (!serviceProvider) {
+      return res.status(404).json({ success: false, error: "Service provider application not found" });
     }
 
+    const user = serviceProvider.user;
+    if (!user) {
+      return res.status(404).json({ success: false, error: "Linked user account not found" });
+    }
+
+    // 2. Update User status
     user.providerStatus = status;
     await user.save();
 
-    // Update ServiceProvider collection linked to this user
-    await ServiceProvider.findOneAndUpdate(
-      { user: user._id },
-      { approvalStatus: status },
-      { new: true }
-    );
+    // 3. Update ServiceProvider status
+    serviceProvider.approvalStatus = status;
+    await serviceProvider.save();
 
     res.json({
       success: true,
@@ -163,7 +166,7 @@ export const verifyProvider = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role.name,
+        role: user.role?.name,
         providerStatus: user.providerStatus
       }
     });

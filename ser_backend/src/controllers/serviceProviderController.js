@@ -56,9 +56,9 @@ export const upsertProviderDetails = async (req, res) => {
       currentPlace: req.body.currentPlace,
       emergencyContact,
       services, // ✅ always an array now
-      certificates: certificateFiles.map(file => file.path),
-      addressProofs: addressProofFiles.map(file => file.path),
-      idProofs: idProofFiles.map(file => file.path),
+      certificates: certificateFiles.map(file => `/uploads/providers/${file.filename}`),
+      addressProofs: addressProofFiles.map(file => `/uploads/providers/${file.filename}`),
+      idProofs: idProofFiles.map(file => `/uploads/providers/${file.filename}`),
       approvalStatus: "pending" // always pending until admin verifies
     };
 

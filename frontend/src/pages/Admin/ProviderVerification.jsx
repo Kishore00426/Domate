@@ -173,21 +173,79 @@ const ProviderVerification = () => {
                                 </div>
                             </div>
 
+
                             <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                                <div className="flex items-center gap-2 mb-2">
+                                <div className="flex items-center gap-2 mb-3">
                                     <FileText className="w-4 h-4 text-gray-500" />
                                     <p className="text-xs text-gray-500 uppercase font-bold">Uploaded Documents</p>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2 mt-2">
-                                    {/* This section would actally map through documents if available */}
-                                    <div className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer">
-                                        <FileText className="w-3 h-3" /> ID Proof.pdf
-                                    </div>
-                                    <div className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer">
-                                        <FileText className="w-3 h-3" /> Certificate.jpg
-                                    </div>
+                                <div className="space-y-4">
+                                    {/* Certificates */}
+                                    {selectedProvider.certificates?.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">Certificates</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedProvider.certificates.map((doc, index) => (
+                                                    <a
+                                                        key={`cert-${index}`}
+                                                        href={`http://localhost:4000${doc}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer"
+                                                    >
+                                                        <FileText className="w-3 h-3" /> Certificate {index + 1}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* ID Proofs */}
+                                    {selectedProvider.idProofs?.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">ID Proofs</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedProvider.idProofs.map((doc, index) => (
+                                                    <a
+                                                        key={`id-${index}`}
+                                                        href={`http://localhost:4000${doc}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer"
+                                                    >
+                                                        <FileText className="w-3 h-3" /> ID Proof {index + 1}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Address Proofs */}
+                                    {selectedProvider.addressProofs?.length > 0 && (
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 mb-2">Address Proofs</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {selectedProvider.addressProofs.map((doc, index) => (
+                                                    <a
+                                                        key={`addr-${index}`}
+                                                        href={`http://localhost:4000${doc}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer"
+                                                    >
+                                                        <FileText className="w-3 h-3" /> Address Proof {index + 1}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {(!selectedProvider.certificates?.length && !selectedProvider.idProofs?.length && !selectedProvider.addressProofs?.length) && (
+                                        <p className="text-sm text-gray-400 italic">No documents uploaded.</p>
+                                    )}
                                 </div>
                             </div>
+
 
                         </div>
 
@@ -210,8 +268,9 @@ const ProviderVerification = () => {
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 
