@@ -1,4 +1,5 @@
 import React from 'react';
+import { getImageUrl } from '../utils/imageUrl';
 
 const ServiceBanner = ({ name, description, imageUrl }) => {
     return (
@@ -27,7 +28,7 @@ const ServiceBanner = ({ name, description, imageUrl }) => {
             {imageUrl && (
                 <div className="relative z-10 w-full md:w-1/2 h-64 md:h-80 rounded-2xl overflow-hidden shadow-2xl transform md:rotate-2 hover:rotate-0 transition-transform duration-500">
                     <img
-                        src={`http://localhost:4000${imageUrl}`}
+                        src={getImageUrl(imageUrl)}
                         alt={name}
                         className="w-full h-full object-cover"
                     />

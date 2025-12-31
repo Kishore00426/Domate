@@ -22,8 +22,9 @@ const AdminLayout = () => {
 
     React.useEffect(() => {
         const checkAuth = () => {
-            const token = localStorage.getItem('adminToken');
-            const user = localStorage.getItem('adminUser');
+            // Updated to use Unified Session Keys
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
 
             if (!token || !user) {
                 navigate('/admin/login');
@@ -32,15 +33,22 @@ const AdminLayout = () => {
 
             try {
                 const parsedUser = JSON.parse(user);
-                // Optional: Check if user role is actually admin if stored in localstorage
-                if (parsedUser.role && parsedUser.role.name && parsedUser.role.name !== 'admin') {
-                    navigate('/admin/login'); // Or unauthorized page
+                // Strict check: User must be an Admin
+                // Handling both string "admin" or populated role object { name: "admin" } if applicable, 
+                // but based on valid response it is user.role (string name) or user.role.name
+
+                const roleName = parsedUser.role?.name || parsedUser.role;
+
+                if (roleName !== 'admin') {
+                    // Redirect non-admins to home or show denied
+                    // Here we redirect to admin login to "deny" access
+                    navigate('/admin/login');
                     return;
                 }
                 setAdminName(parsedUser.username || parsedUser.name || 'Admin');
                 setIsLoading(false);
             } catch (e) {
-                console.error("Failed to parse admin user", e);
+                console.error("Failed to parse user", e);
                 navigate('/admin/login');
             }
         };
@@ -49,8 +57,8 @@ const AdminLayout = () => {
     }, [navigate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminUser');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate('/admin/login');
     };
 

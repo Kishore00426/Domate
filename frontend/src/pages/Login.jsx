@@ -41,7 +41,12 @@ const Login = () => {
                 console.log('Logged in successfully', data);
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                navigate('/home');
+
+                if (data.user.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/home');
+                }
             } catch (err) {
                 console.error("Login failed", err);
                 setErrors({ ...errors, form: err.response?.data?.error || 'Login failed. Please try again.' });

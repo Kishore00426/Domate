@@ -30,8 +30,8 @@ const AdminLogin = () => {
             if (response.success) {
                 // Check if user is actually an admin
                 if (response.user.role === 'admin') {
-                    localStorage.setItem('adminToken', response.token);
-                    localStorage.setItem('adminUser', JSON.stringify(response.user));
+                    localStorage.setItem('token', response.token);
+                    localStorage.setItem('user', JSON.stringify(response.user));
                     navigate('/admin');
                 } else {
                     throw new Error('Access Denied. Admins only.');
