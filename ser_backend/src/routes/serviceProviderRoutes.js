@@ -5,9 +5,6 @@ import { upload } from "../middleware/upload.js";
 import {
   upsertProviderDetails,
   getProviderByUser,
-  getAllProviders,
-  approveProvider,
-  rejectProvider,
   getMyProviderProfile
 } from "../controllers/serviceProviderController.js";
 
@@ -48,13 +45,7 @@ router.put(
 );
 
 // 👇 Get provider details by userId (admin or self)
+// Note: Admins can call this too, but approval/rejection is handled in adminRoutes
 router.get("/:userId", authenticate, getProviderByUser);
-
-// 👇 Get all providers (admin use)
-router.get("/", authenticate, authorize(["admin"]), getAllProviders);
-
-// 👇 Admin approval/rejection
-router.put("/:id/approve", authenticate, authorize(["admin"]), approveProvider);
-router.put("/:id/reject", authenticate, authorize(["admin"]), rejectProvider);
 
 export default router;
