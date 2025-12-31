@@ -71,13 +71,8 @@ const Register = () => {
         else if (!/^\d{10}$/.test(formData.mobile)) tempErrors.mobile = 'Invalid mobile number (10 digits)';
 
         if (!formData.email) {
-            // Optional for provider initially? Prompt said "Common Fields (always visible): ... Email (optional)". 
-            // Wait, standard user usually needs email. Let's make it optional as per "Email (optional)" text in prompt, 
-            // but usually auth needs it. The prompt listed "Email (optional)" under Common Fields.
-            // However, typical registration needs a unique identifier. Let's trust the prompt "Email (optional)".
-            // But if entered, validate format.
-        }
-        if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+            tempErrors.email = 'Email is required';
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             tempErrors.email = 'Email is invalid';
         }
 
@@ -123,24 +118,26 @@ const Register = () => {
 
     const handleNext = () => {
         if (step === 1) {
-            if (validateStep1()) setStep(2);
-        } else if (step === 2) {
-            if (validateStep2()) setStep(3);
-        } else if (step === 3) {
-            if (validateStep3()) setStep(4);
+            // For providers, Step 1 is the ONLY step now.
+            // So we don't go to step 2, we just validate.
+            if (validateStep1()) {
+                // In a wizard, next usually means go to next step. 
+                // But here we want to submit if it's provider.
+                // However, the UI has a "Submit" button separate from "Continue" usually.
+                // Let's adjust the button logic below instead.
+                setStep(2); // Keep this for USER flow if needed, OR just remove steps entirely?
+                // The user said "first page of register is enough". 
+            }
         }
+        // Other steps removed for provider
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         let isValid = false;
 
-        if (isProvider) {
-            if (step === 4 && validateStep4()) isValid = true;
-        } else {
-            // User flow
-            if (validateStep1()) isValid = true;
-        }
+        // Both User and Provider now just need Step 1 validation
+        if (validateStep1()) isValid = true;
 
         if (isValid) {
             try {
@@ -152,6 +149,8 @@ const Register = () => {
                     password: formData.password,
                     role: role
                 };
+                // ... rest of submit
+
 
                 const data = await register(payload);
                 console.log('Registered successfully', data);
@@ -195,7 +194,7 @@ const Register = () => {
                                     {isProvider ? 'Professional Registration' : 'Join DoMate'}
                                 </h2>
                                 <p className="text-gray-500 text-sm">
-                                    {isProvider ? `Step ${step} of 4: ${step === 1 ? 'Basic Info' : step === 2 ? 'Skills & Exp' : step === 3 ? 'Service Area' : 'Documents'}` : 'Create an account to book professionals.'}
+                                    {isProvider ? 'Create your professional account.' : 'Create an account to book professionals.'}
                                 </p>
                             </div>
 
@@ -229,7 +228,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Email Address <span className="text-gray-400 font-normal">(Optional)</span></label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">Email Address</label>
                                         <input
                                             type="email"
                                             name="email"
@@ -346,10 +345,10 @@ const Register = () => {
                                 </div>
                             )}
 
-                             {/* Step 3: Service Area */}
-                             {isProvider && step === 3 && (
+                            {/* Step 3: Service Area */}
+                            {isProvider && step === 3 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
-                                     <div>
+                                    <div>
                                         <label className="block text-xs font-semibold text-soft-black mb-1">Work City</label>
                                         <div className="relative">
                                             <select
@@ -420,7 +419,7 @@ const Register = () => {
                                         {errors.addressProof && <p className="text-red-500 text-xs mt-1 ml-1">{errors.addressProof}</p>}
                                     </div>
 
-                                     <div>
+                                    <div>
                                         <label className="block text-xs font-semibold text-soft-black mb-1">Profile Photo</label>
                                         <input
                                             type="file"
@@ -441,7 +440,7 @@ const Register = () => {
                                         />
                                     </div>
 
-                                     <div className="pt-2">
+                                    <div className="pt-2">
                                         <label className="flex items-center gap-2 cursor-pointer">
                                             <input
                                                 type="checkbox"
@@ -459,42 +458,13 @@ const Register = () => {
 
                             {/* Buttons */}
                             <div className="mt-6 flex flex-col gap-3">
-                                {isProvider ? (
-                                    <>
-                                        {step < 4 ? (
-                                            <button
-                                                type="button"
-                                                onClick={handleNext}
-                                                className="w-full bg-soft-black text-white py-3 rounded-xl font-bold text-base hover:bg-black transition-transform active:scale-95 duration-200 shadow-lg cursor-pointer"
-                                            >
-                                                Continue
-                                            </button>
-                                        ) : (
-                                            <button
-                                                type="submit"
-                                                className="w-full bg-soft-black text-white py-3 rounded-xl font-bold text-base hover:bg-black transition-transform active:scale-95 duration-200 shadow-lg cursor-pointer"
-                                            >
-                                                Submit
-                                            </button>
-                                        )}
-                                        {step > 1 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setStep(step - 1)}
-                                                className="text-xs text-center text-gray-500 hover:text-soft-black hover:underline"
-                                            >
-                                                Back
-                                            </button>
-                                        )}
-                                    </>
-                                ) : (
-                                    <button
-                                        type="submit"
-                                        className="w-full bg-soft-black text-white py-3 rounded-xl font-bold text-base hover:bg-black transition-transform active:scale-95 duration-200 shadow-lg cursor-pointer"
-                                    >
-                                        Register
-                                    </button>
-                                )}
+                                {/* Single Step for Everyone Now (or at least for Provider) */}
+                                <button
+                                    type="submit"
+                                    className="w-full bg-soft-black text-white py-3 rounded-xl font-bold text-base hover:bg-black transition-transform active:scale-95 duration-200 shadow-lg cursor-pointer"
+                                >
+                                    {isProvider ? 'Register as Professional' : 'Register'}
+                                </button>
                             </div>
 
                             <div className="mt-6 text-center text-xs text-gray-500">

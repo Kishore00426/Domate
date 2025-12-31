@@ -17,6 +17,9 @@ import serviceProviderRoutes from "./routes/serviceProviderRoutes.js";
 const app = express();
 
 
+
+// ...
+
 // Middleware
 app.use(cors());
 app.use(express.json());

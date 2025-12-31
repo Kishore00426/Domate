@@ -11,6 +11,7 @@ import AdminLayout from './layouts/AdminLayout';
 import ServiceDetail from './pages/ServiceDetail';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ProviderVerification from './pages/Admin/ProviderVerification';
+import ProviderDashboard from './pages/ProviderDashboard'; // Added
 import AdminLogin from './pages/Admin/AdminLogin';
 import AdminRegister from './pages/Admin/AdminRegister';
 import CategoryManagement from './pages/Admin/CategoryManagement';
@@ -33,6 +34,8 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/account" element={<Account />} />
           <Route path="/services/:id" element={<ServiceDetail />} />
+          {/* Provider Dashboard */}
+          <Route path="/provider/dashboard" element={<ProviderDashboard />} />
 
 
           {/* Admin Auth Routes */}

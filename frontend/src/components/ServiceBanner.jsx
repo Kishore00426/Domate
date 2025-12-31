@@ -3,7 +3,7 @@ import { getImageUrl } from '../utils/imageUrl';
 
 const ServiceBanner = ({ name, description, imageUrl }) => {
     return (
-        <div className="bg-soft-black rounded-3xl overflow-hidden shadow-lg p-8 md:p-12 mb-10 flex flex-col md:flex-row items-center gap-8 relative max-w-6xl mx-auto">
+        <div className="bg-soft-black rounded-3xl overflow-hidden shadow-lg p-8 md:p-12 mb-10 flex flex-col md:flex-row items-center gap-8 relative max-w-6xl mx-auto md:mt-12">
             {/* Background Pattern/Overlay */}
             <div className="absolute inset-0 bg-gradient-to-r from-soft-black via-soft-black/90 to-transparent z-10"></div>
 

@@ -61,9 +61,7 @@ const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
 
     return (
         <section className="py-8 px-6 max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-soft-black mb-6">
-                {selectedCategory ? `${selectedCategory}` : 'All Services'}
-            </h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {services.map((service) => (
                     <div key={service._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
