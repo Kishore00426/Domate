@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUrl';
 
 const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySelect, categoryName }) => {
     const navigate = useNavigate();
@@ -29,7 +30,7 @@ const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySele
                         <div className={`w-20 h-20 rounded-xl overflow-hidden ${selectedSubcategory === sub.name ? 'bg-gray-800' : 'bg-gray-100'}`}>
                             {/* Assuming subcategory has imageUrl, otherwise placeholder */}
                             {sub.imageUrl ? (
-                                <img src={`http://localhost:4000${sub.imageUrl}`} alt={sub.name} className="w-full h-full object-cover" />
+                                <img src={getImageUrl(sub.imageUrl)} alt={sub.name} className="w-full h-full object-cover" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Image</div>
                             )}

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getServiceById } from '../api/services';
 import HomeLayout from '../layouts/HomeLayout';
 import { CheckCircle2, XCircle, Wrench, FileText, ArrowLeft, Loader, IndianRupee } from 'lucide-react';
+import { getImageUrl } from '../utils/imageUrl';
 
 const ServiceDetail = () => {
     const { id } = useParams();
@@ -77,7 +78,7 @@ const ServiceDetail = () => {
                             <div className="w-full md:w-1/3 bg-gray-100 rounded-2xl overflow-hidden aspect-video relative shadow-sm">
                                 {service.imageUrl ? (
                                     <img
-                                        src={`http://localhost:4000${service.imageUrl}`}
+                                        src={getImageUrl(service.imageUrl)}
                                         alt={service.title}
                                         className="w-full h-full object-cover"
                                     />

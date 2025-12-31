@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getImageUrl } from '../utils/imageUrl';
 
 const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
     const navigate = useNavigate();
@@ -60,16 +61,14 @@ const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
 
     return (
         <section className="py-8 px-6 max-w-6xl mx-auto">
-            <h2 className="text-2xl font-bold text-soft-black mb-6">
-                {selectedCategory ? `${selectedCategory}` : 'All Services'}
-            </h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {services.map((service) => (
                     <div key={service._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
                         <div className="h-48 overflow-hidden bg-gray-100 relative">
                             {service.imageUrl ? (
                                 <img
-                                    src={`http://localhost:4000${service.imageUrl}`}
+                                    src={getImageUrl(service.imageUrl)}
                                     alt={service.title}
                                     className="w-full h-full object-cover"
                                 />

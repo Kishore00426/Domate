@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Role from "../models/Role.js";
+import fs from "fs";
+import path from "path";
 
 // Register (works for both user and service provider)
 export const register = async (req, res) => {
