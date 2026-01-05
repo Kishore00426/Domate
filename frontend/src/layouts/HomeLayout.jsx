@@ -43,7 +43,16 @@ const HomeLayout = ({ children }) => {
 
             } catch (err) {
                 console.error("Failed to fetch user for layout", err);
-
+                // If fetch fails (likely 401 or network), clear invalid session
+                localStorage.removeItem('token');
+                // Don't clear user entirely if you want to fall back to guest, 
+                // but usually for auth failure we want to start fresh or keep guest if that was the intent.
+                // However, if we had a token, we were trying to be key "User".
+                if (localStorage.getItem('token')) {
+                    // Only clear if we actually had a token that failed
+                    localStorage.removeItem('user');
+                    setUser(null);
+                }
             } finally {
                 setLoading(false);
             }

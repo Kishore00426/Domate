@@ -11,14 +11,14 @@ export const register = async (userData) => {
 };
 
 export const getMe = async () => {
-    // Use /users/profile to get full profile including address
-    const response = await api.get('/users/profile');
+    // Use /user/profile to get full profile including address
+    const response = await api.get('/user/profile');
     return response.data;
 };
 
 export const updateProfile = async (userData) => {
     // Determine if we need to call specific user update routes
-    // For now, let's assume we use the /users/profile-address endpoint
-    const response = await api.put('/users/profile-address', userData);
+    // For now, let's assume we use the /user/profile-address endpoint
+    const response = await api.put('/user/profile-address', userData);
     return response.data;
 };

@@ -96,7 +96,7 @@ export const getMe = async (req, res) => {
         id: user._id,
         username: user.username,
         email: user.email,
-        role: user.role.name
+        role: user.role?.name || null // Safely access role name
       }
     });
   } catch (err) {

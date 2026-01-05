@@ -3,8 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getServiceById } from '../api/services';
 import api from '../api/axios';
 import HomeLayout from '../layouts/HomeLayout';
-import { CheckCircle2, XCircle, Wrench, FileText, ArrowLeft, Loader, IndianRupee, Star, User } from 'lucide-react';
+import { CheckCircle2, XCircle, Wrench, FileText, Loader, IndianRupee, Star, User } from 'lucide-react';
 import { getImageUrl } from '../utils/imageUrl';
+import BackButton from '../components/BackButton';
 
 const ServiceDetail = () => {
     const { id } = useParams();
@@ -80,16 +81,9 @@ const ServiceDetail = () => {
 
     return (
         <HomeLayout>
-            <div className="bg-gray-50 min-h-screen pb-20 pt-8">
+            <BackButton onClick={() => navigate(-1)} />
+            <div className=" min-h-screen mt-20 pb-20 pt-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-                    {/* Back Button */}
-                    <button
-                        onClick={() => navigate(-1)}
-                        className="text-gray-500 hover:text-soft-black transition-colors flex items-center gap-2 mb-6 text-sm font-medium"
-                    >
-                        <ArrowLeft className="w-4 h-4" /> Back
-                    </button>
 
                     <div className="flex flex-col lg:flex-row gap-8">
 
@@ -149,10 +143,9 @@ const ServiceDetail = () => {
                                         <CheckCircle2 className="w-5 h-5 text-green-600" />
                                         What is Covered
                                     </h3>
-                                    <ul className="grid grid-cols-1 gap-3">
+                                    <ul className="list-disc list-inside grid grid-cols-1 gap-3 text-sm text-gray-700">
                                         {service.whatIsCovered.map((item, index) => (
-                                            <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+                                            <li key={index}>
                                                 {item}
                                             </li>
                                         ))}
@@ -167,10 +160,9 @@ const ServiceDetail = () => {
                                         <XCircle className="w-5 h-5 text-red-600" />
                                         What is Not Covered
                                     </h3>
-                                    <ul className="grid grid-cols-1 gap-3">
+                                    <ul className="list-disc list-inside grid grid-cols-1 gap-3 text-sm text-gray-700">
                                         {service.whatIsNotCovered.map((item, index) => (
-                                            <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 flex-shrink-0"></div>
+                                            <li key={index}>
                                                 {item}
                                             </li>
                                         ))}
