@@ -11,7 +11,10 @@ const serviceSchema = new mongoose.Schema({
   warranty: { type: String },
   imageUrl: { type: String },
   category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
-  subcategory: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" }
+  subcategory: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" },
+
+  // 🔑 New field: multiple providers linked to this service
+  providers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 }, { timestamps: true });
 
 export default mongoose.models.Service ||

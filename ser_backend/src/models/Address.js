@@ -10,4 +10,6 @@ const addressSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-export default mongoose.model("Address", addressSchema);
+// ✅ Safe export pattern
+export default mongoose.models.Address ||
+  mongoose.model("Address", addressSchema);

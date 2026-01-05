@@ -8,14 +8,13 @@ export const authorize = (allowedRoles = []) => {
 
     // Handle both populated role object and plain string
     let userRole;
-    if (typeof req.user.role === "string") {
-      userRole = req.user.role;
-    } else if (req.user.role.name) {
-      userRole = req.user.role.name;
-    } else {
-      return res.status(403).json({ success: false, error: "Invalid role format" });
-    }
-
+if (typeof req.user.role === "string") {
+  userRole = req.user.role.toLowerCase();
+} else if (req.user.role.name) {
+  userRole = req.user.role.name.toLowerCase();
+} else {
+  return res.status(403).json({ success: false, error: "Invalid role format" });
+}
     // Check if role is allowed
     if (!allowedRoles.includes(userRole)) {
       return res.status(403).json({ success: false, error: "Access denied" });
