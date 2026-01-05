@@ -325,7 +325,11 @@ const parseArrayField = (field) => {
     return field.split(",").map((item) => item.trim()).filter((item) => item !== "");
   }
   if (Array.isArray(field)) {
-    return field.filter((item) => item.trim() !== "");
+    // Handle case where array contains comma-separated strings
+    return field
+      .flatMap(item => (typeof item === "string" ? item.split(",") : [item]))
+      .map(item => (typeof item === "string" ? item.trim() : item))
+      .filter(item => item !== "");
   }
   return [];
 };

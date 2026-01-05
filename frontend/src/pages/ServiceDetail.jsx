@@ -62,6 +62,13 @@ const ServiceDetail = () => {
         );
     }
 
+    const parseList = (list) => {
+        if (!list) return [];
+        return list.flatMap(item =>
+            typeof item === 'string' ? item.split(',').map(s => s.trim()) : item
+        ).filter(s => s !== "");
+    };
+
     if (error || !service) {
         return (
             <HomeLayout>
@@ -72,7 +79,8 @@ const ServiceDetail = () => {
                         onClick={() => navigate('/services')}
                         className="text-soft-black font-medium hover:underline flex items-center justify-center gap-2"
                     >
-                        <ArrowLeft className="w-4 h-4" /> Back to Services
+                        {/* ArrowLeft is not imported, let's just use text or simple back */}
+                        Back to Services
                     </button>
                 </div>
             </HomeLayout>
@@ -144,7 +152,7 @@ const ServiceDetail = () => {
                                         What is Covered
                                     </h3>
                                     <ul className="list-disc list-inside grid grid-cols-1 gap-3 text-sm text-gray-700">
-                                        {service.whatIsCovered.map((item, index) => (
+                                        {parseList(service.whatIsCovered).map((item, index) => (
                                             <li key={index}>
                                                 {item}
                                             </li>
@@ -161,7 +169,7 @@ const ServiceDetail = () => {
                                         What is Not Covered
                                     </h3>
                                     <ul className="list-disc list-inside grid grid-cols-1 gap-3 text-sm text-gray-700">
-                                        {service.whatIsNotCovered.map((item, index) => (
+                                        {parseList(service.whatIsNotCovered).map((item, index) => (
                                             <li key={index}>
                                                 {item}
                                             </li>
@@ -180,7 +188,7 @@ const ServiceDetail = () => {
                                             Required Equipment
                                         </h3>
                                         <ul className="space-y-3">
-                                            {service.requiredEquipment.map((item, index) => (
+                                            {parseList(service.requiredEquipment).map((item, index) => (
                                                 <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
                                                     {item}
@@ -198,7 +206,7 @@ const ServiceDetail = () => {
                                             Service Process
                                         </h3>
                                         <div className="space-y-3">
-                                            {service.serviceProcess.map((item, index) => (
+                                            {parseList(service.serviceProcess).map((item, index) => (
                                                 <div key={index} className="flex gap-3 text-sm">
                                                     <span className="text-blue-600 font-bold">{index + 1}.</span>
                                                     <span className="text-gray-700">{item}</span>
