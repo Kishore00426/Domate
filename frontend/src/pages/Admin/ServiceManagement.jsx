@@ -112,26 +112,11 @@ const ServiceManagement = () => {
             data.append('price', formData.price);
             data.append('detailedDescription', formData.detailedDescription);
 
-            // Split comma-separated strings into arrays
-            const splitAndTrim = (str) => str ? str.split(',').map(s => s.trim()).filter(s => s) : [];
-
-            // Backend expects arrays, but FormData appends simple values. 
-            // Depending on backend body parser (multer usually handles standard fields), 
-            // if we send arrays via FormData, we might need to send them element by element or as JSON string if backend handles it manually.
-            // However, standard text fields in FormData are strings. 
-            // If the backend model expects [String], we might need to send multiple entries with the same key
-            // OR the backend needs to parse a JSON string.
-            // Since we are using standard multipart/form-data, let's append them individually.
-
-            const covered = splitAndTrim(formData.whatIsCovered);
-            covered.forEach(item => data.append('whatIsCovered[]', item)); // Using [] convention or just same key depends on backend middleware (e.g. multer)
-
-            // Wait, usually multer just provides req.body.key = "value" or ["val1", "val2"].
-            // Let's try appending same key multiple times.
-            splitAndTrim(formData.whatIsCovered).forEach(val => data.append('whatIsCovered', val));
-            splitAndTrim(formData.whatIsNotCovered).forEach(val => data.append('whatIsNotCovered', val));
-            splitAndTrim(formData.requiredEquipment).forEach(val => data.append('requiredEquipment', val));
-            splitAndTrim(formData.serviceProcess).forEach(val => data.append('serviceProcess', val));
+            // Direct append of comma-separated strings (Backend will handle parsing)
+            data.append('whatIsCovered', formData.whatIsCovered);
+            data.append('whatIsNotCovered', formData.whatIsNotCovered);
+            data.append('requiredEquipment', formData.requiredEquipment);
+            data.append('serviceProcess', formData.serviceProcess);
 
             data.append('warranty', formData.warranty);
             if (formData.image) data.append('image', formData.image);

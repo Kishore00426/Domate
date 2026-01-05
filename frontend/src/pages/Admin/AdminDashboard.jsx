@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Users, CheckCircle, Clock, TrendingUp, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Users, CheckCircle, Clock, TrendingUp, Activity, Plus } from 'lucide-react';
 import { getDashboardStats } from '../../api/admin';
 
 const AdminDashboard = () => {
+    const navigate = useNavigate();
     const [stats, setStats] = useState([
         { label: 'Total Users', value: '...', icon: Users, color: 'bg-blue-100 text-blue-600' },
         { label: 'Active Providers', value: '...', icon: CheckCircle, color: 'bg-green-100 text-green-600' },
         { label: 'Pending Verifications', value: '...', icon: Clock, color: 'bg-yellow-100 text-yellow-600' },
-        { label: 'Total Revenue', value: '₹...', icon: TrendingUp, color: 'bg-purple-100 text-purple-600' },
     ]);
     const [loading, setLoading] = useState(true);
 
@@ -21,7 +22,6 @@ const AdminDashboard = () => {
                         { label: 'Total Users', value: data.totalUsers || 0, icon: Users, color: 'bg-blue-100 text-blue-600' },
                         { label: 'Active Providers', value: data.activeProviders || 0, icon: CheckCircle, color: 'bg-green-100 text-green-600' },
                         { label: 'Pending Verifications', value: data.pendingVerifications || 0, icon: Clock, color: 'bg-yellow-100 text-yellow-600' },
-                        { label: 'Total Revenue', value: `₹${data.totalRevenue || 0}`, icon: TrendingUp, color: 'bg-purple-100 text-purple-600' },
                     ]);
                 }
             } catch (error) {
@@ -36,12 +36,15 @@ const AdminDashboard = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
-            <div>
-                <h1 className="text-2xl font-bold text-soft-black">Dashboard Overview</h1>
-                <p className="text-gray-500">Welcome back, here's what's happening today.</p>
+            <div className="flex justify-between items-end">
+                <div>
+                    <h1 className="text-2xl font-bold text-soft-black">Dashboard Overview</h1>
+                    <p className="text-gray-500">Welcome back, here's what's happening today.</p>
+                </div>
+
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {stats.map((stat, index) => (
                     <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
                         <div className={`p-4 rounded-xl ${stat.color}`}>

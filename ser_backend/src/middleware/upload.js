@@ -5,11 +5,12 @@ import path from "path";
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let folder = "uploads/general";
+    const url = req.originalUrl || req.url; // Use full URL for better matching
 
-    if (req.baseUrl.includes("categories")) folder = "uploads/categories";
-    else if (req.baseUrl.includes("subcategories")) folder = "uploads/subcategories";
-    else if (req.baseUrl.includes("services")) folder = "uploads/services";
-    else if (req.baseUrl.includes("service-providers")) folder = "uploads/providers";
+    if (url.includes("/categories")) folder = "uploads/categories";
+    else if (url.includes("/subcategories")) folder = "uploads/subcategories";
+    else if (url.includes("/providers") || url.includes("/service-providers")) folder = "uploads/providers";
+    else if (url.includes("/services")) folder = "uploads/services";
 
     const uploadPath = path.join(process.cwd(), folder);
 
