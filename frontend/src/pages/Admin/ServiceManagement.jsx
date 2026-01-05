@@ -26,6 +26,7 @@ const ServiceManagement = () => {
         warranty: '',
         image: null
     });
+    const [removeImage, setRemoveImage] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -78,6 +79,7 @@ const ServiceManagement = () => {
                 image: null
             });
         }
+        setRemoveImage(false);
         setIsModalOpen(true);
     };
 
@@ -95,6 +97,7 @@ const ServiceManagement = () => {
         const { name, value, files } = e.target;
         if (name === 'image') {
             setFormData({ ...formData, image: files[0] });
+            setRemoveImage(false);
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -119,7 +122,12 @@ const ServiceManagement = () => {
             data.append('serviceProcess', formData.serviceProcess);
 
             data.append('warranty', formData.warranty);
-            if (formData.image) data.append('image', formData.image);
+
+            if (formData.image) {
+                data.append('image', formData.image);
+            } else if (removeImage) {
+                data.append('removeImage', 'true');
+            }
 
             let response;
             if (editingItem) {
@@ -421,7 +429,28 @@ const ServiceManagement = () => {
 
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Service Image</label>
-                                            <div className="border border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer relative group">
+
+                                            {editingItem && editingItem.imageUrl && !removeImage && !formData.image && (
+                                                <div className="mb-3 flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                                    <img
+                                                        src={getImageUrl(editingItem.imageUrl)}
+                                                        alt="Current"
+                                                        className="w-12 h-12 rounded-lg object-cover"
+                                                    />
+                                                    <div className="flex-1">
+                                                        <p className="text-sm font-medium text-soft-black">Current Image</p>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setRemoveImage(true)}
+                                                            className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 mt-1"
+                                                        >
+                                                            <Trash2 className="w-3 h-3" /> Remove Image
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className={`border border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer relative group ${removeImage ? 'bg-red-50/50 border-red-200' : ''}`}>
                                                 <input
                                                     type="file"
                                                     name="image"
@@ -430,8 +459,15 @@ const ServiceManagement = () => {
                                                     accept="image/*"
                                                 />
                                                 <div className="flex flex-col items-center gap-2 text-gray-500 group-hover:text-soft-black transition-colors">
-                                                    <Upload className="w-8 h-8 text-gray-400 group-hover:text-soft-black" />
-                                                    <span className="text-xs font-medium">{formData.image ? formData.image.name : 'Click to upload image'}</span>
+                                                    <Upload className={`w-8 h-8 text-gray-400 group-hover:text-soft-black ${removeImage ? 'text-red-400' : ''}`} />
+                                                    <span className="text-xs font-medium">
+                                                        {formData.image
+                                                            ? formData.image.name
+                                                            : removeImage
+                                                                ? 'Image removed. Click to upload replacement.'
+                                                                : 'Click to upload image'
+                                                        }
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

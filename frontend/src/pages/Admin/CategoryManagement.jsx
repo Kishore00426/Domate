@@ -23,6 +23,7 @@ const CategoryManagement = () => {
         category: '', // For subcategories
         image: null // File object
     });
+    const [removeImage, setRemoveImage] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -60,6 +61,7 @@ const CategoryManagement = () => {
                 image: null
             });
         }
+        setRemoveImage(false);
         setIsModalOpen(true);
     };
 
@@ -73,6 +75,7 @@ const CategoryManagement = () => {
         const { name, value, files } = e.target;
         if (name === 'image') {
             setFormData({ ...formData, image: files[0] });
+            setRemoveImage(false); // If they upload a new one, uncheck remove
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -86,7 +89,11 @@ const CategoryManagement = () => {
             const data = new FormData();
             data.append('name', formData.name);
             data.append('description', formData.description);
-            if (formData.image) data.append('image', formData.image);
+            if (formData.image) {
+                data.append('image', formData.image);
+            } else if (removeImage) {
+                data.append('removeImage', 'true');
+            }
 
             if (activeTab === 'subcategories') {
                 if (formData.category) data.append('category', formData.category);
@@ -325,7 +332,28 @@ const CategoryManagement = () => {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
-                                <div className="border border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
+
+                                {editingItem && editingItem.imageUrl && !removeImage && !formData.image && (
+                                    <div className="mb-3 flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                                        <img
+                                            src={getImageUrl(editingItem.imageUrl)}
+                                            alt="Current"
+                                            className="w-12 h-12 rounded-lg object-cover"
+                                        />
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-soft-black">Current Image</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => setRemoveImage(true)}
+                                                className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1 mt-1"
+                                            >
+                                                <Trash2 className="w-3 h-3" /> Remove Image
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className={`border border-dashed border-gray-300 rounded-xl p-4 text-center hover:bg-gray-50 transition-colors cursor-pointer relative ${removeImage ? 'bg-red-50/50 border-red-200' : ''}`}>
                                     <input
                                         type="file"
                                         name="image"
@@ -334,8 +362,15 @@ const CategoryManagement = () => {
                                         accept="image/*"
                                     />
                                     <div className="flex flex-col items-center gap-2 text-gray-500">
-                                        <Upload className="w-5 h-5" />
-                                        <span className="text-xs">{formData.image ? formData.image.name : 'Click to upload image'}</span>
+                                        <Upload className={`w-5 h-5 ${removeImage ? 'text-red-400' : ''}`} />
+                                        <span className="text-xs">
+                                            {formData.image
+                                                ? formData.image.name
+                                                : removeImage
+                                                    ? 'Image removed. Click to upload replacement.'
+                                                    : 'Click to upload image'
+                                            }
+                                        </span>
                                     </div>
                                 </div>
                             </div>

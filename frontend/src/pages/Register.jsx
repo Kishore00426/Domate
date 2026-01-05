@@ -30,7 +30,7 @@ const Register = () => {
         // Provider Specific
         serviceCategory: '',
         workLocation: '',
-        pincode: '',
+        workPincode: '',
         radius: '',
         agreedToTerms: false,
         experience: '',
@@ -379,8 +379,8 @@ const Register = () => {
                                         <label className="block text-xs font-semibold text-soft-black mb-1">Pincode</label>
                                         <input
                                             type="text"
-                                            name="pincode"
-                                            value={formData.pincode}
+                                            name="workPincode"
+                                            value={formData.workPincode}
                                             onChange={handleChange}
                                             placeholder="e.g. 600001"
                                             className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-sm text-black ${errors.pincode ? 'border-red-500' : ''}`}

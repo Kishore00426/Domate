@@ -199,7 +199,11 @@ export const getCategories = async (req, res) => {
 export const updateCategory = async (req, res) => {
   try {
     const updates = { ...req.body };
-    if (req.file) updates.imageUrl = `/uploads/categories/${req.file.filename}`;
+    if (req.file) {
+      updates.imageUrl = `/uploads/categories/${req.file.filename}`;
+    } else if (req.body.removeImage === 'true') {
+      updates.imageUrl = null;
+    }
     const category = await Category.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!category) return res.status(404).json({ success: false, error: "Category not found" });
     res.json({ success: true, category });
@@ -221,13 +225,14 @@ export const deleteCategory = async (req, res) => {
 // ---------------- SUBCATEGORY CRUD (single image) ----------------
 export const createSubcategory = async (req, res) => {
   try {
-    const { name, process, category } = req.body;
+    const { name, process, category, description } = req.body;
     const imageUrl = req.file ? `/uploads/subcategories/${req.file.filename}` : null;
 
     // Create subcategory with parent reference
     const subcategory = await Subcategory.create({
       name,
       process,
+      description,
       imageUrl,
       category: category || null
     });
@@ -257,10 +262,12 @@ export const getSubcategories = async (req, res) => {
 
 export const updateSubcategory = async (req, res) => {
   try {
-    const { name, process, category } = req.body;
-    const updates = { name, process };
+    const { name, process, category, description } = req.body;
+    const updates = { name, process, description };
     if (req.file) {
       updates.imageUrl = `/uploads/subcategories/${req.file.filename}`;
+    } else if (req.body.removeImage === 'true') {
+      updates.imageUrl = null;
     }
 
     // Retrieve current subcategory to check for parent change
@@ -393,6 +400,8 @@ export const updateService = async (req, res) => {
     const updates = { ...req.body };
     if (req.file) {
       updates.imageUrl = `/uploads/services/${req.file.filename}`;
+    } else if (req.body.removeImage === 'true') {
+      updates.imageUrl = null;
     }
 
     // Parse array fields if they exist in updates
