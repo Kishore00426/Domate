@@ -158,7 +158,15 @@ const Register = () => {
                 navigate('/login?registered=true');
             } catch (err) {
                 console.error("Registration failed", err);
-                setErrors({ ...errors, form: err.response?.data?.error || 'Registration failed. Please try again.' });
+                let errorMessage = 'Registration failed. Please try again.';
+
+                if (err.code === 'ERR_NETWORK') {
+                    errorMessage = 'Unable to connect to the server. Please check your internet connection or try again later.';
+                } else if (err.response?.data?.error) {
+                    errorMessage = err.response.data.error;
+                }
+
+                setErrors({ ...errors, form: errorMessage });
             }
         }
     };

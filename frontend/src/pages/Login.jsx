@@ -51,7 +51,15 @@ const Login = () => {
                 }
             } catch (err) {
                 console.error("Login failed", err);
-                setErrors({ ...errors, form: err.response?.data?.error || 'Login failed. Please try again.' });
+                let errorMessage = 'Login failed. Please try again.';
+
+                if (err.code === 'ERR_NETWORK') {
+                    errorMessage = 'Unable to connect to the server. Please check your internet connection or try again later.';
+                } else if (err.response?.data?.error) {
+                    errorMessage = err.response.data.error;
+                }
+
+                setErrors({ ...errors, form: errorMessage });
             }
         }
     };
