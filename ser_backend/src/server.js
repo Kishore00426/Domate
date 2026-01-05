@@ -11,6 +11,7 @@ import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
 import serviceProviderRoutes from "./routes/serviceProviderRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
 
 
 
@@ -42,6 +43,7 @@ app.get("/api/ping", (req, res) => {
     app.use("/api/admin", adminRoutes);
     app.use("/api/services", serviceRoutes);
     app.use("/api/providers", serviceProviderRoutes);
+    app.use("/api/bookings", bookingRoutes);
 
     // Start server
     const port = process.env.PORT || 4000;
