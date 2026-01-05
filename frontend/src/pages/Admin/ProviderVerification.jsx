@@ -90,11 +90,11 @@ const ProviderVerification = () => {
                                         <td className="px-6 py-4 font-medium text-soft-black">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 bg-black text-white rounded-full flex items-center justify-center font-bold">
-                                                    {provider.username?.charAt(0).toUpperCase()}
+                                                    {provider.user?.username?.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <div className="font-semibold">{provider.username}</div>
-                                                    <div className="text-xs text-gray-500">{provider.email}</div>
+                                                    <div className="font-semibold">{provider.user?.username}</div>
+                                                    <div className="text-xs text-gray-500">{provider.user?.email}</div>
                                                 </div>
                                             </div>
                                         </td>
@@ -148,12 +148,12 @@ const ProviderVerification = () => {
                             {/* Personal Info */}
                             <div className="flex items-start gap-4">
                                 <div className="w-16 h-16 bg-soft-black text-white rounded-2xl flex items-center justify-center text-2xl font-bold">
-                                    {selectedProvider.username?.charAt(0).toUpperCase()}
+                                    {selectedProvider.user?.username?.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="space-y-1">
-                                    <h3 className="text-lg font-bold text-soft-black">{selectedProvider.username}</h3>
+                                    <h3 className="text-lg font-bold text-soft-black">{selectedProvider.user?.username}</h3>
                                     <div className="flex items-center gap-4 text-sm text-gray-600">
-                                        <div className="flex items-center gap-1"><Mail className="w-3 h-3" /> {selectedProvider.email}</div>
+                                        <div className="flex items-center gap-1"><Mail className="w-3 h-3" /> {selectedProvider.user?.email}</div>
                                         <div className="flex items-center gap-1"><Phone className="w-3 h-3" /> {selectedProvider.phone || 'N/A'}</div>
                                     </div>
                                     <div className="flex items-center gap-1 text-sm text-gray-600">

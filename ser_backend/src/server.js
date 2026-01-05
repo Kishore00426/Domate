@@ -30,11 +30,32 @@ app.get("/api/ping", (req, res) => {
   res.json({ success: true, message: "pong" });
 });
 
+import fs from "fs";
+
+// ... imports remain the same
+
 // Connect to MongoDB Atlas and start server
 (async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected");
+
+    // 🛠️ IMAGE RECOVERY: Check 'general' folder if file is missing in specific folder
+    // This fixes 404s for images uploaded before the folder logic fix
+    app.get("/uploads/:folder/:filename", (req, res, next) => {
+      const { folder, filename } = req.params;
+      if (["services", "categories", "subcategories", "providers"].includes(folder)) {
+        const paramspath = path.join(process.cwd(), "uploads", folder, filename);
+        if (!fs.existsSync(paramspath)) {
+          const generalPath = path.join(process.cwd(), "uploads/general", filename);
+          if (fs.existsSync(generalPath)) {
+            return res.sendFile(generalPath);
+          }
+        }
+      }
+      next();
+    });
+
     // Use absolute path for uploads to avoid CWD issues
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
     // Routes

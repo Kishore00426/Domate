@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getServiceById } from '../api/services';
-import api from '../api/axios';
+import { getProvidersByService } from '../api/providers';
 import HomeLayout from '../layouts/HomeLayout';
 import { CheckCircle2, XCircle, Wrench, FileText, Loader, IndianRupee, Star, User } from 'lucide-react';
 import { getImageUrl } from '../utils/imageUrl';
@@ -31,9 +31,9 @@ const ServiceDetail = () => {
 
                 // Fetch Providers for this service
                 try {
-                    const providersResponse = await api.get(`/service-providers/service/${id}`);
-                    if (providersResponse.data.success) {
-                        setProviders(providersResponse.data.providers);
+                    const providersResponse = await getProvidersByService(id);
+                    if (providersResponse.success) {
+                        setProviders(providersResponse.providers);
                     }
                 } catch (err) {
                     console.error("Failed to fetch providers", err);
@@ -89,6 +89,7 @@ const ServiceDetail = () => {
 
     return (
         <HomeLayout>
+
             <BackButton onClick={() => navigate(-1)} />
             <div className=" min-h-screen mt-20 pb-20 pt-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -181,7 +182,7 @@ const ServiceDetail = () => {
                             {/* Equipment & Process Grid */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Required Equipment */}
-                                {service.requiredEquipment && service.requiredEquipment.length > 0 && (
+                                {parseList(service.requiredEquipment).length > 0 && (
                                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                         <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
                                             <Wrench className="w-5 h-5 text-amber-600" />
@@ -226,27 +227,41 @@ const ServiceDetail = () => {
                                 {providers.length > 0 ? (
                                     <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar">
                                         {providers.map((provider) => (
-                                            <div key={provider._id} className="border border-gray-100 rounded-xl p-4 hover:border-gray-300 transition-colors bg-gray-50/50">
+                                            <div
+                                                key={provider._id}
+                                                title="Click to book"
+                                                className="group border border-gray-100 rounded-xl p-4 hover:border-gray-800 hover:bg-white transition-all cursor-pointer bg-gray-50/50"
+                                                onClick={() => {
+                                                    // Placeholder for booking logic or open modal
+                                                    console.log("Book provider", provider._id);
+                                                }}
+                                            >
                                                 <div className="flex items-center gap-4">
                                                     {/* Profile Circle */}
-                                                    <div className="w-12 h-12 rounded-full bg-soft-black text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                                                    <div className="w-12 h-12 rounded-full bg-soft-black text-white flex items-center justify-center text-lg font-bold flex-shrink-0 group-hover:bg-black transition-colors">
                                                         {provider.user?.username ? provider.user.username.charAt(0).toUpperCase() : <User className="w-6 h-6" />}
                                                     </div>
 
                                                     {/* Details */}
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="font-bold text-soft-black truncate">{provider.user?.username || 'Service Provider'}</h3>
-                                                        <div className="flex items-center gap-1 text-sm mt-0.5">
-                                                            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-                                                            <span className="font-semibold">{provider.rating || 'New'}</span>
-                                                            <span className="text-gray-400 text-xs">• {provider.experience || 'trained'}</span>
+                                                        <div className="flex items-center gap-3 text-sm mt-1">
+                                                            <div className="flex items-center gap-1 bg-yellow-400/10 px-2 py-0.5 rounded-md">
+                                                                <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
+                                                                <span className="font-semibold text-yellow-700">{provider.rating || 'New'}</span>
+                                                            </div>
+                                                            <span className="text-gray-500 text-xs px-2 py-0.5 bg-gray-100 rounded-md">
+                                                                {provider.experience ? `${provider.experience} exp` : 'Trained'}
+                                                            </span>
                                                         </div>
                                                     </div>
 
-                                                    {/* Book Button */}
-                                                    <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors whitespace-nowrap">
-                                                        Book Now
-                                                    </button>
+                                                    {/* Book Arrow (Visual Cue) */}
+                                                    <div className="text-gray-300 group-hover:text-black transition-colors">
+                                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
