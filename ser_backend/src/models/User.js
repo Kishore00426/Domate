@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'rejected', 'none'],
       default: 'none'
     },
-    documents: [{ type: String }] // URLs to documents
+    //documents: [{ type: String }] // URLs to documents
   },
   { timestamps: true }
 );
