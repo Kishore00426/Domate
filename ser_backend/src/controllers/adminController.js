@@ -319,21 +319,40 @@ export const linkSubcategoryToCategory = async (req, res) => {
 };
 
 // ---------------- SERVICE CRUD ----------------
+// Helper to separate comma strings into array
+const parseArrayField = (field) => {
+  if (typeof field === "string") {
+    return field.split(",").map((item) => item.trim()).filter((item) => item !== "");
+  }
+  if (Array.isArray(field)) {
+    return field.filter((item) => item.trim() !== "");
+  }
+  return [];
+};
+
+// ---------------- SERVICE CRUD ----------------
 export const createService = async (req, res) => {
   try {
     const {
       title, detailedDescription, price,
       whatIsCovered, whatIsNotCovered,
-      neededEquipment, warranty,
+      requiredEquipment, serviceProcess, // changed neededEquipment to requiredEquipment to match Schema
+      warranty,
       category, subcategory
     } = req.body;
     const imageUrl = req.file ? `/uploads/services/${req.file.filename}` : null;
 
     const service = await Service.create({
-      title, detailedDescription, price,
-      whatIsCovered, whatIsNotCovered,
-      neededEquipment, warranty,
-      category, subcategory,
+      title,
+      detailedDescription,
+      price,
+      whatIsCovered: parseArrayField(whatIsCovered),
+      whatIsNotCovered: parseArrayField(whatIsNotCovered),
+      requiredEquipment: parseArrayField(requiredEquipment), // matched schema name
+      serviceProcess: parseArrayField(serviceProcess),
+      warranty,
+      category,
+      subcategory,
       imageUrl
     });
     res.status(201).json({ success: true, service });
@@ -371,6 +390,13 @@ export const updateService = async (req, res) => {
     if (req.file) {
       updates.imageUrl = `/uploads/services/${req.file.filename}`;
     }
+
+    // Parse array fields if they exist in updates
+    if (updates.whatIsCovered) updates.whatIsCovered = parseArrayField(updates.whatIsCovered);
+    if (updates.whatIsNotCovered) updates.whatIsNotCovered = parseArrayField(updates.whatIsNotCovered);
+    if (updates.requiredEquipment) updates.requiredEquipment = parseArrayField(updates.requiredEquipment);
+    if (updates.serviceProcess) updates.serviceProcess = parseArrayField(updates.serviceProcess);
+
     const service = await Service.findByIdAndUpdate(req.params.id, updates, { new: true })
       .populate("category")
       .populate("subcategory");
