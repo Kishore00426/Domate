@@ -64,13 +64,13 @@ const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {services.map((service) => (
-                    <div key={service._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                    <div key={service._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
                         <div className="h-48 overflow-hidden bg-gray-100 relative">
                             {service.imageUrl ? (
                                 <img
                                     src={getImageUrl(service.imageUrl)}
                                     alt={service.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400">

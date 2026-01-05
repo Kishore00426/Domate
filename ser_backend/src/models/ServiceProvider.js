@@ -45,6 +45,10 @@ const serviceProviderSchema = new mongoose.Schema({
     default: "pending"
   },
 
+  // ✅ Ratings
+  rating: { type: Number, default: 0 },
+  totalReviews: { type: Number, default: 0 },
+
   createdAt: { type: Date, default: Date.now }
 });
 

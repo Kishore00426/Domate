@@ -6,7 +6,8 @@ import {
   updateProviderBio,
   updateProviderServices,
   getProviderByUser,
-  getMyProviderProfile
+  getMyProviderProfile,
+  getProvidersByService
 } from "../controllers/serviceProviderController.js";
 
 const router = express.Router();
@@ -57,6 +58,12 @@ router.get(
   authenticate,
   authorize(["admin", "service_provider"]),
   getProviderByUser
+);
+
+// 👇 Get providers by service ID (Public)
+router.get(
+  "/service/:serviceId",
+  getProvidersByService
 );
 
 export default router;

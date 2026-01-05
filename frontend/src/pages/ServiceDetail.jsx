@@ -1,36 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getServiceById } from '../api/services';
+import api from '../api/axios';
 import HomeLayout from '../layouts/HomeLayout';
-import { CheckCircle2, XCircle, Wrench, FileText, ArrowLeft, Loader, IndianRupee } from 'lucide-react';
+import { CheckCircle2, XCircle, Wrench, FileText, ArrowLeft, Loader, IndianRupee, Star, User } from 'lucide-react';
 import { getImageUrl } from '../utils/imageUrl';
 
 const ServiceDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [service, setService] = useState(null);
+    const [providers, setProviders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchService = async () => {
+        const fetchData = async () => {
             setLoading(true);
             try {
-                const response = await getServiceById(id);
-                if (response.success) {
-                    setService(response.service);
+                // Fetch Service Details
+                const serviceResponse = await getServiceById(id);
+                if (serviceResponse.success) {
+                    setService(serviceResponse.service);
                 } else {
                     setError('Service not found or failed to load.');
+                    setLoading(false);
+                    return;
                 }
+
+                // Fetch Providers for this service
+                try {
+                    const providersResponse = await api.get(`/service-providers/service/${id}`);
+                    if (providersResponse.data.success) {
+                        setProviders(providersResponse.data.providers);
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch providers", err);
+                    // Don't block the page if providers fail to load, just show empty list
+                }
+
             } catch (err) {
-                setError('An error occurred while fetching service details.');
+                setError('An error occurred while fetching details.');
             } finally {
                 setLoading(false);
             }
         };
 
         if (id) {
-            fetchService();
+            fetchData();
         }
     }, [id]);
 
@@ -63,153 +80,192 @@ const ServiceDetail = () => {
 
     return (
         <HomeLayout>
-            <div className="bg-gray-50 min-h-screen pb-20">
-                {/* Hero / Header */}
-                <div className="bg-white border-b border-gray-200">
-                    <div className="max-w-6xl mx-auto px-6 py-8">
-                        <button
-                            onClick={() => navigate(-1)}
-                            className="text-gray-500 hover:text-soft-black transition-colors flex items-center gap-2 mb-6 text-sm font-medium"
-                        >
-                            <ArrowLeft className="w-4 h-4" /> Back
-                        </button>
+            <div className="bg-gray-50 min-h-screen pb-20 pt-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                        <div className="flex flex-col md:flex-row gap-8 items-start">
-                            <div className="w-full md:w-1/3 bg-gray-100 rounded-2xl overflow-hidden aspect-video relative shadow-sm">
-                                {service.imageUrl ? (
-                                    <img
-                                        src={getImageUrl(service.imageUrl)}
-                                        alt={service.title}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        No Image Available
+                    {/* Back Button */}
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="text-gray-500 hover:text-soft-black transition-colors flex items-center gap-2 mb-6 text-sm font-medium"
+                    >
+                        <ArrowLeft className="w-4 h-4" /> Back
+                    </button>
+
+                    <div className="flex flex-col lg:flex-row gap-8">
+
+                        {/* LEFT COLUMN - Service Details (60%) */}
+                        <div className="w-full lg:w-[60%] space-y-8">
+
+                            {/* Hero Section */}
+                            <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
+                                <div className="aspect-video relative bg-gray-100">
+                                    {service.imageUrl ? (
+                                        <img
+                                            src={getImageUrl(service.imageUrl)}
+                                            alt={service.title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                            No Image Available
+                                        </div>
+                                    )}
+                                    <div className="absolute top-4 left-4">
+                                        <span className="bg-white/90 backdrop-blur px-4 py-1.5 rounded-full text-sm font-semibold text-soft-black shadow-sm">
+                                            {service.category?.name}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-8">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h1 className="text-3xl font-bold text-soft-black mb-2">{service.title}</h1>
+                                            {service.subcategory && (
+                                                <p className="text-gray-500 text-sm">{service.subcategory.name}</p>
+                                            )}
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-2xl font-bold text-soft-black">₹{service.price}</div>
+                                            <div className="text-xs text-gray-500">Starting from</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl">
+                                        {service.detailedDescription}
+                                    </p>
+
+                                    {service.warranty && (
+                                        <div className="mt-4 flex items-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-lg w-fit text-sm font-medium">
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            Warranty: {service.warranty}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* What is Covered */}
+                            {service.whatIsCovered && service.whatIsCovered.length > 0 && (
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                    <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
+                                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                                        What is Covered
+                                    </h3>
+                                    <ul className="grid grid-cols-1 gap-3">
+                                        {service.whatIsCovered.map((item, index) => (
+                                            <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></div>
+                                                {item}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* What is Not Covered */}
+                            {service.whatIsNotCovered && service.whatIsNotCovered.length > 0 && (
+                                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                    <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
+                                        <XCircle className="w-5 h-5 text-red-600" />
+                                        What is Not Covered
+                                    </h3>
+                                    <ul className="grid grid-cols-1 gap-3">
+                                        {service.whatIsNotCovered.map((item, index) => (
+                                            <li key={index} className="flex items-start gap-3 text-sm text-gray-700">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 flex-shrink-0"></div>
+                                                {item}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Equipment & Process Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Required Equipment */}
+                                {service.requiredEquipment && service.requiredEquipment.length > 0 && (
+                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
+                                            <Wrench className="w-5 h-5 text-amber-600" />
+                                            Required Equipment
+                                        </h3>
+                                        <ul className="space-y-3">
+                                            {service.requiredEquipment.map((item, index) => (
+                                                <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                                    {item}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+
+                                {/* Service Process */}
+                                {service.serviceProcess && service.serviceProcess.length > 0 && (
+                                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                        <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
+                                            <FileText className="w-5 h-5 text-blue-600" />
+                                            Service Process
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {service.serviceProcess.map((item, index) => (
+                                                <div key={index} className="flex gap-3 text-sm">
+                                                    <span className="text-blue-600 font-bold">{index + 1}.</span>
+                                                    <span className="text-gray-700">{item}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 )}
                             </div>
+                        </div>
 
-                            <div className="flex-1">
-                                <div className="flex items-start justify-between gap-4">
-                                    <div>
-                                        <span className="text-sm font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">{service.category?.name}</span>
-                                        <h1 className="text-3xl font-bold text-soft-black mt-3 mb-2">{service.title}</h1>
-                                        {service.subcategory && (
-                                            <p className="text-gray-500 text-sm mb-4">Type: {service.subcategory.name}</p>
-                                        )}
+                        {/* RIGHT COLUMN - Provider Listing (40%) */}
+                        <div className="w-full lg:w-[40%]">
+                            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 sticky top-24">
+                                <h2 className="text-xl font-bold text-soft-black mb-6">Book an Expert Today</h2>
+
+                                {providers.length > 0 ? (
+                                    <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar">
+                                        {providers.map((provider) => (
+                                            <div key={provider._id} className="border border-gray-100 rounded-xl p-4 hover:border-gray-300 transition-colors bg-gray-50/50">
+                                                <div className="flex items-center gap-4">
+                                                    {/* Profile Circle */}
+                                                    <div className="w-12 h-12 rounded-full bg-soft-black text-white flex items-center justify-center text-lg font-bold flex-shrink-0">
+                                                        {provider.user?.username ? provider.user.username.charAt(0).toUpperCase() : <User className="w-6 h-6" />}
+                                                    </div>
+
+                                                    {/* Details */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-bold text-soft-black truncate">{provider.user?.username || 'Service Provider'}</h3>
+                                                        <div className="flex items-center gap-1 text-sm mt-0.5">
+                                                            <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                                                            <span className="font-semibold">{provider.rating || 'New'}</span>
+                                                            <span className="text-gray-400 text-xs">• {provider.experience || 'trained'}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Book Button */}
+                                                    <button className="bg-black text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors whitespace-nowrap">
+                                                        Book Now
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-3xl font-bold text-soft-black flex items-center justify-end">
-                                            <IndianRupee className="w-6 h-6" />{service.price}
-                                        </div>
-                                        {service.warranty && (
-                                            <p className="text-green-600 text-sm font-medium mt-1">Warranty: {service.warranty}</p>
-                                        )}
+                                ) : (
+                                    <div className="text-center py-10 bg-gray-50 rounded-xl">
+                                        <p className="text-gray-500 text-sm">No experts currently available for this service.</p>
                                     </div>
-                                </div>
+                                )}
 
-                                <p className="text-gray-600 mt-4 leading-relaxed bg-white rounded-xl">
-                                    {service.detailedDescription}
-                                </p>
-
-                                <div className="mt-8 flex gap-4">
-                                    <button className="flex-1 bg-black text-white py-3.5 rounded-xl font-bold text-lg hover:bg-gray-800 transition-transform active:scale-95 shadow-lg">
-                                        Book Now
-                                    </button>
+                                <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+                                    <p className="text-xs text-gray-500">
+                                        All our experts are verified and background checked.
+                                    </p>
                                 </div>
                             </div>
                         </div>
+
                     </div>
-                </div>
-
-                {/* Details Sections */}
-                <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 gap-8">
-
-                    {/* What is Covered */}
-                    {service.whatIsCovered && service.whatIsCovered.length > 0 && (
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                            <h3 className="text-xl font-bold text-soft-black mb-6 flex items-center gap-3">
-                                <div className="p-2 bg-green-100 rounded-lg text-green-600">
-                                    <CheckCircle2 className="w-5 h-5" />
-                                </div>
-                                What is Covered
-                            </h3>
-                            <ul className="space-y-4">
-                                {service.whatIsCovered.map((item, index) => (
-                                    <li key={index} className="flex items-start gap-3">
-                                        <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                                        <span className="text-gray-700">{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* What is Not Covered */}
-                    {service.whatIsNotCovered && service.whatIsNotCovered.length > 0 && (
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                            <h3 className="text-xl font-bold text-soft-black mb-6 flex items-center gap-3">
-                                <div className="p-2 bg-red-100 rounded-lg text-red-600">
-                                    <XCircle className="w-5 h-5" />
-                                </div>
-                                What is Not Covered
-                            </h3>
-                            <ul className="space-y-4">
-                                {service.whatIsNotCovered.map((item, index) => (
-                                    <li key={index} className="flex items-start gap-3">
-                                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                                        <span className="text-gray-700">{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* Required Equipment */}
-                    {service.requiredEquipment && service.requiredEquipment.length > 0 && (
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                            <h3 className="text-xl font-bold text-soft-black mb-6 flex items-center gap-3">
-                                <div className="p-2 bg-amber-100 rounded-lg text-amber-600">
-                                    <Wrench className="w-5 h-5" />
-                                </div>
-                                Required Equipment
-                            </h3>
-                            <p className="text-gray-500 text-sm mb-4 italic">Please ensure these are available/prepared:</p>
-                            <ul className="space-y-4">
-                                {service.requiredEquipment.map((item, index) => (
-                                    <li key={index} className="flex items-start gap-3">
-                                        <span className="w-2 h-2 rounded-full bg-amber-400 mt-2 flex-shrink-0"></span>
-                                        <span className="text-gray-700">{item}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                    {/* Service Process */}
-                    {service.serviceProcess && service.serviceProcess.length > 0 && (
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                            <h3 className="text-xl font-bold text-soft-black mb-6 flex items-center gap-3">
-                                <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
-                                    <FileText className="w-5 h-5" />
-                                </div>
-                                Service Process
-                            </h3>
-                            <div className="space-y-6">
-                                {service.serviceProcess.map((item, index) => (
-                                    <div key={index} className="flex gap-4">
-                                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
-                                            {index + 1}
-                                        </div>
-                                        <div className="pt-1">
-                                            <p className="text-gray-700">{item}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
                 </div>
             </div>
         </HomeLayout>

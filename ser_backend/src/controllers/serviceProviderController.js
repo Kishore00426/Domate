@@ -157,3 +157,26 @@ export const getMyProviderProfile = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+/**
+ * Get approved providers by Service ID
+ * Public access
+ */
+export const getProvidersByService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+
+    // Find custom providers who have this service in their list AND are approved
+    // Populate user to get name, profile image (if any)
+    const providers = await ServiceProvider.find({
+      services: serviceId,
+      approvalStatus: "approved"
+    })
+      .populate("user", "username email location experience documents date_joined") // Populate specific user fields
+      .select("rating totalReviews experience user services price_range"); // Select specific provider fields
+
+    res.json({ success: true, providers });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
