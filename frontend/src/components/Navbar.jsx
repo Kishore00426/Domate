@@ -63,7 +63,21 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
 
                 {!isDashboard && (
                     <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
-                        <a href="#" className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors">Services</a>
+                        <button
+                            onClick={() => {
+                                // Set guest user in localStorage
+                                const guestUser = {
+                                    name: 'Guest',
+                                    location: 'Unknown'
+                                };
+                                localStorage.setItem('user', JSON.stringify(guestUser));
+                                // Navigate to home page
+                                navigate('/home');
+                            }}
+                            className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors cursor-pointer"
+                        >
+                            Services
+                        </button>
                         <Link to="/register?role=service_provider" className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors">Become a Professional</Link>
                     </div>
                 )}
@@ -219,7 +233,23 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                         </>
                     ) : (
                         <>
-                            <a href="#" className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg">Services</a>
+                            <button
+                                onClick={() => {
+                                    // Set guest user in localStorage
+                                    const guestUser = {
+                                        name: 'Guest',
+                                        location: 'Unknown'
+                                    };
+                                    localStorage.setItem('user', JSON.stringify(guestUser));
+                                    // Navigate to home page
+                                    navigate('/home');
+                                    // Close mobile menu
+                                    setIsOpen(false);
+                                }}
+                                className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg text-left w-full cursor-pointer"
+                            >
+                                Services
+                            </button>
                             <Link to="/register?role=service_provider" className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg">Become a Professional</Link>
                             <Link to="/register" className="bg-soft-black text-white px-5 py-3 rounded-xl text-sm font-medium w-full block text-center">
                                 Get Started
