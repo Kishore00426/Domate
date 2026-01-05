@@ -1,7 +1,10 @@
 import ServiceProvider from "../models/ServiceProvider.js";
 
-// Create or update provider details + handle PDF uploads
-export const upsertProviderDetails = async (req, res) => {
+/**
+ * Update provider bio details + certificates/proofs
+ * (phone, address, experience, nativePlace, currentPlace, emergencyContact, documents)
+ */
+export const updateProviderBio = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -29,25 +32,6 @@ export const upsertProviderDetails = async (req, res) => {
     const addressProofFiles = req.files?.addressProof || [];
     const idProofFiles = req.files?.idProof || [];
 
-    // ✅ Handle services (single or multiple)
-    let services = req.body.services;
-    if (services) {
-      if (typeof services === "string") {
-        try {
-          // Try parsing JSON array string
-          services = JSON.parse(services);
-        } catch {
-          // Fallback: comma-separated string
-          services = services.split(",").map(s => s.trim());
-        }
-      }
-      if (!Array.isArray(services)) {
-        services = [services];
-      }
-    } else {
-      services = [];
-    }
-
     const updateData = {
       phone: req.body.phone,
       address: req.body.address,
@@ -55,7 +39,6 @@ export const upsertProviderDetails = async (req, res) => {
       nativePlace: req.body.nativePlace,
       currentPlace: req.body.currentPlace,
       emergencyContact,
-      services, // ✅ always an array now
       certificates: certificateFiles.map(file => `/uploads/providers/${file.filename}`),
       addressProofs: addressProofFiles.map(file => `/uploads/providers/${file.filename}`),
       idProofs: idProofFiles.map(file => `/uploads/providers/${file.filename}`),
@@ -74,7 +57,78 @@ export const upsertProviderDetails = async (req, res) => {
   }
 };
 
-// Get provider details by userId (admin or self)
+/**
+ * Update provider services + descriptions
+ * (services array of ObjectIds, serviceDescriptions array of { serviceId, description })
+ */
+export const updateProviderServices = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Ownership + role checks
+    if (req.user._id.toString() !== id) {
+      return res.status(403).json({ success: false, error: "Access denied" });
+    }
+    const userRole = req.user.role?.name || req.user.role;
+    if (userRole !== "service_provider") {
+      return res.status(403).json({ success: false, error: "User is not a service provider" });
+    }
+
+    // ✅ Handle catalog services (single or multiple)
+    let services = req.body.services;
+    if (services) {
+      if (typeof services === "string") {
+        try {
+          services = JSON.parse(services); // Try parsing JSON array string
+        } catch {
+          services = services.split(",").map(s => s.trim()); // Fallback: comma-separated string
+        }
+      }
+      if (!Array.isArray(services)) {
+        services = [services];
+      }
+    } else {
+      services = [];
+    }
+
+    // ✅ Handle serviceDescriptions (array of { serviceId, description })
+    let serviceDescriptions = req.body.serviceDescriptions;
+    if (serviceDescriptions) {
+      if (typeof serviceDescriptions === "string") {
+        try {
+          serviceDescriptions = JSON.parse(serviceDescriptions);
+        } catch {
+          return res.status(400).json({ success: false, error: "Invalid serviceDescriptions JSON format" });
+        }
+      }
+      if (!Array.isArray(serviceDescriptions)) {
+        serviceDescriptions = [serviceDescriptions];
+      }
+    } else {
+      serviceDescriptions = [];
+    }
+
+    const updateData = {
+      services,
+      serviceDescriptions,
+      approvalStatus: "pending" // always pending until admin verifies
+    };
+
+    const provider = await ServiceProvider.findOneAndUpdate(
+      { user: req.user._id },
+      updateData,
+      { upsert: true, new: true }
+    ).populate("services");
+
+    res.json({ success: true, provider });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+/**
+ * Get provider details by userId (admin or self)
+ */
 export const getProviderByUser = async (req, res) => {
   try {
     const provider = await ServiceProvider.findOne({ user: req.params.userId })
@@ -88,7 +142,9 @@ export const getProviderByUser = async (req, res) => {
   }
 };
 
-// Get logged-in provider’s own profile
+/**
+ * Get logged-in provider’s own profile
+ */
 export const getMyProviderProfile = async (req, res) => {
   try {
     const provider = await ServiceProvider.findOne({ user: req.user._id })

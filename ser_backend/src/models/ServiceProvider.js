@@ -7,6 +7,12 @@ const emergencyContactSchema = new mongoose.Schema({
   relation: { type: String }
 }, { _id: false });
 
+// Service description schema (hybrid: catalog service + provider-specific description)
+const serviceDescriptionSchema = new mongoose.Schema({
+  serviceId: { type: mongoose.Schema.Types.ObjectId, ref: "Service" },
+  description: { type: String, trim: true }
+}, { _id: false });
+
 const serviceProviderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
@@ -17,13 +23,22 @@ const serviceProviderSchema = new mongoose.Schema({
   currentPlace: { type: String },
   emergencyContact: emergencyContactSchema,
 
-  // ✅ multiple services supported
-  services: [{ type: mongoose.Schema.Types.ObjectId, ref: "Service" }],
+  // ✅ multiple services supported (linked to Service model)
+  services: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Service",
+    required: false
+  }],
 
-  certificates: [{ type: String }],   // multiple certificate file paths
-  addressProofs: [{ type: String }],  // multiple address proof file paths
-  idProofs: [{ type: String }],       // multiple ID proof file paths
+  // ✅ hybrid: provider-specific descriptions for catalog services
+  serviceDescriptions: [serviceDescriptionSchema],
 
+  // ✅ file uploads as arrays
+  certificates: [{ type: String }],
+  addressProofs: [{ type: String }],
+  idProofs: [{ type: String }],
+
+  // ✅ approval workflow
   approvalStatus: {
     type: String,
     enum: ["pending", "approved", "rejected"],

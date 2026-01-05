@@ -3,7 +3,8 @@ import { authenticate } from "../middleware/Authenticate.js";
 import { authorize } from "../middleware/Authorize.js";
 import { upload } from "../middleware/upload.js";
 import {
-  upsertProviderDetails,
+  updateProviderBio,
+  updateProviderServices,
   getProviderByUser,
   getMyProviderProfile
 } from "../controllers/serviceProviderController.js";
@@ -11,11 +12,16 @@ import {
 const router = express.Router();
 
 // 👇 Provider fetches their own profile
-router.get("/me", authenticate, authorize(["service_provider"]), getMyProviderProfile);
-
-// 👇 Provider updates their own profile (details + file upload in one request)
-router.put(
+router.get(
   "/me",
+  authenticate,
+  authorize(["service_provider"]),
+  getMyProviderProfile
+);
+
+// 👇 Provider updates their bio + certificates/proofs
+router.put(
+  "/me/bio",
   authenticate,
   authorize(["service_provider"]),
   upload.fields([
@@ -28,24 +34,29 @@ router.put(
     req.params.id = req.user._id.toString();
     next();
   },
-  upsertProviderDetails
+  updateProviderBio
 );
 
-// 👇 Provider submits or updates details + uploads files by ID (same PUT handles both)
+// 👇 Provider updates their services + descriptions
 router.put(
-  "/:id",
+  "/me/services",
   authenticate,
   authorize(["service_provider"]),
-  upload.fields([
-    { name: "certificate", maxCount: 10 },
-    { name: "addressProof", maxCount: 10 },
-    { name: "idProof", maxCount: 10 }
-  ]),
-  upsertProviderDetails
+  (req, res, next) => {
+    // Force the ID to match the logged-in user
+    req.params.id = req.user._id.toString();
+    next();
+  },
+  updateProviderServices
 );
 
-// 👇 Get provider details by userId (admin or self)
+// 👇 Admin or provider fetches provider details by userId
 // Note: Admins can call this too, but approval/rejection is handled in adminRoutes
-router.get("/:userId", authenticate, getProviderByUser);
+router.get(
+  "/:userId",
+  authenticate,
+  authorize(["admin", "service_provider"]),
+  getProviderByUser
+);
 
 export default router;
