@@ -1,7 +1,7 @@
 import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 import Service from "../models/Service.js";
-
+import ServiceProvider from "../models/ServiceProvider.js";
 
 // ---------------- USER CREATES BOOKING ----------------
 export const createBooking = async (req, res) => {
@@ -18,17 +18,23 @@ export const createBooking = async (req, res) => {
       return res.status(400).json({ success: false, error: "Provider not approved or not found" });
     }
 
-    // 2. Ensure service exists and provider is linked to it
+    // 2. Ensure service exists
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ success: false, error: "Service not found" });
     }
 
-    if (!service.providers.includes(providerId)) {
+    // 3. Ensure provider is linked to this service via ServiceProvider collection
+    const link = await ServiceProvider.findOne({
+      user: providerId,
+      services: serviceId,
+      approvalStatus: "approved"
+    });
+    if (!link) {
       return res.status(400).json({ success: false, error: "Provider not linked to this service" });
     }
 
-    // 3. Create booking
+    // 4. Create booking
     const booking = await Booking.create({
       user: req.user._id,
       serviceProvider: providerId,
@@ -42,6 +48,7 @@ export const createBooking = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
 // ---------------- PROVIDER UPDATES BOOKING STATUS ----------------
 export const updateBookingStatus = async (req, res) => {
   try {
