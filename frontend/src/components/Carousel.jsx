@@ -57,6 +57,7 @@ const Carousel = () => {
                         <p className="text-xl md:text-2xl font-light mb-8 max-w-2xl drop-shadow-md animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
                             {slide.subtitle}
                         </p>
+
                         <Link
                             to="/register"
                             className="bg-white text-soft-black px-8 py-3 rounded-full font-bold hover:bg-beige transition-colors shadow-xl animate-in fade-in zoom-in duration-500 delay-200"

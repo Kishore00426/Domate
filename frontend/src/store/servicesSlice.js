@@ -1,13 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getAllServices } from '../api/services';
+
+// Async thunk to fetch services from the backend
+export const fetchServices = createAsyncThunk(
+  'services/fetchServices',
+  async () => {
+    const response = await getAllServices();
+    if (response.success) {
+      return response.services;
+    }
+    throw new Error(response.error || 'Failed to fetch services');
+  }
+);
 
 const initialState = {
-  services: [
-    { id: 1, name: 'House Cleaning', category: 'Cleaning' },
-    { id: 2, name: 'Plumbing Repair', category: 'Plumbing' },
-    { id: 3, name: 'Electrical Wiring', category: 'Electrical' },
-    { id: 4, name: 'Interior Painting', category: 'Painting' },
-    { id: 5, name: 'Furniture Assembly', category: 'Carpentry' },
-  ],
+  services: [],
+  loading: false,
+  error: null,
 };
 
 const servicesSlice = createSlice({
@@ -15,6 +24,21 @@ const servicesSlice = createSlice({
   initialState,
   reducers: {
     // Add reducers here if we need to modify services later
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchServices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchServices.fulfilled, (state, action) => {
+        state.loading = false;
+        state.services = action.payload;
+      })
+      .addCase(fetchServices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      });
   },
 });
 

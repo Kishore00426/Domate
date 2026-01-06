@@ -6,6 +6,7 @@ const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchUsers();
@@ -44,6 +45,16 @@ const UserManagement = () => {
         }
     };
 
+    // Filter users based on search term
+    const filteredUsers = users.filter(user => {
+        const searchLower = searchTerm.toLowerCase();
+        return (
+            user.username?.toLowerCase().includes(searchLower) ||
+            user.email?.toLowerCase().includes(searchLower) ||
+            user.role?.name?.toLowerCase().includes(searchLower)
+        );
+    });
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -60,6 +71,8 @@ const UserManagement = () => {
                         <input
                             type="text"
                             placeholder="Search users..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-soft-black outline-none w-full text-sm text-soft-black"
                         />
                         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -71,7 +84,7 @@ const UserManagement = () => {
                         <div className="flex items-center justify-center h-48 text-gray-400">Loading users...</div>
                     ) : error ? (
                         <div className="flex items-center justify-center h-48 text-red-500">{error}</div>
-                    ) : users.length === 0 ? (
+                    ) : filteredUsers.length === 0 ? (
                         <div className="flex items-center justify-center h-48 text-gray-400">No users found</div>
                     ) : (
                         <table className="w-full text-left text-sm">
@@ -84,7 +97,7 @@ const UserManagement = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {users.map((user) => (
+                                {filteredUsers.map((user) => (
                                     <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-soft-black">
                                             <div className="flex items-center gap-3">

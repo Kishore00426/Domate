@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getMe, updateProfile } from '../api/auth';
 import UserDashboard from '../components/dashboard/UserDashboard';
-import ProviderDashboard from '../components/dashboard/ProviderDashboard';
 
 const Account = () => {
+    const navigate = useNavigate();
     // User state
     const [user, setUser] = useState({
         name: "", // Will be populated from DB
@@ -29,6 +30,11 @@ const Account = () => {
                     location: userData.user.address?.city || "Unknown Location",
                     role: userData.user.role // Very important for conditional rendering
                 }));
+
+                // Redirect provider to their dashboard
+                if (userData.user.role === 'service_provider') {
+                    navigate('/provider/dashboard');
+                }
             } catch (err) {
                 console.error("Failed to fetch user profile", err);
             } finally {
@@ -36,7 +42,7 @@ const Account = () => {
             }
         };
         fetchUser();
-    }, []);
+    }, [navigate]);
 
     // Edit mode states (Shared logic - mostly for UserDashboard currently)
     const [isEditing, setIsEditing] = useState(false);
@@ -96,20 +102,16 @@ const Account = () => {
 
     return (
         <HomeLayout>
-            {user.role === 'service_provider' ? (
-                <ProviderDashboard user={user} />
-            ) : (
-                <UserDashboard
-                    user={user}
-                    isEditing={isEditing}
-                    tempData={tempData}
-                    handleEdit={handleEdit}
-                    handleCancel={handleCancel}
-                    handleSave={handleSave}
-                    handleChange={handleChange}
-                    addressTags={addressTags}
-                />
-            )}
+            <UserDashboard
+                user={user}
+                isEditing={isEditing}
+                tempData={tempData}
+                handleEdit={handleEdit}
+                handleCancel={handleCancel}
+                handleSave={handleSave}
+                handleChange={handleChange}
+                addressTags={addressTags}
+            />
         </HomeLayout>
     );
 };

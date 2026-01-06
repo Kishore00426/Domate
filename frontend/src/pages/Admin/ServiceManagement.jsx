@@ -9,6 +9,8 @@ const ServiceManagement = () => {
     const [subcategories, setSubcategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -170,6 +172,16 @@ const ServiceManagement = () => {
         return cat ? cat.name : 'Unknown';
     };
 
+    // Filter services based on search term and selected category
+    const filteredServices = services.filter(service => {
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = service.title?.toLowerCase().includes(searchLower) ||
+            getCategoryName(service.category).toLowerCase().includes(searchLower);
+        const matchesCategory = !selectedCategory ||
+            (typeof service.category === 'object' ? service.category._id : service.category) === selectedCategory;
+        return matchesSearch && matchesCategory;
+    });
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500 relative">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -199,20 +211,23 @@ const ServiceManagement = () => {
                     <input
                         type="text"
                         placeholder="Search services..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-soft-black outline-none w-full text-sm text-soft-black"
                     />
                     <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
                 <div className="flex gap-2 w-full md:w-auto">
-                    <select className="px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-soft-black outline-none bg-white text-soft-black">
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-soft-black outline-none bg-white text-soft-black"
+                    >
                         <option value="">All Categories</option>
                         {categories.map(cat => (
                             <option key={cat._id} value={cat._id}>{cat.name}</option>
                         ))}
                     </select>
-                    <button className="p-2 border border-gray-200 rounded-xl hover:bg-gray-50">
-                        <Filter className="w-4 h-4 text-gray-600" />
-                    </button>
                 </div>
             </div>
 
@@ -232,7 +247,7 @@ const ServiceManagement = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {services.map((service) => (
+                                {filteredServices.map((service) => (
                                     <tr key={service._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
                                             {service.imageUrl ? (

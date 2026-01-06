@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import GoToTop from '../components/GoToTop';
 import { getMe } from '../api/auth';
+import { fetchServices } from '../store/servicesSlice';
 
 const HomeLayout = ({ children }) => {
+    const dispatch = useDispatch();
 
     const [user, setUser] = useState(() => {
         const savedUser = localStorage.getItem('user');
@@ -19,6 +22,9 @@ const HomeLayout = ({ children }) => {
     });
 
     useEffect(() => {
+        // Fetch services from database
+        dispatch(fetchServices());
+
         const fetchUser = async () => {
             try {
 

@@ -88,6 +88,22 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
 
                     {isDashboard ? (
                         <div className="hidden md:flex items-center gap-2 ">
+                            <Link
+                                to="/home"
+                                className={`p-2 rounded-full transition-all ${isHomeActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
+                                title="Home"
+                            >
+                                <Home className="w-5 h-5" />
+                            </Link>
+
+                            <Link
+                                to="/cart"
+                                className={`relative p-2 rounded-full transition-all ${isCartActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
+                                title="Cart"
+                            >
+                                <ShoppingCart className="w-5 h-5" />
+                                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                            </Link>
 
                             {/* Expanding Search Bar */}
                             {(isHomeActive || isCartActive) && (
@@ -118,24 +134,6 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                     )}
                                 </div>
                             )}
-                            <Link
-                                to="/home"
-                                className={`p-2 ml-2 rounded-full transition-all ${isHomeActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
-                                title="Home"
-                            >
-                                <Home className="w-5 h-5" />
-                            </Link>
-
-
-
-                            <Link
-                                to="/cart"
-                                className={`relative p-2 rounded-full transition-all ${isCartActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
-                                title="Cart"
-                            >
-                                <ShoppingCart className="w-5 h-5" />
-                                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                            </Link>
 
 
                             {loading ? (

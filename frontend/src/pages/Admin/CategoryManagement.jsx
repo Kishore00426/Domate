@@ -13,6 +13,7 @@ const CategoryManagement = () => {
     const [subcategories, setSubcategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -151,6 +152,17 @@ const CategoryManagement = () => {
         return cat ? cat.name : 'Unknown';
     };
 
+    // Filter categories or subcategories based on search term
+    const filteredCategories = categories.filter(cat =>
+        cat.name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const filteredSubcategories = subcategories.filter(sub => {
+        const searchLower = searchTerm.toLowerCase();
+        return sub.name?.toLowerCase().includes(searchLower) ||
+            getCategoryName(sub.category || sub.parentCategory).toLowerCase().includes(searchLower);
+    });
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500 relative">
             {/* Header */}
@@ -204,6 +216,8 @@ const CategoryManagement = () => {
                         <input
                             type="text"
                             placeholder={`Search ${activeTab}...`}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:border-soft-black outline-none w-full text-sm text-soft-black"
                         />
                         <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -225,47 +239,55 @@ const CategoryManagement = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {activeTab === 'categories' ? (
-                                    categories.map((item) => (
-                                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
-                                                {item.imageUrl ? (
-                                                    <img src={getImageUrl(item.imageUrl)} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
-                                                ) : (
-                                                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">N/A</div>
-                                                )}
-                                                {item.name}
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-500 truncate max-w-xs">{item.description}</td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button onClick={() => handleOpenModal(item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                                    <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
+                                    filteredCategories.length === 0 ? (
+                                        <tr><td colSpan="3" className="px-6 py-8 text-center text-gray-400">No categories found</td></tr>
+                                    ) : (
+                                        filteredCategories.map((item) => (
+                                            <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
+                                                    {item.imageUrl ? (
+                                                        <img src={getImageUrl(item.imageUrl)} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
+                                                    ) : (
+                                                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">N/A</div>
+                                                    )}
+                                                    {item.name}
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-500 truncate max-w-xs">{item.description}</td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button onClick={() => handleOpenModal(item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                                        <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )
                                 ) : (
-                                    subcategories.map((item) => (
-                                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
-                                                {item.imageUrl ? (
-                                                    <img src={getImageUrl(item.imageUrl)} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
-                                                ) : (
-                                                    <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">N/A</div>
-                                                )}
-                                                {item.name}
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-600">
-                                                <span className="bg-gray-100 px-2 py-1 rounded text-xs">{getCategoryName(item.category || item.parentCategory)}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="flex items-center justify-end gap-2">
-                                                    <button onClick={() => handleOpenModal(item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
-                                                    <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
+                                    filteredSubcategories.length === 0 ? (
+                                        <tr><td colSpan="3" className="px-6 py-8 text-center text-gray-400">No subcategories found</td></tr>
+                                    ) : (
+                                        filteredSubcategories.map((item) => (
+                                            <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
+                                                    {item.imageUrl ? (
+                                                        <img src={getImageUrl(item.imageUrl)} alt={item.name} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
+                                                    ) : (
+                                                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-xs text-gray-400">N/A</div>
+                                                    )}
+                                                    {item.name}
+                                                </td>
+                                                <td className="px-6 py-4 text-gray-600">
+                                                    <span className="bg-gray-100 px-2 py-1 rounded text-xs">{getCategoryName(item.category || item.parentCategory)}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button onClick={() => handleOpenModal(item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
+                                                        <button onClick={() => handleDelete(item._id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )
                                 )}
                             </tbody>
                         </table>
