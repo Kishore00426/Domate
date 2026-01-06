@@ -218,7 +218,7 @@ const CategoryManagement = () => {
                             <thead className="bg-gray-50 text-gray-500 font-medium">
                                 <tr>
                                     <th className="px-6 py-4">Name</th>
-                                    <th className="px-6 py-4">Description</th>
+                                    {activeTab === 'categories' && <th className="px-6 py-4">Description</th>}
                                     {activeTab === 'subcategories' && <th className="px-6 py-4">Parent Category</th>}
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
@@ -255,7 +255,6 @@ const CategoryManagement = () => {
                                                 )}
                                                 {item.name}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-500 truncate max-w-xs">{item.description}</td>
                                             <td className="px-6 py-4 text-gray-600">
                                                 <span className="bg-gray-100 px-2 py-1 rounded text-xs">{getCategoryName(item.category || item.parentCategory)}</span>
                                             </td>
@@ -318,17 +317,19 @@ const CategoryManagement = () => {
                                 </div>
                             )}
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                <textarea
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleInputChange}
-                                    rows="3"
-                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all resize-none text-soft-black"
-                                    placeholder="Brief description..."
-                                />
-                            </div>
+                            {activeTab === 'categories' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleInputChange}
+                                        rows="3"
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all resize-none text-soft-black"
+                                        placeholder="Brief description..."
+                                    />
+                                </div>
+                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
