@@ -14,21 +14,46 @@ const router = express.Router();
 
 // ---------------- USER ROUTES ----------------
 
-// User creates a booking
-router.post("/", authenticate, authorize(["user"]), createBooking);
+// User creates a booking (linked to provider’s User ID)
+router.post(
+  "/",
+  authenticate,
+  authorize(["user"]),
+  createBooking
+);
 
-// User views their bookings
-router.get("/my", authenticate, authorize(["user"]), getUserBookings);
+// User views their own bookings
+router.get(
+  "/my",
+  authenticate,
+  authorize(["user"]),
+  getUserBookings
+);
 
 // User gets provider contact (only if booking accepted)
-router.get("/:id/contact", authenticate, authorize(["user"]), getProviderContact);
+router.get(
+  "/:id/contact",
+  authenticate,
+  authorize(["user"]),
+  getProviderContact
+);
 
 // ---------------- PROVIDER ROUTES ----------------
 
-// Provider views incoming bookings
-router.get("/provider", authenticate, authorize(["service_provider"]), getProviderBookings);
+// Provider views incoming bookings (bookings tied to their User ID)
+router.get(
+  "/provider",
+  authenticate,
+  authorize(["service_provider"]),
+  getProviderBookings
+);
 
-// Provider updates booking status
-router.put("/:id/status", authenticate, authorize(["service_provider"]), updateBookingStatus);
+// Provider updates booking status (accepted/rejected)
+router.put(
+  "/:id/status",
+  authenticate,
+  authorize(["service_provider"]),
+  updateBookingStatus
+);
 
 export default router;

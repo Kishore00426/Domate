@@ -2,42 +2,44 @@ import Booking from "../models/Booking.js";
 import User from "../models/User.js";
 import Service from "../models/Service.js";
 import ServiceProvider from "../models/ServiceProvider.js";
+import mongoose from "mongoose";
 
 // ---------------- USER CREATES BOOKING ----------------
 export const createBooking = async (req, res) => {
   try {
     const { providerId, serviceId, scheduledDate, notes } = req.body;
 
-    // 1. Ensure provider exists, has correct role, and is approved
-    const provider = await User.findById(providerId).populate("role");
-    if (
-      !provider ||
-      provider.role.name !== "service_provider" ||
-      provider.providerStatus !== "approved"
-    ) {
+    // 1. Load ServiceProvider document and populate linked User
+    const spDoc = await ServiceProvider.findById(providerId).populate("user");
+    if (!spDoc || spDoc.approvalStatus !== "approved") {
       return res.status(400).json({ success: false, error: "Provider not approved or not found" });
     }
 
-    // 2. Ensure service exists
+    // 2. Validate linked user has correct role and status
+    const providerUser = spDoc.user;
+    if (
+      !providerUser ||
+      providerUser.role?.name !== "service_provider" ||
+      providerUser.providerStatus !== "approved"
+    ) {
+      return res.status(400).json({ success: false, error: "Linked user is not an approved service provider" });
+    }
+
+    // 3. Ensure service exists
     const service = await Service.findById(serviceId);
     if (!service) {
       return res.status(404).json({ success: false, error: "Service not found" });
     }
 
-    // 3. Ensure provider is linked to this service via ServiceProvider collection
-    const link = await ServiceProvider.findOne({
-      user: providerId,
-      services: serviceId,
-      approvalStatus: "approved"
-    });
-    if (!link) {
+    // 4. Ensure provider is linked to this service
+    if (!spDoc.services.includes(serviceId)) {
       return res.status(400).json({ success: false, error: "Provider not linked to this service" });
     }
 
-    // 4. Create booking
+    // 5. Create booking with provider’s User ID
     const booking = await Booking.create({
-      user: req.user._id,
-      serviceProvider: providerId,
+      user: req.user._id,                  // customer making the booking
+      serviceProvider: providerUser._id,   // ✅ store User ID, not ServiceProvider ID
       service: serviceId,
       scheduledDate,
       notes
@@ -54,25 +56,56 @@ export const updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
+    // Validate status
     if (!["accepted", "rejected"].includes(status)) {
-      return res.status(400).json({ success: false, error: "Invalid status" });
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid status" });
     }
 
-    const booking = await Booking.findById(req.params.id).populate("serviceProvider user");
+    // Load booking
+    const booking = await Booking.findById(req.params.id);
     if (!booking) {
-      return res.status(404).json({ success: false, error: "Booking not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Booking not found" });
     }
 
-    if (booking.serviceProvider._id.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, error: "Not authorized" });
+    // Normalize authenticated user ID
+    const rawUserId = req.user?._id ?? req.user?.id;
+    if (!rawUserId) {
+      return res
+        .status(401)
+        .json({ success: false, error: "Not authenticated: user id missing" });
     }
 
+    const authUserId = mongoose.Types.ObjectId.isValid(rawUserId)
+      ? new mongoose.Types.ObjectId(rawUserId)
+      : null;
+
+    if (!authUserId) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid authenticated user id" });
+    }
+
+    // Authorization check
+    if (!booking.serviceProvider.equals(authUserId)) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          error: "Access denied: cannot modify another provider",
+        });
+    }
+
+    // Update status
     booking.status = status;
     await booking.save();
 
-    res.json({ success: true, booking });
+    return res.json({ success: true, booking });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    return res.status(500).json({ success: false, error: err.message });
   }
 };
 
@@ -80,7 +113,7 @@ export const updateBookingStatus = async (req, res) => {
 export const getUserBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
-      .populate("serviceProvider", "username email phone")
+      .populate("serviceProvider", "username email phone") // provider’s User info
       .populate("service", "title");
 
     res.json({ success: true, bookings });
@@ -93,7 +126,7 @@ export const getUserBookings = async (req, res) => {
 export const getProviderBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ serviceProvider: req.user._id })
-      .populate("user", "username email")
+      .populate("user", "username email") // customer info
       .populate("service", "title");
 
     res.json({ success: true, bookings });
@@ -105,19 +138,28 @@ export const getProviderBookings = async (req, res) => {
 // ---------------- USER GETS PROVIDER CONTACT (ONLY IF ACCEPTED) ----------------
 export const getProviderContact = async (req, res) => {
   try {
-    const booking = await Booking.findById(req.params.id)
-      .populate("serviceProvider", "username email phone");
+    const booking = await Booking.findById(req.params.id).populate(
+      "serviceProvider",
+      "username email phone"
+    );
 
     if (!booking) {
-      return res.status(404).json({ success: false, error: "Booking not found" });
+      return res
+        .status(404)
+        .json({ success: false, error: "Booking not found" });
     }
 
     if (booking.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, error: "Not authorized" });
+      return res
+        .status(403)
+        .json({ success: false, error: "Not authorized" });
     }
 
     if (booking.status !== "accepted") {
-      return res.json({ success: false, message: "Booking not accepted yet" });
+      return res.json({
+        success: false,
+        message: "Booking not accepted yet",
+      });
     }
 
     res.json({
@@ -125,8 +167,8 @@ export const getProviderContact = async (req, res) => {
       providerContact: {
         username: booking.serviceProvider.username,
         email: booking.serviceProvider.email,
-        phone: booking.serviceProvider.phone || "N/A"
-      }
+        phone: booking.serviceProvider.phone || "N/A",
+      },
     });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
