@@ -1,0 +1,50 @@
+Total services: 12
+
+1. "Switch & Socket Installation"
+   Category: Electrician (ID: 695caf1fb727624cb1ac55db)
+   Subcategory: Switches, Sockets & Light Services (ID: 695cb3d7b727624cb1ac5678)
+
+2. "Light Fixture Installation"
+   Category: Electrician (ID: 695caf1fb727624cb1ac55db)
+   Subcategory: Switches, Sockets & Light Services (ID: 695cb3d7b727624cb1ac5678)
+
+3. "Tap Leakage Repair"
+   Category: Plumbing (ID: 695caf5eb727624cb1ac55e6)
+   Subcategory: Leak Detection & Repair (ID: 6952487edbb23affa2cccded)
+
+4. "Pipe Leakage Repair"
+   Category: Plumbing (ID: 695caf5eb727624cb1ac55e6)
+   Subcategory: Leak Detection & Repair (ID: 6952487edbb23affa2cccded)
+
+5. "Drain Blockage Removal"
+   Category: Plumbing (ID: 695caf5eb727624cb1ac55e6)
+   Subcategory: Leak Detection & Repair (ID: 6952487edbb23affa2cccded)
+
+6. "Door Hinge Fixing"
+   Category: Carpenter (ID: 695caf83b727624cb1ac55f1)
+   Subcategory: Door & Window Services (ID: 695cb67db727624cb1ac56c2)
+
+7. "Furniture Joint Repair"
+   Category: Carpenter (ID: 695caf83b727624cb1ac55f1)
+   Subcategory: Custom Carpentry Work (ID: 695cb6cfb727624cb1ac56dc)
+
+8. "Haircut & Styling Men"
+   Category: Salon  (ID: 695bebef89fa263ccd7b1140)
+   Subcategory: Men salon (ID: 695bf94b89fa263ccd7b11e6)
+
+9. "Waxing Service Women"
+   Category: Spa (ID: 695bf39989fa263ccd7b1170)
+   Subcategory: Women Spa (ID: 695bf79889fa263ccd7b11ac)
+
+10. "Full Body Relaxation Massage Men"
+   Category: Spa (ID: 695bf39989fa263ccd7b1170)
+   Subcategory: Men spa (ID: 695bf8fc89fa263ccd7b11cf)
+
+11. "Head, Neck & Shoulder Massage Women"
+   Category: Spa (ID: 695bf39989fa263ccd7b1170)
+   Subcategory: Women Spa (ID: 695bf79889fa263ccd7b11ac)
+
+12. "Aromatherapy Massage Men"
+   Category: Spa (ID: 695bf39989fa263ccd7b1170)
+   Subcategory: Men spa (ID: 695bf8fc89fa263ccd7b11cf)
+

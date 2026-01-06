@@ -1,0 +1,29 @@
+import api from './axios';
+
+// Create a new booking
+export const createBooking = async (bookingData) => {
+    try {
+        const response = await api.post('/bookings', bookingData);
+        return { success: true, booking: response.data.booking };
+    } catch (error) {
+        console.error("Error creating booking:", error);
+        return {
+            success: false,
+            error: error.response?.data?.error || "Failed to create booking"
+        };
+    }
+};
+
+// Get user's bookings
+export const getUserBookings = async () => {
+    try {
+        const response = await api.get('/bookings/my');
+        return { success: true, bookings: response.data.bookings };
+    } catch (error) {
+        console.error("Error fetching user bookings:", error);
+        return {
+            success: false,
+            error: error.response?.data?.error || "Failed to fetch bookings"
+        };
+    }
+};

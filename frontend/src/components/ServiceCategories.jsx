@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
+import { getCategoryDetails, getAllCategories } from '../api/services';
 
 const categories = [
   {
@@ -37,33 +38,130 @@ const categories = [
   }
 ];
 
-const handymanSubcategories = [
-  { id: 'plumbing', title: 'Plumbing', image: '/icons/plumber.png' },
-  { id: 'electrician', title: 'Electrician', image: '/icons/electrician.png' },
-  { id: 'carpenter', title: 'Carpenter', image: '/icons/carpenter.png' }
-];
+// Configuration for mapping cards to database content
+const modalConfig = {
+  "Salon & Spa": { type: "group", names: ["Salon", "Spa"] }, // Matches "Salon " leniently if needed
+  "Handyman Services": { type: "group", names: ["Electrician", "Plumbing", "Carpenter"] },
+  "AC & Appliance Repair": { type: "group", names: ["AC Services", "Appliance Service"] },
+  "Painting & Waterproofing": { type: "group", names: ["Painting", "Waterproofing", "Wallpaper Service"] },
+  "Cleaning": { type: "parent", name: "Cleaning" },
+  "Mosquito & Safety nets": { type: "parent", name: "Mosquito & Safety Nets" },
+  "Disinfection Services": { type: "parent", name: "Pest Control" },
+  "Packers & Movers": { type: "parent", name: "Packers and Movers" }
+};
 
 const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Master list of all categories from DB (for Group strategy)
+  const [allCategories, setAllCategories] = useState([]);
+
+  // Current content to show in modal
+  const [modalContent, setModalContent] = useState([]);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalImage, setModalImage] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const handleCategoryClick = (categoryTitle) => {
-    if (categoryTitle === 'Handyman Services') {
-      setIsModalOpen(true);
-    } else {
-      if (onCategorySelect) {
-        onCategorySelect(categoryTitle);
-      } else {
-        // Navigate or default behavior if needed
+  // Fetch all categories on mount to have them ready for Group filtering
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const response = await getAllCategories();
+        if (response.success) {
+          setAllCategories(response.categories);
+        }
+      } catch (err) {
+        console.error("Failed to load categories", err);
       }
+    };
+    fetchAll();
+  }, []);
+
+  const handleCategoryClick = async (categoryTitle) => {
+    setIsModalOpen(true);
+    setLoading(true);
+    setError(null);
+    setModalTitle(categoryTitle);
+
+    // Set modal image from static card data
+    const cardImg = categories.find(c => c.title === categoryTitle)?.image || '';
+    setModalImage(cardImg);
+
+    const config = modalConfig[categoryTitle];
+
+    if (!config) {
+      // Fallback if no config: try to find category by title directly
+      // This behaves like "parent" strategy with the title itself
+      await fetchParentStrategy(categoryTitle);
+      return;
+    }
+
+    if (config.type === "group") {
+      // FILTER strategy: Find categories in `allCategories` that match `config.names`
+      // We use lenient matching (includes) to handle "AC Services" vs "AC" etc.
+      const matches = allCategories.filter(cat =>
+        config.names.some(name =>
+          cat.name.toLowerCase().includes(name.toLowerCase()) ||
+          name.toLowerCase().includes(cat.name.toLowerCase())
+        )
+      );
+
+      // Map to common display format
+      const items = matches.map(cat => ({
+        _id: cat._id,
+        name: cat.name,
+        imageUrl: cat.imageUrl,
+        type: 'category', // It's a main category
+        // For group items, the category itself is the filter
+        navParam: `?category=${encodeURIComponent(cat.name)}`
+      }));
+
+      setModalContent(items);
+      setLoading(false);
+
+    } else if (config.type === "parent") {
+      await fetchParentStrategy(config.name);
     }
   };
 
-  const handleSubcategoryClick = (subcategoryTitle) => {
+  const fetchParentStrategy = async (dbName) => {
+    try {
+      const response = await getCategoryDetails(dbName);
+      if (response.success && response.category) {
+        const subcats = response.category.subcategories || [];
+        const items = subcats.map(sub => ({
+          _id: sub._id,
+          name: sub.name,
+          imageUrl: sub.imageUrl,
+          type: 'subcategory',
+          // For parent subcategories, we filter by category AND subcategory
+          navParam: `?category=${encodeURIComponent(dbName)}&subcategory=${encodeURIComponent(sub.name)}`
+        }));
+        setModalContent(items);
+      } else {
+        // Category might not exist or has no subcategories
+        setModalContent([]);
+      }
+    } catch (err) {
+      console.error("Error fetching category details", err);
+      setModalContent([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleItemClick = (navParam) => {
     setIsModalOpen(false);
-    // As per requirement: "These are existing individual categories"
-    // So we navigate to the main category page for them.
-    navigate(`/services?category=${encodeURIComponent(subcategoryTitle)}`);
+    navigate(`/services${navParam}`);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalContent([]);
+    setError(null);
   };
 
   return (
@@ -96,46 +194,96 @@ const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
         </div>
       </div>
 
-      {/* Handyman Modal */}
+      {/* Dynamic Category Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={handleCloseModal}
+        >
+          <div
+            className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Header with Category Image */}
             <div className="relative h-32 bg-gray-100">
-              {/* Dynamically find Handyman category image or fallback */}
-              <img
-                src={
-                  categories.find(c => c.title === 'Handyman Services')?.image ||
-                  "/icons/engineer.png"
-                }
-                alt="Handyman Services"
-                className="w-full h-full object-cover opacity-90"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
-                <h3 className="text-xl font-bold text-white">Handyman Services</h3>
-              </div>
+              <>
+                <img
+                  src={modalImage || "/icons/default.png"}
+                  alt={modalTitle}
+                  className="w-full h-full object-cover opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-6">
+                  <h3 className="text-xl font-bold text-white">{modalTitle}</h3>
+                </div>
+              </>
+
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={handleCloseModal}
                 className="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white hover:bg-white/40 transition-colors rounded-full p-1"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 grid grid-cols-3 gap-4">
-              {handymanSubcategories.map((sub) => (
-                <div
-                  key={sub.id}
-                  onClick={() => handleSubcategoryClick(sub.title)}
-                  className="flex flex-col items-center gap-2 cursor-pointer group p-2 rounded-xl hover:bg-gray-50 transition-colors"
-                >
-                  <div className="w-16 h-16 bg-beige/50 rounded-full flex items-center justify-center group-hover:bg-beige transition-colors aspect-square overflow-hidden p-3">
-                    {/* Placeholder icon if image fails or generic icon */}
-                    <img src={sub.image} alt={sub.title} className="w-full h-full object-contain" onError={(e) => e.target.style.display = 'none'} />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-soft-black text-center">{sub.title}</span>
+            {/* Content Area */}
+            <div className="p-6">
+              {loading && (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-soft-black"></div>
                 </div>
-              ))}
+              )}
+
+              {error && (
+                <div className="text-center py-8">
+                  <p className="text-red-500 mb-4">{error}</p>
+                  <button
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 bg-soft-black text-white rounded-lg hover:bg-black transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+
+              {!loading && !error && (
+                <>
+                  {modalContent && modalContent.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-4">
+                      {modalContent.map((item) => (
+                        <div
+                          key={item._id}
+                          onClick={() => handleItemClick(item.navParam)}
+                          className="flex flex-col items-center gap-2 cursor-pointer group p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="w-16 h-16 bg-beige/50 rounded-full flex items-center justify-center group-hover:bg-beige transition-colors aspect-square overflow-hidden">
+                            <img
+                              src={item.imageUrl || "/icons/default.png"}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                          <span className="text-sm font-medium text-gray-700 group-hover:text-soft-black text-center">
+                            {item.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 mb-4">No services available for this category yet.</p>
+                      <button
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 bg-soft-black text-white rounded-lg hover:bg-black transition-colors"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>

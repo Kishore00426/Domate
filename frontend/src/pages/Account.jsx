@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import HomeLayout from '../layouts/HomeLayout';
 import { getMe, updateProfile } from '../api/auth';
+import { getUserBookings } from '../api/bookings';
 import UserDashboard from '../components/dashboard/UserDashboard';
 import ProviderDashboard from '../components/dashboard/ProviderDashboard';
 
@@ -16,11 +17,13 @@ const Account = () => {
         role: ""
     });
 
+    const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchData = async () => {
             try {
+                // Fetch User
                 const userData = await getMe();
                 setUser(prev => ({
                     ...prev,
@@ -29,13 +32,22 @@ const Account = () => {
                     location: userData.user.address?.city || "Unknown Location",
                     role: userData.user.role // Very important for conditional rendering
                 }));
+
+                // Fetch Bookings if user is not a provider (or even if they serve as both)
+                if (userData.user.role !== 'service_provider') {
+                    const bookingsData = await getUserBookings();
+                    if (bookingsData.success) {
+                        setBookings(bookingsData.bookings);
+                    }
+                }
+
             } catch (err) {
-                console.error("Failed to fetch user profile", err);
+                console.error("Failed to fetch profile or bookings", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchUser();
+        fetchData();
     }, []);
 
     // Edit mode states (Shared logic - mostly for UserDashboard currently)
@@ -101,6 +113,7 @@ const Account = () => {
             ) : (
                 <UserDashboard
                     user={user}
+                    bookings={bookings}
                     isEditing={isEditing}
                     tempData={tempData}
                     handleEdit={handleEdit}
