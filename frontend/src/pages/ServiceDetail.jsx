@@ -6,7 +6,7 @@ import { createBooking } from '../api/bookings';
 import HomeLayout from '../layouts/HomeLayout';
 import { CheckCircle2, XCircle, Wrench, FileText, Loader, Star, User } from 'lucide-react';
 import { getImageUrl } from '../utils/imageUrl';
-import BackButton from '../components/BackButton';
+
 
 const ServiceDetail = () => {
     const { id } = useParams();
@@ -146,7 +146,7 @@ const ServiceDetail = () => {
     return (
         <HomeLayout>
 
-            <BackButton onClick={() => navigate(-1)} />
+
             <div className=" min-h-screen mt-20 pb-20 pt-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
