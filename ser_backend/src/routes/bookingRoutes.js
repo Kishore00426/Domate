@@ -7,7 +7,8 @@ import {
   updateBookingStatus,
   getUserBookings,
   getProviderBookings,
-  getProviderContact
+  getProviderContact,
+  deleteBooking
 } from "../controllers/bookingController.js";
 
 const router = express.Router();
@@ -36,6 +37,14 @@ router.get(
   authenticate,
   authorize(["user"]),
   getProviderContact
+);
+
+// User deletes a booking
+router.delete(
+  "/:id",
+  authenticate,
+  authorize(["user"]),
+  deleteBooking
 );
 
 // ---------------- PROVIDER ROUTES ----------------

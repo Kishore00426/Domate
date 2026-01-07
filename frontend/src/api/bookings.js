@@ -54,3 +54,23 @@ export const getUserBookings = async () => {
         };
     }
 };
+
+export const getProviderContact = async (bookingId) => {
+    try {
+        const response = await api.get(`/bookings/${bookingId}/contact`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching provider contact:", error);
+        return { success: false, error: error.response?.data?.error || "Failed to fetch contact details" };
+    }
+};
+
+export const deleteBooking = async (bookingId) => {
+    try {
+        const response = await api.delete(`/bookings/${bookingId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting booking:", error);
+        return { success: false, error: error.response?.data?.error || "Failed to delete booking" };
+    }
+};
