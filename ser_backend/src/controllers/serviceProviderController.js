@@ -42,8 +42,12 @@ export const updateProviderBio = async (req, res) => {
       certificates: certificateFiles.map(file => `/uploads/providers/${file.filename}`),
       addressProofs: addressProofFiles.map(file => `/uploads/providers/${file.filename}`),
       idProofs: idProofFiles.map(file => `/uploads/providers/${file.filename}`),
-      approvalStatus: "pending" // always pending until admin verifies
     };
+
+    // ✅ Only trigger "pending" verification if DOCUMENTS are updated
+    if (certificateFiles.length > 0 || addressProofFiles.length > 0 || idProofFiles.length > 0) {
+      updateData.approvalStatus = "pending";
+    }
 
     const provider = await ServiceProvider.findOneAndUpdate(
       { user: req.user._id },
