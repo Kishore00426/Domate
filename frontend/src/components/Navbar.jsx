@@ -14,8 +14,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const isDashboard = variant === 'dashboard';
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.clear(); // Remove all cache data
         navigate('/home');
     };
     const isHomeActive = location.pathname === '/home';

@@ -12,6 +12,7 @@ const UserManagement = () => {
     const [selectedProviderDetails, setSelectedProviderDetails] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [detailsLoading, setDetailsLoading] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         fetchUsers();
@@ -76,6 +77,11 @@ const UserManagement = () => {
         setSelectedUser(null);
         setSelectedProviderDetails(null);
     };
+
+    const filteredUsers = users.filter(user =>
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
