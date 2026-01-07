@@ -58,68 +58,58 @@ const OurExperts = () => {
                     {experts.map((expert) => (
                         <div
                             key={expert._id}
-                            className="flex-none w-72 sm:w-80 snap-start bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+                            className="flex-none w-64 h-96 snap-start relative rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group"
                         >
-                            <div className="flex flex-col items-center text-center">
-                                {/* Avatar */}
-                                <div className="w-24 h-24 rounded-full overflow-hidden mb-4 border-2 border-gray-100">
-                                    {expert.user?.profileImage ? (
-                                        <img
-                                            src={getImageUrl(expert.user.profileImage)}
-                                            alt={expert.user.username}
-                                            className="w-full h-full object-cover"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
-                                            <User className="w-10 h-10" />
-                                        </div>
-                                    )}
-                                </div>
+                            {/* Full Background Image */}
+                            <div className="absolute inset-0 bg-gray-200">
+                                {expert.user?.profileImage ? (
+                                    <img
+                                        src={getImageUrl(expert.user.profileImage)}
+                                        alt={expert.user.username}
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                        <User className="w-16 h-16" />
+                                    </div>
+                                )}
+                            </div>
 
-                                {/* Name & Role */}
-                                <h3 className="font-bold text-lg text-soft-black mb-1">
+                            {/* Gradient Overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex flex-col justify-end p-5">
+                                {/* Content placed below 50% visually due to flex-col justify-end */}
+
+                                {/* Name */}
+                                <h3 className="font-bold text-xl text-white mb-1 text-left">
                                     {expert.user?.username || "Service Provider"}
                                 </h3>
 
-                                {/* Rating */}
-                                <div className="flex items-center gap-1 text-sm font-bold text-gray-700 mb-4">
-                                    <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                                    <span>{expert.rating || "New"}</span>
-                                    <span className="text-gray-400 font-normal">
-                                        ({expert.totalReviews || 0} reviews)
-                                    </span>
-                                </div>
-
-                                {/* Stats */}
-                                <div className="w-full grid grid-cols-2 gap-2 mb-4">
-                                    <div className="bg-gray-50 p-2 rounded-lg text-center">
-                                        <p className="text-xs text-gray-500 uppercase tracking-wide">Experience</p>
-                                        <p className="font-bold text-soft-black">{expert.experience} Yrs</p>
+                                {/* Experience & Ratings Row */}
+                                <div className="flex items-center justify-between text-white/90 text-sm mb-3">
+                                    <div className="font-medium text-left text-gray-300">
+                                        {expert.experience} Yrs Exp
                                     </div>
-                                    <div className="bg-gray-50 p-2 rounded-lg text-center">
-                                        <p className="text-xs text-gray-500 uppercase tracking-wide">Services</p>
-                                        <p className="font-bold text-soft-black">{expert.services?.length || 0}</p>
+                                    <div className="flex items-center gap-1 font-bold">
+                                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                                        <span>{expert.rating || "New"}</span>
                                     </div>
                                 </div>
 
-                                {/* Services List (Truncated) */}
-                                <div className="w-full text-left">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Briefcase className="w-3 h-3 text-gray-400" />
-                                        <span className="text-xs font-semibold text-gray-600 uppercase">Expertise</span>
-                                    </div>
+                                {/* Expertise */}
+                                <div className="text-left">
+                                    <p className="text-xs text-white/60 uppercase font-semibold mb-2">Expertise</p>
                                     <div className="flex flex-wrap gap-2">
-                                        {expert.services?.slice(0, 3).map((service, idx) => (
+                                        {expert.services?.slice(0, 2).map((service, idx) => (
                                             <span
                                                 key={idx}
-                                                className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md truncate max-w-[100px]"
+                                                className="px-2 py-1 bg-white/20 backdrop-blur-sm text-white text-xs rounded-md truncate max-w-[100px] border border-white/10"
                                             >
                                                 {service.title || "Service"}
                                             </span>
                                         ))}
-                                        {expert.services?.length > 3 && (
-                                            <span className="px-2 py-1 bg-gray-50 text-gray-400 text-xs rounded-md">
-                                                +{expert.services.length - 3}
+                                        {expert.services?.length > 2 && (
+                                            <span className="px-2 py-1 bg-white/10 text-white/70 text-xs rounded-md">
+                                                +{expert.services.length - 2}
                                             </span>
                                         )}
                                     </div>
