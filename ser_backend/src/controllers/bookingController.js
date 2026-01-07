@@ -1,4 +1,6 @@
 import Booking from "../models/Booking.js";
+import Role from "../models/Role.js";
+import Address from "../models/Address.js";
 import User from "../models/User.js";
 import Service from "../models/Service.js";
 import ServiceProvider from "../models/ServiceProvider.js";
@@ -111,11 +113,26 @@ export const getUserBookings = async (req, res) => {
 // ---------------- PROVIDER VIEWS INCOMING BOOKINGS ----------------
 export const getProviderBookings = async (req, res) => {
   try {
+    // Get bookings
     const bookings = await Booking.find({ serviceProvider: req.user._id })
-      .populate("user", "username email phone")   // customer info
+      .populate("user", "username email") // phone is in Address now
       .populate("service", "title");
 
-    res.json({ success: true, bookings });
+    // Enhance bookings with phone from Address
+    const bookingsWithPhone = await Promise.all(bookings.map(async (b) => {
+      const bookingObj = b.toObject();
+      if (bookingObj.user) {
+        try {
+          const address = await Address.findOne({ user: bookingObj.user._id });
+          bookingObj.user.phone = address?.phone || null;
+        } catch (e) {
+          bookingObj.user.phone = null;
+        }
+      }
+      return bookingObj;
+    }));
+
+    res.json({ success: true, bookings: bookingsWithPhone });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

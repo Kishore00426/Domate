@@ -661,12 +661,10 @@ const ProviderDashboard = () => {
                                                                     </div>
                                                                 </div>
                                                                 {/* Contact Info (if available in schema/populate) */}
-                                                                {booking.user?.email && (
+                                                                {/* Contact Info */}
+                                                                {booking.user?.phone && (
                                                                     <div className="text-right text-sm text-gray-500">
-                                                                        <p>Contact: {booking.user.email}</p>
-                                                                        {booking.user?.phone && (
-                                                                            <p className="font-medium text-gray-700">{booking.user.phone}</p>
-                                                                        )}
+                                                                        <p className="font-medium text-gray-700">Contact: {booking.user.phone}</p>
                                                                     </div>
                                                                 )}
                                                             </div>

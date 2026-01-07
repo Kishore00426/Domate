@@ -31,6 +31,7 @@ const Account = () => {
                     name: userData.user.username,
                     email: userData.user.email,
                     location: userData.user.address?.city || "Unknown Location",
+                    phone: userData.user.address?.phone || prev.phone,
                     role: userData.user.role // Very important for conditional rendering
                 }));
 
@@ -77,6 +78,7 @@ const Account = () => {
                 username: tempData.name,
                 email: tempData.email,
                 city: tempData.location,
+                phone: tempData.phone,
             };
 
             const response = await updateProfile(payload);

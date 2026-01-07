@@ -26,6 +26,7 @@ export const getUserProfile = async (req, res) => {
             state: address.state,
             postalCode: address.postalCode,
             country: address.country,
+            phone: address.phone,
           }
           : null,
       },
@@ -54,7 +55,7 @@ export const deleteUser = async (req, res) => {
 // ---------------- UPDATE USER PROFILE + ADDRESS ----------------
 export const updateUserProfileAndAddress = async (req, res) => {
   try {
-    const { username, email, street, city, state, postalCode, country } = req.body;
+    const { username, email, street, city, state, postalCode, country, phone } = req.body;
 
     // ✅ Update user profile
     const updateData = {};
@@ -71,9 +72,9 @@ export const updateUserProfileAndAddress = async (req, res) => {
 
     // ✅ Upsert address
     let updatedAddress = await Address.findOne({ user: req.user._id });
-    if (street || city || state || postalCode || country) {
+    if (street || city || state || postalCode || country || phone) {
       if (updatedAddress) {
-        Object.assign(updatedAddress, { street, city, state, postalCode, country });
+        Object.assign(updatedAddress, { street, city, state, postalCode, country, phone });
         await updatedAddress.save();
       } else {
         updatedAddress = await Address.create({
@@ -83,6 +84,7 @@ export const updateUserProfileAndAddress = async (req, res) => {
           state,
           postalCode,
           country,
+          phone,
         });
       }
     }
@@ -101,6 +103,7 @@ export const updateUserProfileAndAddress = async (req, res) => {
             state: updatedAddress.state,
             postalCode: updatedAddress.postalCode,
             country: updatedAddress.country,
+            phone: updatedAddress.phone,
           }
           : null,
       },
