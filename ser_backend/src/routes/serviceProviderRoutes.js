@@ -7,7 +7,8 @@ import {
   updateProviderServices,
   getProviderByUser,
   getMyProviderProfile,
-  getProvidersByService
+  getProvidersByService,
+  getAllVerifiedProviders
 } from "../controllers/serviceProviderController.js";
 
 const router = express.Router();
@@ -64,6 +65,12 @@ router.get(
 router.get(
   "/service/:serviceId",
   getProvidersByService
+);
+
+// 👇 Get all verified providers (Public)
+router.get(
+  "/",
+  getAllVerifiedProviders
 );
 
 export default router;

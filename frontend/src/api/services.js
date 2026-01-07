@@ -40,3 +40,13 @@ export const getServiceById = async (id) => {
         return { success: false, error: error.message };
     }
 };
+
+export const getAllServices = async (params = {}) => {
+    try {
+        const response = await api.get('/services', { params });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching services:", error);
+        return { success: false, error: error.message };
+    }
+};

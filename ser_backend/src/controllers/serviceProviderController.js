@@ -180,3 +180,20 @@ export const getProvidersByService = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+/**
+ * Get all verified providers sorted by experience
+ * Public access
+ */
+export const getAllVerifiedProviders = async (req, res) => {
+  try {
+    const providers = await ServiceProvider.find({ approvalStatus: "approved" })
+      .populate("user", "username email location profileImage") // Ensure profileImage is populated if it exists
+      .populate("services", "title")
+      .sort({ experience: -1 }); // Sort by experience descending
+
+    res.json({ success: true, providers });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};

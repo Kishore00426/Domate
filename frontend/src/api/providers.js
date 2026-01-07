@@ -56,3 +56,14 @@ export const getProvidersByService = async (serviceId) => {
         return { success: false, error: error.message };
     }
 };
+
+// Get all verified providers (Public)
+export const getAllVerifiedProviders = async () => {
+    try {
+        const response = await api.get('/providers');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching all verified providers:", error);
+        return { success: false, error: error.message };
+    }
+};

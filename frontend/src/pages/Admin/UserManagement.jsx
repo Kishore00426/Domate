@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Trash2, Mail, MapPin, User, Shield } from 'lucide-react';
+import { Search, Trash2, Mail, MapPin, User, Shield, Eye, X, Phone, Calendar, CheckCircle, Briefcase } from 'lucide-react';
 import { getUsers, deleteUser } from '../../api/admin';
+import { getProviderByUserId } from '../../api/providers';
+import { getImageUrl } from '../../utils/imageUrl';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -45,6 +47,7 @@ const UserManagement = () => {
         }
     };
 
+<<<<<<< HEAD
     // Filter users based on search term
     const filteredUsers = users.filter(user => {
         const searchLower = searchTerm.toLowerCase();
@@ -54,6 +57,34 @@ const UserManagement = () => {
             user.role?.name?.toLowerCase().includes(searchLower)
         );
     });
+=======
+    const handleViewUser = async (user) => {
+        setSelectedUser(user);
+        setSelectedProviderDetails(null); // Reset
+        setShowModal(true);
+
+        // If user is a service provider, fetch their details
+        if (user.role?.name === 'service_provider') {
+            setDetailsLoading(true);
+            try {
+                const response = await getProviderByUserId(user._id);
+                if (response.success) {
+                    setSelectedProviderDetails(response.provider);
+                }
+            } catch (error) {
+                console.error("Failed to fetch provider details:", error);
+            } finally {
+                setDetailsLoading(false);
+            }
+        }
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setSelectedUser(null);
+        setSelectedProviderDetails(null);
+    };
+>>>>>>> 8f1be80940c1e5fee8aa3d7ab181fc9d5c311b62
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
@@ -101,8 +132,16 @@ const UserManagement = () => {
                                     <tr key={user._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-soft-black">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500">
-                                                    <User className="w-4 h-4" />
+                                                <div className="w-8 h-8 bg-gray-100 rounded-full overflow-hidden flex items-center justify-center text-gray-500">
+                                                    {user.profileImage ? (
+                                                        <img
+                                                            src={getImageUrl(user.profileImage)}
+                                                            alt={user.username}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <User className="w-4 h-4" />
+                                                    )}
                                                 </div>
                                                 <div>
                                                     <div className="font-semibold">{user.username}</div>
@@ -121,13 +160,22 @@ const UserManagement = () => {
                                             {new Date(user.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <button
-                                                onClick={() => handleDelete(user._id)}
-                                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                title="Delete User"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleViewUser(user)}
+                                                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(user._id)}
+                                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete User"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -136,6 +184,150 @@ const UserManagement = () => {
                     )}
                 </div>
             </div>
+
+            {/* User Detail Modal */}
+            {showModal && selectedUser && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg md:max-w-2xl lg:max-w-3xl overflow-hidden animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+                        {/* Header */}
+                        <div className="relative h-32 bg-gray-100">
+                            <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                                <User className="w-16 h-16 opacity-20" />
+                            </div>
+                            <button
+                                onClick={closeModal}
+                                className="absolute top-4 right-4 p-2 bg-white/50 hover:bg-white rounded-full transition-colors backdrop-blur-sm"
+                            >
+                                <X className="w-5 h-5 text-gray-600" />
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-6 pb-8 relative">
+                            {/* Avatar */}
+                            <div className="-mt-12 mb-4 relative inline-block">
+                                <div className="w-24 h-24 bg-white rounded-full p-1 shadow-md">
+                                    <div className="w-full h-full rounded-full overflow-hidden bg-gray-100 flex items-center justify-center text-gray-400">
+                                        {selectedUser.profileImage ? (
+                                            <img
+                                                src={getImageUrl(selectedUser.profileImage)}
+                                                alt={selectedUser.username}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <User className="w-10 h-10" />
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Main Info */}
+                            <div className="mb-6">
+                                <h2 className="text-2xl font-bold text-soft-black flex items-center gap-2">
+                                    {selectedUser.username}
+                                    {selectedUser.role?.name === 'admin' && (
+                                        <Shield className="w-5 h-5 text-purple-600 fill-purple-100" />
+                                    )}
+                                </h2>
+                                <p className="text-gray-500">{selectedUser.email}</p>
+                            </div>
+
+                            {/* Service Provider Specifics */}
+                            {selectedUser.role?.name === 'service_provider' && (
+                                <div className="mb-6 p-4 bg-blue-50 rounded-2xl border border-blue-100">
+
+                                    {detailsLoading ? (
+                                        <div className="text-sm text-gray-500 animate-pulse">Loading details...</div>
+                                    ) : selectedProviderDetails ? (
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                <div>
+                                                    <p className="text-gray-500 text-xs uppercase font-bold">Experience</p>
+                                                    <p className="font-semibold text-soft-black">{selectedProviderDetails.experience || 0} Years</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 text-xs uppercase font-bold">Rating</p>
+                                                    <p className="font-semibold text-soft-black flex items-center gap-1">
+                                                        {selectedProviderDetails.rating || 'N/A'}
+                                                        <span className="text-gray-400 font-normal">({selectedProviderDetails.totalReviews || 0})</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-gray-500 text-xs uppercase font-bold mb-2">Services Offered</p>
+                                                {selectedProviderDetails.services && selectedProviderDetails.services.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {selectedProviderDetails.services.map((service, idx) => (
+                                                            <span key={idx} className="px-2 py-1 bg-white text-blue-700 text-xs font-medium rounded-lg border border-blue-100 shadow-sm">
+                                                                {service.title || "Service"}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-sm text-gray-400 italic">No services listed yet.</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm text-gray-500">No additional provider details found.</div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Details Grid */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <div className="flex items-center gap-3 mb-1 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                        <Shield className="w-3 h-3" /> Role
+                                    </div>
+                                    <div className="font-semibold text-soft-black capitalize">
+                                        {selectedUser.role?.name || 'User'}
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                    <div className="flex items-center gap-3 mb-1 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                        <Calendar className="w-3 h-3" /> Joined
+                                    </div>
+                                    <div className="font-semibold text-soft-black">
+                                        {new Date(selectedUser.createdAt).toLocaleDateString()}
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 md:col-span-2">
+                                    <div className="flex items-center gap-3 mb-1 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                        <MapPin className="w-3 h-3" /> Location
+                                    </div>
+                                    <div className="font-semibold text-soft-black">
+                                        {selectedUser.location || 'Not provided'}
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 md:col-span-2">
+                                    <div className="flex items-center gap-3 mb-1 text-gray-400 text-xs font-bold uppercase tracking-wider">
+                                        <span className="font-mono text-[10px]">ID</span> User ID
+                                    </div>
+                                    <div className="font-mono text-xs text-gray-500 truncate">
+                                        {selectedUser._id}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Status (Dummy for now as usage status isn't clear) */}
+                            <div className="mt-6 flex items-center justify-between p-4 bg-green-50 text-green-700 rounded-xl border border-green-100">
+                                <div className="flex items-center gap-2 font-medium">
+                                    <CheckCircle className="w-5 h-5" />
+                                    Account Active
+                                </div>
+                                <span className="text-xs bg-white px-2 py-1 rounded-md shadow-sm border border-green-100">
+                                    Verified
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

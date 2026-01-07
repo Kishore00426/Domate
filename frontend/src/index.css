@@ -8,28 +8,31 @@
   --font-sans: 'Inter', 'Poppins', sans-serif;
 }
 
+/* Global Scrollbar Hiding */
+* {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+*::-webkit-scrollbar {
+  display: none;
+}
+
 html,
 body {
   background-color: var(--color-beige);
   color: var(--color-soft-black);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
 }
 
 input,
 textarea,
 select {
   color: var(--color-soft-black) !important;
-}
-
-/* Hide scrollbar for Chrome, Safari and Opera */
-html::-webkit-scrollbar,
-body::-webkit-scrollbar {
-  display: none;
 }
 
 @keyframes marquee {
