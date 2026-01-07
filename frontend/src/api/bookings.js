@@ -19,7 +19,7 @@ export const updateBookingStatus = async (id, status) => {
         return { success: false, error: error.message };
     }
 };
-import api from './axios';
+
 
 // Create a new booking
 export const createBooking = async (bookingData) => {
