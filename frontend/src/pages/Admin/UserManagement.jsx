@@ -8,7 +8,10 @@ const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedProviderDetails, setSelectedProviderDetails] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [detailsLoading, setDetailsLoading] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -47,17 +50,6 @@ const UserManagement = () => {
         }
     };
 
-<<<<<<< HEAD
-    // Filter users based on search term
-    const filteredUsers = users.filter(user => {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-            user.username?.toLowerCase().includes(searchLower) ||
-            user.email?.toLowerCase().includes(searchLower) ||
-            user.role?.name?.toLowerCase().includes(searchLower)
-        );
-    });
-=======
     const handleViewUser = async (user) => {
         setSelectedUser(user);
         setSelectedProviderDetails(null); // Reset
@@ -84,7 +76,6 @@ const UserManagement = () => {
         setSelectedUser(null);
         setSelectedProviderDetails(null);
     };
->>>>>>> 8f1be80940c1e5fee8aa3d7ab181fc9d5c311b62
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
