@@ -79,7 +79,11 @@ export const updateBookingStatus = async (req, res) => {
 
     // ✅ Authorization check
     if (!booking.serviceProvider.equals(authUserId)) {
-      return res.status(403).json({ success: false, error: "Access denied: cannot modify another provider" });
+      console.log('❌ AUTH MISMATCH! Booking Provider:', booking.serviceProvider, 'Auth User:', authUserId);
+      return res.status(403).json({
+        success: false,
+        error: `Access denied: cannot modify another provider. Booking belongs to ${booking.serviceProvider}, you are ${authUserId}`
+      });
     }
 
     booking.status = status;

@@ -6,7 +6,10 @@ export const getProviderBookings = async () => {
         return response.data;
     } catch (error) {
         console.error("Error fetching provider bookings:", error);
-        return { success: false, error: error.message };
+        return {
+            success: false,
+            error: error.response?.data?.error || error.message || "Failed to fetch bookings"
+        };
     }
 };
 
@@ -16,7 +19,10 @@ export const updateBookingStatus = async (id, status) => {
         return response.data;
     } catch (error) {
         console.error("Error updating booking status:", error);
-        return { success: false, error: error.message };
+        return {
+            success: false,
+            error: error.response?.data?.error || error.message || "Failed to update status"
+        };
     }
 };
 
