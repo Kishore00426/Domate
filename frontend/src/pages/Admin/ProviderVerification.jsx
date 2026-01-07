@@ -100,7 +100,7 @@ const ProviderVerification = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-semibold">
-                                                {provider.category || 'N/A'}
+                                                {provider.services?.[0]?.category?.name || provider.category || 'N/A'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-gray-500">
@@ -165,7 +165,7 @@ const ProviderVerification = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">Service Category</p>
-                                    <p className="font-semibold text-soft-black">{selectedProvider.category || 'N/A'}</p>
+                                    <p className="font-semibold text-soft-black">{selectedProvider.services?.[0]?.category?.name || selectedProvider.category || 'N/A'}</p>
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <p className="text-xs text-gray-500 uppercase font-bold mb-1">Experience</p>

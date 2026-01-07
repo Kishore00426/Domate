@@ -10,19 +10,18 @@ export const createBooking = async (req, res) => {
     const { providerId, serviceId, scheduledDate, notes } = req.body;
 
     // 1. Load ServiceProvider document and linked User
-    const spDoc = await ServiceProvider.findById(providerId).populate("user");
+    const spDoc = await ServiceProvider.findById(providerId).populate({
+      path: "user",
+      populate: { path: "role", select: "name" }
+    });
     if (!spDoc || spDoc.approvalStatus !== "approved") {
       return res.status(400).json({ success: false, error: "Provider not approved or not found" });
     }
 
     // 2. Validate linked user has correct role and status
     const providerUser = spDoc.user;
-    if (
-      !providerUser ||
-      providerUser.role?.name !== "service_provider" ||
-      providerUser.providerStatus !== "approved"
-    ) {
-      return res.status(400).json({ success: false, error: "Linked user is not an approved service provider" });
+    if (!providerUser) {
+      return res.status(400).json({ success: false, error: "Linked user account not found" });
     }
 
     // 3. Ensure service exists

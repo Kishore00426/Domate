@@ -121,7 +121,10 @@ export const getPendingProviders = async (req, res) => {
         select: "username email role providerStatus", // only return useful fields
         populate: { path: "role", select: "name" }
       })
-      .populate("services"); // optional: populate services if you want
+      .populate({
+        path: "services",
+        populate: { path: "category", select: "name" }
+      });
 
     res.json({ success: true, providers });
   } catch (err) {
