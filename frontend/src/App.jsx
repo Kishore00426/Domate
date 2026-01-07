@@ -22,6 +22,7 @@ import PrivilegeManagement from './pages/Admin/PrivilegeManagement';
 import MyBookings from './pages/MyBookings';
 import Settings from './pages/Settings';
 import SavedAddresses from './pages/SavedAddresses';
+import MyPlans from './pages/MyPlans';
 
 
 function App() {
@@ -41,6 +42,8 @@ function App() {
           {/* User Routes */}
           <Route path="/user/bookings" element={<MyBookings />} />
           <Route path="/user/addresses" element={<SavedAddresses />} />
+          <Route path="/user/plans" element={<MyPlans />} />
+          <Route path="/user/settings" element={<Settings />} />
 
           {/* Provider Dashboard */}
           <Route path="/provider/dashboard" element={<ProviderDashboard />} />

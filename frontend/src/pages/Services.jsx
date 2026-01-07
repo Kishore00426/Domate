@@ -5,7 +5,8 @@ import ServiceCategories from '../components/ServiceCategories';
 import ServiceList from '../components/ServiceList';
 import ServiceBanner from '../components/ServiceBanner';
 import SubcategoryGrid from '../components/SubcategoryGrid';
-import { getCategoryDetails } from '../api/services';
+import CategoryServiceRow from '../components/CategoryServiceRow';
+import { getCategoryDetails, getAllCategories } from '../api/services';
 
 const Services = () => {
     const [searchParams, setSearchParams] = useSearchParams();
@@ -15,6 +16,7 @@ const Services = () => {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedSubcategory, setSelectedSubcategory] = useState(null);
     const [categoryDetails, setCategoryDetails] = useState(null);
+    const [allCategories, setAllCategories] = useState([]);
 
     // Initial load from URL params
     useEffect(() => {
@@ -47,6 +49,21 @@ const Services = () => {
         };
 
         fetchDetails();
+        fetchDetails();
+    }, [selectedCategory]);
+
+    // Fetch all categories for default view
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const response = await getAllCategories();
+            if (response.success) {
+                setAllCategories(response.categories);
+            }
+        };
+
+        if (!selectedCategory) {
+            fetchCategories();
+        }
     }, [selectedCategory]);
 
     const handleCategorySelect = (categoryTitle) => {
@@ -121,6 +138,13 @@ const Services = () => {
                         />
                         <div className="max-w-6xl mx-auto px-6">
                             <div className="border-b border-gray-200 my-4"></div>
+                        </div>
+
+                        {/* All Categories Rows */}
+                        <div className="pb-20">
+                            {allCategories.map((category) => (
+                                <CategoryServiceRow key={category._id} category={category} />
+                            ))}
                         </div>
                     </>
                 )}

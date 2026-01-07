@@ -20,7 +20,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
         navigate('/home');
     };
     const isHomeActive = location.pathname === '/home';
-    const isServicesActive = location.pathname === '/services';
+    const isServicesActive = location.pathname.startsWith('/services');
     const isCartActive = location.pathname === '/cart';
     const isAccountPage = location.pathname === '/account';
 
@@ -89,7 +89,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                     {isDashboard ? (
                         <div className="hidden md:flex items-center gap-2 ">
                             {/* Expanding Search Bar */}
-                            {(isHomeActive || isCartActive) && (
+                            {(isHomeActive || isCartActive || isServicesActive) && (
                                 <div className="relative group mr-2" ref={searchRef}>
                                     <div
                                         className={`flex items-center rounded-full bg-transparent hover:bg-white border-none transition-all duration-300 ease-in-out cursor-pointer ${isSearchOpen || searchTerm ? 'w-[250px] px-4 py-2 bg-white ring-1 ring-gray-200' : 'w-10 h-10 justify-center hover:w-[250px] hover:justify-start hover:px-4'}`}
@@ -126,6 +126,14 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 <Home className="w-5 h-5" />
                             </Link>
 
+                            <Link
+                                to="/services"
+                                className={`p-2 rounded-full transition-all ${isServicesActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
+                                title="Services"
+                            >
+                                <LayoutGrid className="w-5 h-5" />
+                            </Link>
+
 
                             {loading ? (
                                 <div className="flex items-center gap-3 pl-2 border-l border-gray-200 p-1">
@@ -154,7 +162,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 )
                             ) : (
                                 <Link to="/account" className="flex items-center gap-3 pl-2 border-l border-gray-200 cursor-pointer hover:bg-gray-50 rounded-lg p-1 transition-colors">
-                                    <div className="w-9 h-9 bg-beige rounded-full flex items-center justify-center text-soft-black font-semibold">
+                                    <div className="w-9 h-9 bg-black rounded-full flex items-center justify-center text-white font-semibold">
                                         {user?.name && user.name.toLowerCase() !== 'guest' ? (
                                             user.name.charAt(0).toUpperCase()
                                         ) : (
@@ -195,18 +203,18 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 md:hidden animate-in fade-in slide-in-from-top-2">
                     {isDashboard ? (
                         <>
-                            <Link to="/home" className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl">
+                            <Link to="/home" className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl text-black font-medium">
                                 <Home className="w-5 h-5" /> Home
                             </Link>
-                            <div className="p-2">
-                                <input type="text" placeholder="Search..." className="w-full px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 shadow-md" />
-                            </div>
-                            <Link to="/cart" className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl">
-                                <ShoppingCart className="w-5 h-5" /> Cart (0)
+                            <Link to="/services" className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl text-black font-medium">
+                                <LayoutGrid className="w-5 h-5" /> Services
                             </Link>
+                            <div className="p-2">
+                                <input type="text" placeholder="Search..." className="w-full px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 shadow-md text-black placeholder:text-gray-500" />
+                            </div>
                             <div className="border-t pt-2 mt-2">
                                 <div className="flex items-center gap-3 p-2">
-                                    <div className="w-8 h-8 bg-beige rounded-full flex items-center justify-center font-semibold">
+                                    <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center font-semibold text-white">
                                         {user?.name && user.name.toLowerCase() !== 'guest' ? (
                                             user.name.charAt(0).toUpperCase()
                                         ) : (
@@ -214,8 +222,8 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                         )}
                                     </div>
                                     <div>
-                                        <div className="font-medium">{user?.name}</div>
-                                        <div className="text-xs text-gray-500">{user?.location}</div>
+                                        <div className="font-medium text-black">{user?.name}</div>
+                                        <div className="text-xs text-black font-medium">{user?.location}</div>
                                     </div>
                                 </div>
                             </div>

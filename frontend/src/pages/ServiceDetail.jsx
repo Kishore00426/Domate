@@ -147,12 +147,12 @@ const ServiceDetail = () => {
         <HomeLayout>
 
 
-            <div className=" min-h-screen mt-20 pb-20 pt-8">
+            <div className=" min-h-screen mt-16 md:mt-20 pb-20 pt-4 md:pt-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-                    <div className="flex flex-col lg:flex-row gap-8">
+                    <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
 
-                        <div className="w-full lg:w-[60%] space-y-8">
+                        <div className="w-full lg:w-[60%] space-y-6 md:space-y-8">
                             <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100">
                                 <div className="aspect-video relative bg-gray-100">
                                     {service.imageUrl ? (
@@ -167,15 +167,15 @@ const ServiceDetail = () => {
                                         </div>
                                     )}
                                     <div className="absolute top-4 left-4">
-                                        <span className="bg-white/90 backdrop-blur px-4 py-1.5 rounded-full text-sm font-semibold text-soft-black shadow-sm">
+                                        <span className="bg-white/90 backdrop-blur px-4 py-1.5 rounded-full text-xs md:text-sm font-semibold text-soft-black shadow-sm">
                                             {service.category?.name}
                                         </span>
                                     </div>
                                 </div>
-                                <div className="p-8">
+                                <div className="p-4 md:p-8">
                                     <div className="flex justify-between items-start mb-4">
                                         <div>
-                                            <h1 className="text-3xl font-bold text-soft-black mb-2">{service.title}</h1>
+                                            <h1 className="text-2xl md:text-3xl font-bold text-soft-black mb-2">{service.title}</h1>
                                             {service.subcategory && (
                                                 <p className="text-gray-500 text-sm">{service.subcategory.name}</p>
                                             )}

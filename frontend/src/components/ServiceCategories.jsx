@@ -171,14 +171,14 @@ const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
           <h2 className="text-2xl md:text-3xl font-bold text-soft-black"> What are you looking for?</h2>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
           {categories.map((category, index) => (
             <div
               key={index}
               onClick={() => handleCategoryClick(category.title)}
-              className={`flex flex-row items-center justify-start text-left p-4 bg-white rounded-2xl shadow-sm border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full gap-4 ${selectedCategory === category.title ? 'border-black ring-2 ring-black bg-gray-50' : 'border-gray-100'}`}
+              className={`flex flex-col md:flex-row items-center justify-center md:justify-start text-center md:text-left p-3 md:p-4 bg-white rounded-2xl shadow-sm border hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer group h-full gap-2 md:gap-4 ${selectedCategory === category.title ? 'border-black ring-2 ring-black bg-gray-50' : 'border-gray-100'}`}
             >
-              <div className="w-16 h-16 shrink-0 relative">
+              <div className="w-10 h-10 md:w-16 md:h-16 shrink-0 relative">
                 <div className="absolute inset-0 bg-beige rounded-full scale-0 group-hover:scale-110 transition-transform duration-300 -z-10"></div>
                 <img
                   src={category.image}
@@ -186,7 +186,7 @@ const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
                   className="w-full h-full object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-110"
                 />
               </div>
-              <h3 className="text-base font-bold text-soft-black leading-tight group-hover:text-black">
+              <h3 className="text-xs md:text-base font-bold text-soft-black leading-tight group-hover:text-black">
                 {category.title}
               </h3>
             </div>
