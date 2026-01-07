@@ -12,7 +12,6 @@ const CleanHomeServices = () => {
     useEffect(() => {
         const fetchCleaningServices = async () => {
             try {
-                // Fetch services specifically for "Cleaning" category
                 const response = await getAllServices({ category: 'Cleaning' });
                 if (response.success) {
                     setServices(response.services);
