@@ -26,9 +26,9 @@ const OurExperts = () => {
 
     if (loading) {
         return (
-            <section className="py-12 px-4 bg-gray-50">
+            <section className="py-12 px-4">
                 <div className="max-w-6xl mx-auto pl-2">
-                    <div className="h-8 w-64 bg-gray-200 rounded-lg animate-pulse mb-6"></div>
+                    <div className="h-8 w-64 rounded-lg animate-pulse mb-6"></div>
                     <div className="flex gap-6 overflow-hidden">
                         {[1, 2, 3, 4].map((i) => (
                             <div key={i} className="flex-none w-72 h-80 bg-white rounded-xl animate-pulse"></div>
@@ -42,7 +42,7 @@ const OurExperts = () => {
     if (experts.length === 0) return null;
 
     return (
-        <section className="py-12 px-4 bg-gray-50">
+        <section className="py-12 px-4 ">
             <div className="max-w-6xl mx-auto">
                 <div className="mb-8 pl-2">
                     <h2 className="text-2xl md:text-3xl font-bold text-soft-black flex items-center gap-2">

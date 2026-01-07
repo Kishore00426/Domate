@@ -19,6 +19,9 @@ import ServiceManagement from './pages/Admin/ServiceManagement';
 import UserManagement from './pages/Admin/UserManagement';
 import AdminSettings from './pages/Admin/AdminSettings';
 import PrivilegeManagement from './pages/Admin/PrivilegeManagement';
+import MyBookings from './pages/MyBookings';
+import Settings from './pages/Settings';
+import SavedAddresses from './pages/SavedAddresses';
 
 
 function App() {
@@ -34,6 +37,11 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/account" element={<Account />} />
           <Route path="/services/:id" element={<ServiceDetail />} />
+
+          {/* User Routes */}
+          <Route path="/user/bookings" element={<MyBookings />} />
+          <Route path="/user/addresses" element={<SavedAddresses />} />
+
           {/* Provider Dashboard */}
           <Route path="/provider/dashboard" element={<ProviderDashboard />} />
 

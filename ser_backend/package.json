@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "dev": "node --env-file=.env src/server.js",
+    "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "node --env-file=.env src/scripts/seedRolesAndPrivileges.js"
   },

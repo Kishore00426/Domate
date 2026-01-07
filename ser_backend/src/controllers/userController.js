@@ -21,12 +21,12 @@ export const getUserProfile = async (req, res) => {
         role: user.role ? user.role.name : null,
         address: address
           ? {
-              street: address.street,
-              city: address.city,
-              state: address.state,
-              postalCode: address.postalCode,
-              country: address.country,
-            }
+            street: address.street,
+            city: address.city,
+            state: address.state,
+            postalCode: address.postalCode,
+            country: address.country,
+          }
           : null,
       },
     });
@@ -96,12 +96,12 @@ export const updateUserProfileAndAddress = async (req, res) => {
         role: updatedUser.role ? updatedUser.role.name : null,
         address: updatedAddress
           ? {
-              street: updatedAddress.street,
-              city: updatedAddress.city,
-              state: updatedAddress.state,
-              postalCode: updatedAddress.postalCode,
-              country: updatedAddress.country,
-            }
+            street: updatedAddress.street,
+            city: updatedAddress.city,
+            state: updatedAddress.state,
+            postalCode: updatedAddress.postalCode,
+            country: updatedAddress.country,
+          }
           : null,
       },
     });
@@ -137,6 +137,80 @@ export const getApprovedProviders = async (req, res) => {
     }
 
     res.json({ success: true, providers });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- ADDRESS MANAGEMENT ----------------
+
+// Get all addresses
+export const getUserAddresses = async (req, res) => {
+  try {
+    const addresses = await Address.find({ user: req.user._id });
+    res.json({ success: true, addresses });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// Add new address
+export const addUserAddress = async (req, res) => {
+  try {
+    const { street, city, state, postalCode, country } = req.body;
+
+    const newAddress = await Address.create({
+      user: req.user._id,
+      street,
+      city,
+      state,
+      postalCode,
+      country,
+    });
+
+    res.json({ success: true, address: newAddress });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// Update existing address
+export const updateUserAddress = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { street, city, state, postalCode, country } = req.body;
+
+    const updatedAddress = await Address.findOneAndUpdate(
+      { _id: id, user: req.user._id },
+      { street, city, state, postalCode, country },
+      { new: true }
+    );
+
+    if (!updatedAddress) {
+      return res.status(404).json({ success: false, error: "Address not found" });
+    }
+
+    res.json({ success: true, address: updatedAddress });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// Delete address
+export const deleteUserAddress = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedAddress = await Address.findOneAndDelete({
+      _id: id,
+      user: req.user._id,
+    });
+
+    if (!deletedAddress) {
+      return res.status(404).json({ success: false, error: "Address not found" });
+    }
+
+    res.json({ success: true, message: "Address deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

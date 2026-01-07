@@ -5,7 +5,11 @@ import {
   getUserProfile,
   updateUserProfileAndAddress,
   deleteUser,
-  getApprovedProviders,   // ✅ added
+  getApprovedProviders,
+  getUserAddresses,
+  addUserAddress,
+  updateUserAddress,
+  deleteUserAddress,
   //getAllUsers
 } from "../controllers/userController.js";
 
@@ -18,6 +22,12 @@ router.get("/profile", authenticate, getUserProfile);
 
 // Update profile + address (combined)
 router.put("/profile-address", authenticate, updateUserProfileAndAddress);
+
+// ---------------- ADDRESS ROUTES ----------------
+router.get("/addresses", authenticate, getUserAddresses);
+router.post("/addresses", authenticate, addUserAddress);
+router.put("/addresses/:id", authenticate, updateUserAddress);
+router.delete("/addresses/:id", authenticate, deleteUserAddress);
 
 // Delete own account
 router.delete("/profile", authenticate, deleteUser);

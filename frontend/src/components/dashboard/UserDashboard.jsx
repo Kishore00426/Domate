@@ -1,23 +1,9 @@
-import React, { useState } from 'react';
-import { User, MapPin, Mail, Phone, Calendar, CreditCard, Settings, HelpCircle, Info, Clock, CheckCircle, XCircle } from 'lucide-react';
+import React from 'react';
+import { User, MapPin, Mail, Phone, Calendar, CreditCard, Settings, HelpCircle, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, handleCancel, handleSave, handleChange, addressTags }) => {
-
-    // UI State for sections
-    const [activeSection, setActiveSection] = useState(null);
-
-    const toggleSection = (section) => {
-        setActiveSection(activeSection === section ? null : section);
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-700';
-            case 'accepted': return 'bg-green-100 text-green-700';
-            case 'rejected': return 'bg-red-100 text-red-700';
-            default: return 'bg-gray-100 text-gray-700';
-        }
-    };
+    const navigate = useNavigate();
 
     return (
         <div className="pt-10 px-4 pb-20">
@@ -143,11 +129,17 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                     <div className="md:col-span-2 space-y-6">
                         {/* Stats/Quick Actions */}
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer">
+                            <div
+                                onClick={() => navigate('/user/bookings')}
+                                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
+                            >
                                 <h3 className="text-2xl font-bold text-soft-black mb-1">{bookings.length}</h3>
                                 <p className="text-gray-500 text-sm">Active Bookings</p>
                             </div>
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center gap-2">
+                            <div
+                                onClick={() => navigate('/user/settings')}
+                                className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center gap-2"
+                            >
                                 <Settings className="w-6 h-6 text-soft-black" />
                                 <p className="text-gray-500 text-sm font-medium">Settings</p>
                             </div>
@@ -159,9 +151,9 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
 
                         {/* Sections */}
                         <div className="bg-white rounded-3xl shadow-lg overflow-hidden">
-                            {/* My Bookings Section */}
+                            {/* My Bookings Section - Linked */}
                             <div
-                                onClick={() => toggleSection('bookings')}
+                                onClick={() => navigate('/user/bookings')}
                                 className="p-6 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors"
                             >
                                 <div className="flex items-center gap-4">
@@ -173,53 +165,14 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                                         <p className="text-xs text-gray-500">View past and upcoming services</p>
                                     </div>
                                 </div>
-                                <svg className={`w-5 h-5 text-gray-400 transform transition-transform ${activeSection === 'bookings' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </div>
 
-                            {/* Collapsible Content for Bookings */}
-                            {activeSection === 'bookings' && (
-                                <div className="bg-gray-50/50 p-6 animate-in slide-in-from-top-4 duration-200">
-                                    {bookings.length > 0 ? (
-                                        <div className="space-y-4">
-                                            {bookings.map(booking => (
-                                                <div key={booking._id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col md:flex-row justify-between gap-4">
-                                                    <div>
-                                                        <h4 className="font-bold text-soft-black text-lg">{booking.service?.title || "Service"}</h4>
-                                                        <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                                                            <User className="w-3 h-3" />
-                                                            Provider: {booking.serviceProvider?.username || "Unknown"}
-                                                        </p>
-                                                        <p className="text-sm text-gray-500 flex items-center gap-2 mt-1">
-                                                            <Calendar className="w-3 h-3" />
-                                                            {new Date(booking.scheduledDate).toLocaleDateString()} at {new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                        </p>
-                                                        {booking.notes && (
-                                                            <p className="text-xs text-gray-400 mt-2 italic">"{booking.notes}"</p>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex flex-row md:flex-col justify-between items-end gap-2">
-                                                        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(booking.status)}`}>
-                                                            {booking.status}
-                                                        </span>
-                                                        {/* Actions placeholder */}
-                                                        {booking.status === 'accepted' && (
-                                                            <button className="text-xs bg-black text-white px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">
-                                                                Contact
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-6 text-gray-500">
-                                            No bookings found. Book a service to get started!
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                            {/* Saved Addresses Section - Linked */}
+                            <div
+                                onClick={() => navigate('/user/addresses')}
+                                className="p-6 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
                                 <div className="flex items-center gap-4">
                                     <div className="p-2 bg-green-50 text-green-600 rounded-lg">
                                         <MapPin className="w-5 h-5" />
@@ -246,7 +199,10 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                             </div>
 
                             {/* Settings Section */}
-                            <div className="p-6 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
+                            <div
+                                onClick={() => navigate('/user/settings')}
+                                className="p-6 border-b border-gray-100 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors"
+                            >
                                 <div className="flex items-center gap-4">
                                     <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                                         <Settings className="w-5 h-5" />

@@ -88,26 +88,9 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
 
                     {isDashboard ? (
                         <div className="hidden md:flex items-center gap-2 ">
-                            <Link
-                                to="/home"
-                                className={`p-2 rounded-full transition-all ${isHomeActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
-                                title="Home"
-                            >
-                                <Home className="w-5 h-5" />
-                            </Link>
-
-                            <Link
-                                to="/cart"
-                                className={`relative p-2 rounded-full transition-all ${isCartActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
-                                title="Cart"
-                            >
-                                <ShoppingCart className="w-5 h-5" />
-                                <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-                            </Link>
-
                             {/* Expanding Search Bar */}
                             {(isHomeActive || isCartActive) && (
-                                <div className="relative group" ref={searchRef}>
+                                <div className="relative group mr-2" ref={searchRef}>
                                     <div
                                         className={`flex items-center rounded-full bg-transparent hover:bg-white border-none transition-all duration-300 ease-in-out cursor-pointer ${isSearchOpen || searchTerm ? 'w-[250px] px-4 py-2 bg-white ring-1 ring-gray-200' : 'w-10 h-10 justify-center hover:w-[250px] hover:justify-start hover:px-4'}`}
                                         onClick={() => dispatch(openSearchModal())}
@@ -128,12 +111,20 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                     </div>
                                     {/* Show modal only if it's "open" (meaning active interaction) */}
                                     {(isSearchOpen) && (
-                                        <div className="absolute top-12 right-0 w-[350px] z-50">
+                                        <div className="absolute top-12 left-0 w-[350px] z-50">
                                             <SearchModal searchTerm={searchTerm} />
                                         </div>
                                     )}
                                 </div>
                             )}
+
+                            <Link
+                                to="/home"
+                                className={`p-2 rounded-full transition-all ${isHomeActive ? 'bg-black text-white' : 'text-gray-600 hover:text-soft-black hover:bg-gray-100'}`}
+                                title="Home"
+                            >
+                                <Home className="w-5 h-5" />
+                            </Link>
 
 
                             {loading ? (
