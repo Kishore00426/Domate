@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, MapPin, Mail, Phone, Calendar, CreditCard, Settings, HelpCircle, Info } from 'lucide-react';
+import { User, MapPin, Mail, Phone, Calendar, CreditCard, Settings, HelpCircle, Info, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, handleCancel, handleSave, handleChange, addressTags }) => {
@@ -137,11 +137,11 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                                 <p className="text-gray-500 text-sm">Active Bookings</p>
                             </div>
                             <div
-                                onClick={() => navigate('/user/settings')}
+                                onClick={() => navigate('/user/plans')}
                                 className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center gap-2"
                             >
-                                <Settings className="w-6 h-6 text-soft-black" />
-                                <p className="text-gray-500 text-sm font-medium">Settings</p>
+                                <FileText className="w-6 h-6 text-soft-black" />
+                                <p className="text-gray-500 text-sm font-medium">My Plans</p>
                             </div>
                             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center justify-center gap-2">
                                 <HelpCircle className="w-6 h-6 text-soft-black" />

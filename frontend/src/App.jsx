@@ -4,7 +4,6 @@ import Landing from './pages/Landing';
 import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
-import Cart from './pages/Cart';
 import Account from './pages/Account';
 import Services from './pages/Services';
 import AdminLayout from './layouts/AdminLayout';
@@ -22,6 +21,7 @@ import PrivilegeManagement from './pages/Admin/PrivilegeManagement';
 import MyBookings from './pages/MyBookings';
 import Settings from './pages/Settings';
 import SavedAddresses from './pages/SavedAddresses';
+import MyPlans from './pages/MyPlans';
 
 
 function App() {
@@ -33,7 +33,7 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/cart" element={<Cart />} />
+
           <Route path="/services" element={<Services />} />
           <Route path="/account" element={<Account />} />
           <Route path="/services/:id" element={<ServiceDetail />} />
@@ -41,6 +41,8 @@ function App() {
           {/* User Routes */}
           <Route path="/user/bookings" element={<MyBookings />} />
           <Route path="/user/addresses" element={<SavedAddresses />} />
+          <Route path="/user/plans" element={<MyPlans />} />
+          <Route path="/user/settings" element={<Settings />} />
 
           {/* Provider Dashboard */}
           <Route path="/provider/dashboard" element={<ProviderDashboard />} />
