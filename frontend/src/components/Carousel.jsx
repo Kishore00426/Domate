@@ -60,22 +60,18 @@ const Carousel = () => {
 
                         {slide.title === 'Skilled Electricians' ? (
                             <Link
-                                to="/services?category=Handyman%20Services"
+                                to="/services?category=Electrician"
                                 className="bg-white text-soft-black px-8 py-3 rounded-full font-bold hover:bg-beige transition-colors shadow-xl animate-in fade-in zoom-in duration-500 delay-200"
                             >
                                 Book Now
                             </Link>
                         ) : (
-                            <a
-                                href="#service-categories"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    document.getElementById('service-categories')?.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="bg-white text-soft-black px-8 py-3 rounded-full font-bold hover:bg-beige transition-colors shadow-xl animate-in fade-in zoom-in duration-500 delay-200 cursor-pointer"
+                            <Link
+                                to="/services"
+                                className="bg-white text-soft-black px-8 py-3 rounded-full font-bold hover:bg-beige transition-colors shadow-xl animate-in fade-in zoom-in duration-500 delay-200"
                             >
                                 Book Now
-                            </a>
+                            </Link>
                         )}
                     </div>
                 </div>

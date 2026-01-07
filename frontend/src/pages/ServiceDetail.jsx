@@ -147,7 +147,7 @@ const ServiceDetail = () => {
         <HomeLayout>
 
 
-            <div className=" min-h-screen mt-16 md:mt-20 pb-20 pt-4 md:pt-8">
+            <div className=" min-h-screen mt-[100px] pb-20 pt-4 md:pt-8">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     <div className="flex flex-col lg:flex-row gap-6 md:gap-8">

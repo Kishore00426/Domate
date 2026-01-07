@@ -58,7 +58,7 @@ const MyBookings = () => {
 
     return (
         <HomeLayout>
-            <div className="pt-10 px-4 md:mt-20 pb-20 max-w-4xl mx-auto">
+            <div className="pt-[100px] px-4 pb-20 max-w-4xl mx-auto">
                 <button
                     onClick={() => navigate('/account')}
                     className="flex items-center text-gray-600 hover:text-black mb-6 transition-colors"

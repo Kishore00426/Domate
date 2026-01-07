@@ -126,6 +126,7 @@ const Account = () => {
                     addressTags={addressTags}
                 />
             )}
+
         </HomeLayout>
     );
 };
