@@ -101,10 +101,24 @@ export const updateBookingStatus = async (req, res) => {
 export const getUserBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
-      .populate("serviceProvider", "username email phone") // provider’s User info
+      .populate("serviceProvider", "username email") // User info
       .populate("service", "title");
 
-    res.json({ success: true, bookings });
+    // Enhance bookings with phone from ServiceProvider
+    const bookingsWithPhone = await Promise.all(bookings.map(async (b) => {
+      const bookingObj = b.toObject();
+      if (bookingObj.serviceProvider) {
+        try {
+          const provider = await ServiceProvider.findOne({ user: bookingObj.serviceProvider._id });
+          bookingObj.serviceProvider.phone = provider?.phone || null;
+        } catch (e) {
+          bookingObj.serviceProvider.phone = null;
+        }
+      }
+      return bookingObj;
+    }));
+
+    res.json({ success: true, bookings: bookingsWithPhone });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -142,7 +156,7 @@ export const getProviderBookings = async (req, res) => {
 export const getProviderContact = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id)
-      .populate("serviceProvider", "username email phone");
+      .populate("serviceProvider", "username email");
 
     if (!booking) {
       return res.status(404).json({ success: false, error: "Booking not found" });
@@ -156,14 +170,34 @@ export const getProviderContact = async (req, res) => {
       return res.json({ success: false, message: "Booking not accepted yet" });
     }
 
+    const provider = await ServiceProvider.findOne({ user: booking.serviceProvider._id });
+
     res.json({
       success: true,
       providerContact: {
         username: booking.serviceProvider.username,
         email: booking.serviceProvider.email,
-        phone: booking.serviceProvider.phone || "N/A"
+        phone: provider?.phone || "N/A"
       }
     });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- USER DELETES BOOKING ----------------
+export const deleteBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user._id // Ensure ownership
+    });
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found or access denied" });
+    }
+
+    res.json({ success: true, message: "Booking deleted successfully" });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

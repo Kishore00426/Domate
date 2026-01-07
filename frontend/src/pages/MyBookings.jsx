@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
-import { getUserBookings } from '../api/bookings';
+import { getUserBookings, deleteBooking } from '../api/bookings';
 import { Calendar, User, ArrowLeft, Clock, Mail, Phone } from 'lucide-react';
 
 
@@ -54,6 +54,22 @@ const MyBookings = () => {
     const handleContactClick = (provider) => {
         setSelectedContact(provider);
         setShowContactModal(true);
+    };
+
+    const handleDelete = async (bookingId) => {
+        if (!window.confirm("Are you sure you want to delete this booking?")) return;
+
+        try {
+            const res = await deleteBooking(bookingId);
+            if (res.success) {
+                setBookings(prev => prev.filter(b => b._id !== bookingId));
+            } else {
+                alert(res.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete booking");
+        }
     };
 
     return (
@@ -123,8 +139,19 @@ const MyBookings = () => {
                                             </button>
                                         )}
                                         {booking.status === 'pending' && (
-                                            <button className="w-full md:w-auto text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors">
+                                            <button
+                                                onClick={() => handleDelete(booking._id)}
+                                                className="w-full md:w-auto text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                                            >
                                                 Cancel Booking
+                                            </button>
+                                        )}
+                                        {booking.status === 'rejected' && (
+                                            <button
+                                                onClick={() => handleDelete(booking._id)}
+                                                className="w-full md:w-auto text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                                            >
+                                                Delete
                                             </button>
                                         )}
                                     </div>
