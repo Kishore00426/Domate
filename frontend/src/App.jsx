@@ -22,6 +22,7 @@ import MyBookings from './pages/MyBookings';
 import Settings from './pages/Settings';
 import SavedAddresses from './pages/SavedAddresses';
 import MyPlans from './pages/MyPlans';
+import Notifications from './pages/Notifications';
 
 
 function App() {
@@ -43,6 +44,7 @@ function App() {
           <Route path="/user/addresses" element={<SavedAddresses />} />
           <Route path="/user/plans" element={<MyPlans />} />
           <Route path="/user/settings" element={<Settings />} />
+          <Route path="/notifications" element={<Notifications />} />
 
           {/* Provider Dashboard */}
           <Route path="/provider/dashboard" element={<ProviderDashboard />} />
