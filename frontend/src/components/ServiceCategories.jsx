@@ -165,7 +165,7 @@ const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
   };
 
   return (
-    <section className="py-8 px-8 md:mt-5" >
+    <section id="service-categories" className="py-8 px-8 md:mt-5" >
       <div className="max-w-6xl mx-auto">
         <div className="my-2 mb-10">
           <h2 className="text-2xl md:text-3xl font-bold text-soft-black"> What are you looking for?</h2>
