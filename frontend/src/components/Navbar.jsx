@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, User, MapPin, Home, Menu, X, FileText, Calendar, Tag, Search, LogOut, LayoutGrid } from 'lucide-react';
+import { User, MapPin, Home, Menu, X, FileText, Calendar, Tag, Search, LogOut, LayoutGrid } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { openSearchModal, closeSearchModal } from '../store/uiSlice';
 import SearchModal from './SearchModal';
 // import SearchBar from './SearchBar'; // No longer needed directly here if we replace it
-
 const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +20,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     };
     const isHomeActive = location.pathname === '/home';
     const isServicesActive = location.pathname.startsWith('/services');
-    const isCartActive = location.pathname === '/cart';
+
     const isAccountPage = location.pathname === '/account';
 
     const searchRef = useRef(null);
@@ -89,7 +88,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                     {isDashboard ? (
                         <div className="hidden md:flex items-center gap-2 ">
                             {/* Expanding Search Bar */}
-                            {(isHomeActive || isCartActive || isServicesActive) && (
+                            {(isHomeActive || isServicesActive) && (
                                 <div className="relative group mr-2" ref={searchRef}>
                                     <div
                                         className={`flex items-center rounded-full bg-transparent hover:bg-white border-none transition-all duration-300 ease-in-out cursor-pointer ${isSearchOpen || searchTerm ? 'w-[250px] px-4 py-2 bg-white ring-1 ring-gray-200' : 'w-10 h-10 justify-center hover:w-[250px] hover:justify-start hover:px-4'}`}
