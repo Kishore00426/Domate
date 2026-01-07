@@ -57,10 +57,10 @@ const Notifications = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen flex flex-col">
             <Navbar user={user} variant="dashboard" />
 
-            <main className="flex-grow pt-28 pb-12 px-4 md:px-8">
+            <main className="flex-grow  pb-12 px-4 md:py-33">
                 <div className="max-w-4xl mx-auto">
                     <div className="flex items-center justify-between mb-8">
                         <div>
