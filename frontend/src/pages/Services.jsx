@@ -86,7 +86,7 @@ const Services = () => {
 
     return (
         <HomeLayout>
-            <div className="pt-24 pb-12">
+            <div className="pt-[100px] pb-12">
 
                 {selectedCategory ? (
                     // Category Specific View
