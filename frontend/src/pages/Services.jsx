@@ -109,6 +109,7 @@ const Services = () => {
                             <h2 className="text-xl font-bold text-soft-black">
                                 {selectedSubcategory ? `Services for ${selectedSubcategory}` : `All ${selectedCategory} Services`}
                             </h2>
+                            <ServiceList selectedCategory={selectedCategory} selectedSubcategory={selectedSubcategory} />
                         </div>
                     </>
                 ) : (
@@ -123,8 +124,6 @@ const Services = () => {
                         </div>
                     </>
                 )}
-
-                <ServiceList selectedCategory={selectedCategory} selectedSubcategory={selectedSubcategory} />
             </div>
         </HomeLayout>
     );
