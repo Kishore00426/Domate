@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getMe, updateProfile } from '../api/auth';
 import { getUserBookings } from '../api/bookings';
 import UserDashboard from '../components/dashboard/UserDashboard';
-import ProviderDashboard from '../components/dashboard/ProviderDashboard';
 
 const Account = () => {
+    const navigate = useNavigate();
     // User state
     const [user, setUser] = useState({
         name: "", // Will be populated from DB
