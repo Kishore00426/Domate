@@ -22,7 +22,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const isHomeActive = location.pathname === '/home';
     const isServicesActive = location.pathname === '/services';
     const isCartActive = location.pathname === '/cart';
-    const isAccountPage = location.pathname === '/account';
+    const isAccountPage = location.pathname === '/account' || location.pathname === '/provider/dashboard';
 
     const searchRef = useRef(null);
     const isSearchOpen = useSelector((state) => state.ui.isSearchModalOpen);
@@ -153,7 +153,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                     </Link>
                                 )
                             ) : (
-                                <Link to="/account" className="flex items-center gap-3 pl-2 border-l border-gray-200 cursor-pointer hover:bg-gray-50 rounded-lg p-1 transition-colors">
+                                <Link to={(user?.role === 'service_provider' || user?.role?.name === 'service_provider') ? "/provider/dashboard" : "/account"} className="flex items-center gap-3 pl-2 border-l border-gray-200 cursor-pointer hover:bg-gray-50 rounded-lg p-1 transition-colors">
                                     <div className="w-9 h-9 bg-beige rounded-full flex items-center justify-center text-soft-black font-semibold">
                                         {user?.name && user.name.toLowerCase() !== 'guest' ? (
                                             user.name.charAt(0).toUpperCase()

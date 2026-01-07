@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getUserBookings } from '../api/bookings';
-import { Calendar, User, ArrowLeft, Clock } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Clock, Mail, Phone } from 'lucide-react';
+
+
 
 const MyBookings = () => {
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [showContactModal, setShowContactModal] = useState(false);
+    const [selectedContact, setSelectedContact] = useState(null);
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -43,6 +48,13 @@ const MyBookings = () => {
             </HomeLayout>
         );
     }
+
+
+
+    const handleContactClick = (provider) => {
+        setSelectedContact(provider);
+        setShowContactModal(true);
+    };
 
     return (
         <HomeLayout>
@@ -103,7 +115,10 @@ const MyBookings = () => {
                                         </span>
 
                                         {booking.status === 'accepted' && (
-                                            <button className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+                                            <button
+                                                onClick={() => handleContactClick(booking.serviceProvider)}
+                                                className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                                            >
                                                 Contact Provider
                                             </button>
                                         )}
@@ -131,6 +146,50 @@ const MyBookings = () => {
                     )}
                 </div>
             </div>
+
+            {/* Contact Modal */}
+            {showContactModal && selectedContact && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <User className="w-8 h-8 text-gray-500" />
+                            </div>
+                            <h3 className="text-xl font-bold text-soft-black">{selectedContact.username}</h3>
+                            <p className="text-sm text-gray-500">Service Provider</p>
+                        </div>
+
+                        <div className="space-y-4 mb-6">
+                            <div className="p-4 bg-gray-50 rounded-xl flex items-center gap-3">
+                                <div className="p-2 bg-white rounded-lg shadow-sm">
+                                    <Mail className="w-5 h-5 text-gray-600" />
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-xs text-gray-500 uppercase font-bold">Email</p>
+                                    <p className="font-medium text-gray-900 truncate">{selectedContact.email}</p>
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-gray-50 rounded-xl flex items-center gap-3">
+                                <div className="p-2 bg-white rounded-lg shadow-sm">
+                                    <Phone className="w-5 h-5 text-gray-600" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500 uppercase font-bold">Phone</p>
+                                    <p className="font-medium text-gray-900">{selectedContact.phone || 'N/A'}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setShowContactModal(false)}
+                            className="w-full bg-soft-black text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
         </HomeLayout>
     );
 };

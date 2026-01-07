@@ -112,7 +112,7 @@ export const getUserBookings = async (req, res) => {
 export const getProviderBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ serviceProvider: req.user._id })
-      .populate("user", "username email")   // customer info
+      .populate("user", "username email phone")   // customer info
       .populate("service", "title");
 
     res.json({ success: true, bookings });
