@@ -10,6 +10,17 @@ export const getAllServices = async () => {
     }
 };
 
+
+export const getAllCategories = async () => {
+    try {
+        const response = await api.get('/services/categories');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching categories:", error);
+        return { success: false, error: error.message };
+    }
+};
+
 export const getCategoryDetails = async (name) => {
     try {
         const response = await api.get(`/services/categories/${encodeURIComponent(name)}`);

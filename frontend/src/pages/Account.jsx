@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getMe, updateProfile } from '../api/auth';
+import { getUserBookings } from '../api/bookings';
 import UserDashboard from '../components/dashboard/UserDashboard';
 
 const Account = () => {
@@ -17,11 +18,13 @@ const Account = () => {
         role: ""
     });
 
+    const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchUser = async () => {
+        const fetchData = async () => {
             try {
+                // Fetch User
                 const userData = await getMe();
                 setUser(prev => ({
                     ...prev,
@@ -31,18 +34,22 @@ const Account = () => {
                     role: userData.user.role // Very important for conditional rendering
                 }));
 
-                // Redirect provider to their dashboard
-                if (userData.user.role === 'service_provider') {
-                    navigate('/provider/dashboard');
+                // Fetch Bookings if user is not a provider (or even if they serve as both)
+                if (userData.user.role !== 'service_provider') {
+                    const bookingsData = await getUserBookings();
+                    if (bookingsData.success) {
+                        setBookings(bookingsData.bookings);
+                    }
                 }
+
             } catch (err) {
-                console.error("Failed to fetch user profile", err);
+                console.error("Failed to fetch profile or bookings", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchUser();
-    }, [navigate]);
+        fetchData();
+    }, []);
 
     // Edit mode states (Shared logic - mostly for UserDashboard currently)
     const [isEditing, setIsEditing] = useState(false);
@@ -102,16 +109,21 @@ const Account = () => {
 
     return (
         <HomeLayout>
-            <UserDashboard
-                user={user}
-                isEditing={isEditing}
-                tempData={tempData}
-                handleEdit={handleEdit}
-                handleCancel={handleCancel}
-                handleSave={handleSave}
-                handleChange={handleChange}
-                addressTags={addressTags}
-            />
+            {user.role === 'service_provider' ? (
+                <ProviderDashboard user={user} />
+            ) : (
+                <UserDashboard
+                    user={user}
+                    bookings={bookings}
+                    isEditing={isEditing}
+                    tempData={tempData}
+                    handleEdit={handleEdit}
+                    handleCancel={handleCancel}
+                    handleSave={handleSave}
+                    handleChange={handleChange}
+                    addressTags={addressTags}
+                />
+            )}
         </HomeLayout>
     );
 };
