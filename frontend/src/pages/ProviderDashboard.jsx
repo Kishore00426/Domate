@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import HomeLayout from '../layouts/HomeLayout';
-import { getMe } from '../api/auth';
+
 import { useNavigate } from 'react-router-dom';
-import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X } from 'lucide-react';
+
+import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2 } from 'lucide-react';
 import { getMyProviderProfile, updateProviderBio, updateProviderServices, deleteProviderDocument } from '../api/providers';
+import { getMe, updateProfile } from '../api/auth';
 import { getProviderBookings, updateBookingStatus, completeBooking } from '../api/bookings';
 import { getAllServices } from '../api/services';
 
@@ -23,6 +25,10 @@ const ProviderDashboard = () => {
     // State for Completion Modal
     const [activeBookingForCompletion, setActiveBookingForCompletion] = useState(null);
     const [invoiceForm, setInvoiceForm] = useState({ servicePrice: '', serviceCharge: '' });
+
+    // UI State for Editing
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [isEditingServices, setIsEditingServices] = useState(false);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -222,237 +228,408 @@ const ProviderDashboard = () => {
 
                             {activeTab === 'profile' && (
                                 <div className="bg-white p-8 rounded-3xl shadow-sm">
-                                    <h2 className="text-xl font-bold text-soft-black mb-6">Professional Details</h2>
-                                    <form className="space-y-6" onSubmit={async (e) => {
-                                        e.preventDefault();
-                                        setLoading(true);
-                                        try {
-                                            const formData = new FormData(e.target);
-                                            // Handle emergency contact manually as it needs to be JSON
-                                            const emergencyContact = {
-                                                name: formData.get('ec_name'),
-                                                phone: formData.get('ec_phone'),
-                                                relation: formData.get('ec_relation')
-                                            };
-                                            formData.set('emergencyContact', JSON.stringify(emergencyContact));
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-soft-black">Professional Details</h2>
+                                        {!isEditingProfile && (
+                                            <button
+                                                onClick={() => setIsEditingProfile(true)}
+                                                className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-black bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
+                                            >
+                                                <Pencil className="w-4 h-4" /> Edit Details
+                                            </button>
+                                        )}
+                                    </div>
 
-                                            // Remove individual EC fields to clean up
-                                            formData.delete('ec_name');
-                                            formData.delete('ec_phone');
-                                            formData.delete('ec_relation');
+                                    {!isEditingProfile ? (
+                                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                                                {/* Contact & Personal */}
+                                                <div className="space-y-6">
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Contact Information</h3>
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="p-2 bg-gray-50 rounded-lg"><User className="w-4 h-4 text-gray-600" /></div>
+                                                                <div>
+                                                                    <p className="text-xs text-gray-500 mb-0.5">Full Name</p>
+                                                                    <p className="font-semibold text-soft-black">{user?.username}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="p-2 bg-gray-50 rounded-lg"><CheckCircle className="w-4 h-4 text-gray-600" /></div>
+                                                                <div>
+                                                                    <p className="text-xs text-gray-500 mb-0.5">Phone Number</p>
+                                                                    <p className="font-semibold text-soft-black">{user?.contactNumber || 'Not provided'}</p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="p-2 bg-gray-50 rounded-lg"><MapPin className="w-4 h-4 text-gray-600" /></div>
+                                                                <div>
+                                                                    <p className="text-xs text-gray-500 mb-0.5">Address</p>
+                                                                    <p className="font-medium text-soft-black leading-relaxed">
+                                                                        {user?.address ? (
+                                                                            <>
+                                                                                {user.address.street && <span>{user.address.street}</span>}
+                                                                                {user.address.city && <span>, {user.address.city}</span>}
+                                                                                {user.address.state && <span>, {user.address.state}</span>}
+                                                                                {user.address.postalCode && <span> - {user.address.postalCode}</span>}
+                                                                            </>
+                                                                        ) : <span className="text-gray-400 italic">Address not provided</span>}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                                            const response = await updateProviderBio(formData);
-                                            if (response.success) {
-                                                setProviderDetails(response.provider);
-                                                alert('Profile updated successfully!');
-                                            } else {
-                                                alert('Failed to update profile: ' + response.error);
-                                            }
-                                        } catch (err) {
-                                            console.error("Error updating profile", err);
-                                            alert('An error occurred while updating profile');
-                                        } finally {
-                                            setLoading(false);
-                                        }
-                                    }}>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-semibold text-soft-black mb-2">Phone Number</label>
-                                                <input
-                                                    name="phone"
-                                                    defaultValue={providerDetails?.user?.contactNumber || providerDetails?.phone}
-                                                    type="tel"
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                    placeholder="Enter phone number"
-                                                    required
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-semibold text-soft-black mb-2">Experience (Years)</label>
-                                                <input
-                                                    name="experience"
-                                                    defaultValue={providerDetails?.experience}
-                                                    type="text"
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                    placeholder="e.g. 5"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-semibold text-soft-black mb-2">Native Place</label>
-                                                <input
-                                                    name="nativePlace"
-                                                    defaultValue={providerDetails?.nativePlace}
-                                                    type="text"
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                    placeholder="City, State"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-semibold text-soft-black mb-2">Current Location</label>
-                                                <input
-                                                    name="currentPlace"
-                                                    defaultValue={providerDetails?.currentPlace}
-                                                    type="text"
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                    placeholder="City, Area"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-semibold text-soft-black mb-2">Address</label>
-                                            <textarea
-                                                name="address"
-                                                defaultValue={providerDetails?.address}
-                                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none h-24 resize-none"
-                                                placeholder="Full residential address"
-                                            ></textarea>
-                                        </div>
-
-                                        <div className="border-t pt-6 mt-2">
-                                            <h3 className="text-lg font-semibold text-soft-black mb-4">Emergency Contact</h3>
-                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                                <div>
-                                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
-                                                    <input
-                                                        name="ec_name"
-                                                        defaultValue={providerDetails?.emergencyContact?.name}
-                                                        type="text"
-                                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                        placeholder="Contact Name"
-                                                    />
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Location Details</h3>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <p className="text-xs text-gray-500 mb-1">Native Place</p>
+                                                                <p className="font-semibold text-soft-black">{providerDetails?.nativePlace || '-'}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs text-gray-500 mb-1">Current City</p>
+                                                                <p className="font-semibold text-soft-black">{providerDetails?.currentPlace || '-'}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
+
+                                                {/* Professional & Emergency */}
+                                                <div className="space-y-6">
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Work Profile</h3>
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="p-2 bg-gray-50 rounded-lg"><Briefcase className="w-4 h-4 text-gray-600" /></div>
+                                                                <div>
+                                                                    <p className="text-xs text-gray-500 mb-0.5">Experience</p>
+                                                                    <p className="font-semibold text-soft-black">{providerDetails?.experience ? `${providerDetails.experience} Years` : 'Not added'}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Emergency Contact</h3>
+                                                        {providerDetails?.emergencyContact?.name ? (
+                                                            <div className="bg-red-50 p-4 rounded-xl border border-red-100">
+                                                                <p className="font-bold text-soft-black mb-1">{providerDetails.emergencyContact.name}</p>
+                                                                <p className="text-sm text-gray-600 mb-1">{providerDetails.emergencyContact.relation}</p>
+                                                                <p className="text-sm font-mono font-medium text-soft-black">{providerDetails.emergencyContact.phone}</p>
+                                                            </div>
+                                                        ) : <p className="text-gray-400 italic">No emergency contact added</p>}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <form className="space-y-6" onSubmit={async (e) => {
+                                            e.preventDefault();
+                                            setLoading(true);
+                                            try {
+                                                const formData = new FormData(e.target);
+
+                                                // 1. Update User Profile (Phone & Address)
+                                                // We only send if values are present to avoid overwriting with null if logic differs
+                                                const contactNumber = formData.get('phone');
+                                                const street = formData.get('address');
+
+                                                if (contactNumber || street) {
+                                                    await updateProfile({
+                                                        phone: contactNumber,
+                                                        street: street
+                                                        // Note: We are only capturing 'street' (full address) here. 
+                                                        // Ideally we should have fields for city/state/zip if we want structured data.
+                                                        // Preserving existing city/state if not provided? 
+                                                        // userController upsert logic uses Object.assign, so providing only street updates street.
+                                                    });
+                                                    // Refresh user data
+                                                    const uRes = await getMe(); // Calls /user/profile which returns updated user
+                                                    if (uRes.success) setUser(uRes.user);
+                                                }
+
+                                                // 2. Update Provider Details
+                                                const emergencyContact = {
+                                                    name: formData.get('ec_name'),
+                                                    phone: formData.get('ec_phone'),
+                                                    relation: formData.get('ec_relation')
+                                                };
+                                                formData.set('emergencyContact', JSON.stringify(emergencyContact));
+                                                formData.delete('ec_name');
+                                                formData.delete('ec_phone');
+                                                formData.delete('ec_relation');
+
+                                                const response = await updateProviderBio(formData);
+                                                if (response.success) {
+                                                    setProviderDetails(response.provider);
+                                                    setIsEditingProfile(false);
+                                                    alert('Profile updated successfully!');
+                                                } else {
+                                                    alert('Failed to update profile details: ' + response.error);
+                                                }
+                                            } catch (err) {
+                                                console.error("Error updating profile", err);
+                                                alert('An error occurred while updating profile');
+                                            } finally {
+                                                setLoading(false);
+                                            }
+                                        }}>
+                                            <div className="flex justify-between items-center mb-4">
+                                                <p className="text-sm text-gray-500">Update your information below</p>
+                                                <button type="button" onClick={() => setIsEditingProfile(false)} className="text-sm text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div>
-                                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Phone</label>
+                                                    <label className="block text-sm font-semibold text-soft-black mb-2">Phone Number</label>
                                                     <input
-                                                        name="ec_phone"
-                                                        defaultValue={providerDetails?.emergencyContact?.phone}
+                                                        name="phone"
+                                                        defaultValue={user?.contactNumber || ''}
                                                         type="tel"
                                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                        placeholder="Contact Phone"
+                                                        placeholder="Enter phone number"
+                                                        required
                                                     />
                                                 </div>
                                                 <div>
-                                                    <label className="block text-xs font-semibold text-gray-500 mb-1">Relation</label>
+                                                    <label className="block text-sm font-semibold text-soft-black mb-2">Experience (Years)</label>
                                                     <input
-                                                        name="ec_relation"
-                                                        defaultValue={providerDetails?.emergencyContact?.relation}
+                                                        name="experience"
+                                                        defaultValue={providerDetails?.experience}
                                                         type="text"
                                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                        placeholder="e.g. Spouse, Father"
+                                                        placeholder="e.g. 5"
                                                     />
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="flex justify-end pt-4">
-                                            <button type="submit" className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors">
-                                                Save Details
-                                            </button>
-                                        </div>
-                                    </form>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-soft-black mb-2">Native Place</label>
+                                                    <input
+                                                        name="nativePlace"
+                                                        defaultValue={providerDetails?.nativePlace}
+                                                        type="text"
+                                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
+                                                        placeholder="City, State"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-soft-black mb-2">Current Location</label>
+                                                    <input
+                                                        name="currentPlace"
+                                                        defaultValue={providerDetails?.currentPlace}
+                                                        type="text"
+                                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
+                                                        placeholder="City, Area"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-soft-black mb-2">Address</label>
+                                                <textarea
+                                                    name="address"
+                                                    defaultValue={user?.address?.street || providerDetails?.address}
+                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none h-24 resize-none"
+                                                    placeholder="Full residential address details"
+                                                ></textarea>
+                                            </div>
+
+                                            <div className="border-t pt-6 mt-2">
+                                                <h3 className="text-lg font-semibold text-soft-black mb-4">Emergency Contact</h3>
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
+                                                        <input
+                                                            name="ec_name"
+                                                            defaultValue={providerDetails?.emergencyContact?.name}
+                                                            type="text"
+                                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
+                                                            placeholder="Contact Name"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Phone</label>
+                                                        <input
+                                                            name="ec_phone"
+                                                            defaultValue={providerDetails?.emergencyContact?.phone}
+                                                            type="tel"
+                                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
+                                                            placeholder="Contact Phone"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Relation</label>
+                                                        <input
+                                                            name="ec_relation"
+                                                            defaultValue={providerDetails?.emergencyContact?.relation}
+                                                            type="text"
+                                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
+                                                            placeholder="e.g. Spouse"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-end pt-4 gap-3">
+                                                <button type="button" onClick={() => setIsEditingProfile(false)} className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">
+                                                    Cancel
+                                                </button>
+                                                <button type="submit" className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg">
+                                                    Save Changes
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
                                 </div>
                             )}
 
                             {activeTab === 'services' && (
                                 <div className="bg-white p-8 rounded-3xl shadow-sm">
-                                    <h2 className="text-xl font-bold text-soft-black mb-6">My Services</h2>
-                                    <p className="text-gray-500 mb-6">Select the services you offer and provide a custom description for each.</p>
+                                    <div className="flex justify-between items-center mb-6">
+                                        <h2 className="text-xl font-bold text-soft-black">My Services</h2>
+                                        {!isEditingServices && (
+                                            <button
+                                                onClick={() => setIsEditingServices(true)}
+                                                className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-black bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
+                                            >
+                                                <Pencil className="w-4 h-4" /> Manage Services
+                                            </button>
+                                        )}
+                                    </div>
 
-                                    <div className="space-y-8">
-                                        {/* Group services by category */}
-                                        {Object.values(allServices.reduce((acc, service) => {
-                                            const catName = service.category?.name || 'Other';
-                                            if (!acc[catName]) acc[catName] = [];
-                                            acc[catName].push(service);
-                                            return acc;
-                                        }, {})).map((group, idx) => (
-                                            <div key={idx} className="border border-gray-100 rounded-2xl p-6">
-                                                <h3 className="font-semibold text-lg mb-4 text-soft-black">
-                                                    {group[0]?.category?.name || 'Other'}
-                                                </h3>
-                                                <div className="space-y-4">
-                                                    {group.map(service => {
-                                                        const isSelected = selectedServices.includes(service._id);
-                                                        return (
-                                                            <div key={service._id} className={`p-4 rounded-xl border transition-all ${isSelected ? 'border-black bg-gray-50' : 'border-gray-200'}`}>
-                                                                <div className="flex items-start gap-3">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={isSelected}
-                                                                        onChange={(e) => {
-                                                                            if (e.target.checked) {
-                                                                                setSelectedServices(prev => [...prev, service._id]);
-                                                                            } else {
-                                                                                setSelectedServices(prev => prev.filter(id => id !== service._id));
-                                                                            }
-                                                                        }}
-                                                                        className="mt-1 w-5 h-5 accent-black"
-                                                                    />
-                                                                    <div className="flex-1">
-                                                                        <h4 className="font-medium text-soft-black">{service.title}</h4>
-                                                                        <p className="text-xs text-gray-500 mb-2">{service.category?.name}</p>
-
-                                                                        {isSelected && (
-                                                                            <div className="mt-3 animate-in fade-in slide-in-from-top-2">
-                                                                                <label className="block text-xs font-semibold text-gray-500 mb-1">Custom Description/Pricing Note</label>
-                                                                                <textarea
-                                                                                    value={serviceDescriptions[service._id] || ''}
-                                                                                    onChange={(e) => setServiceDescriptions(prev => ({
-                                                                                        ...prev,
-                                                                                        [service._id]: e.target.value
-                                                                                    }))}
-                                                                                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-black outline-none text-sm bg-white"
-                                                                                    placeholder={`Describe your specific offering for ${service.title}...`}
-                                                                                    rows="2"
-                                                                                ></textarea>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
+                                    {!isEditingServices ? (
+                                        <div className="animate-in fade-in">
+                                            {selectedServices.length === 0 ? (
+                                                <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                                                    <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                                                    <p className="text-gray-500 font-medium">No services added yet.</p>
                                                 </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                    {allServices.filter(s => selectedServices.includes(s._id)).map(service => (
+                                                        <div key={service._id} className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm flex items-start justify-between group hover:border-black transition-colors">
+                                                            <div>
+                                                                <h4 className="font-bold text-soft-black">{service.title}</h4>
+                                                                <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md mt-1 inline-block">{service.category?.name}</span>
+                                                                {serviceDescriptions[service._id] && (
+                                                                    <p className="text-sm text-gray-500 mt-2 bg-gray-50 p-2 rounded-lg italic text-left">
+                                                                        "{serviceDescriptions[service._id]}"
+                                                                    </p>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            <p className="text-gray-500">Select the services you offer and provide details.</p>
+
+                                            <div className="space-y-8 animate-in fade-in">
+                                                {/* Group services by category */}
+                                                {Object.values(allServices.reduce((acc, service) => {
+                                                    const catName = service.category?.name || 'Other';
+                                                    if (!acc[catName]) acc[catName] = [];
+                                                    acc[catName].push(service);
+                                                    return acc;
+                                                }, {})).map((group, idx) => (
+                                                    <div key={idx} className="border border-gray-100 rounded-2xl p-6">
+                                                        <h3 className="font-semibold text-lg mb-4 text-soft-black">
+                                                            {group[0]?.category?.name || 'Other'}
+                                                        </h3>
+                                                        <div className="space-y-4">
+                                                            {group.map(service => {
+                                                                const isSelected = selectedServices.includes(service._id);
+                                                                return (
+                                                                    <div key={service._id} className={`p-4 rounded-xl border transition-all ${isSelected ? 'border-black bg-gray-50' : 'border-gray-200'}`}>
+                                                                        <div className="flex items-start gap-3">
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={isSelected}
+                                                                                onChange={(e) => {
+                                                                                    if (e.target.checked) {
+                                                                                        setSelectedServices(prev => [...prev, service._id]);
+                                                                                    } else {
+                                                                                        setSelectedServices(prev => prev.filter(id => id !== service._id));
+                                                                                    }
+                                                                                }}
+                                                                                className="mt-1 w-5 h-5 accent-black"
+                                                                            />
+                                                                            <div className="flex-1">
+                                                                                <h4 className="font-medium text-soft-black">{service.title}</h4>
+                                                                                <p className="text-xs text-gray-500 mb-2">{service.category?.name}</p>
+
+                                                                                {isSelected && (
+                                                                                    <div className="mt-3 animate-in fade-in slide-in-from-top-2">
+                                                                                        <label className="block text-xs font-semibold text-gray-500 mb-1">Custom Description/Pricing Note</label>
+                                                                                        <textarea
+                                                                                            value={serviceDescriptions[service._id] || ''}
+                                                                                            onChange={(e) => setServiceDescriptions(prev => ({
+                                                                                                ...prev,
+                                                                                                [service._id]: e.target.value
+                                                                                            }))}
+                                                                                            className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-black outline-none text-sm bg-white"
+                                                                                            placeholder={`Describe your specific offering for ${service.title}...`}
+                                                                                            rows="2"
+                                                                                        ></textarea>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                        ))}
-                                    </div>
 
-                                    <div className="flex justify-end pt-6 sticky bottom-0 bg-white/80 backdrop-blur-sm py-4 border-t mt-4">
-                                        <button
-                                            onClick={async () => {
-                                                setLoading(true);
-                                                try {
-                                                    // Prepare payload
-                                                    const payload = {
-                                                        services: selectedServices,
-                                                        serviceDescriptions: Object.entries(serviceDescriptions)
-                                                            .filter(([id, desc]) => selectedServices.includes(id) && desc.trim())
-                                                            .map(([id, desc]) => ({ serviceId: id, description: desc }))
-                                                    };
+                                            <div className="flex justify-end pt-6 sticky bottom-0 bg-white/80 backdrop-blur-sm py-4 border-t mt-4 gap-3">
+                                                <button
+                                                    onClick={() => setIsEditingServices(false)}
+                                                    className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        setLoading(true);
+                                                        try {
+                                                            // Prepare payload
+                                                            const payload = {
+                                                                services: selectedServices,
+                                                                serviceDescriptions: Object.entries(serviceDescriptions)
+                                                                    .filter(([id, desc]) => selectedServices.includes(id) && desc.trim())
+                                                                    .map(([id, desc]) => ({ serviceId: id, description: desc }))
+                                                            };
 
-                                                    const response = await updateProviderServices(payload);
-                                                    if (response.success) {
-                                                        setProviderDetails(response.provider);
-                                                        alert('Services updated successfully!');
-                                                    } else {
-                                                        alert('Failed to update services: ' + response.error);
-                                                    }
-                                                } catch (err) {
-                                                    console.error(err);
-                                                    alert('Error updating services');
-                                                } finally {
-                                                    setLoading(false);
-                                                }
-                                            }}
-                                            className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg"
-                                        >
-                                            Save Services
-                                        </button>
-                                    </div>
+                                                            const response = await updateProviderServices(payload);
+                                                            if (response.success) {
+                                                                setProviderDetails(response.provider);
+                                                                setIsEditingServices(false);
+                                                                alert('Services updated successfully!');
+                                                            } else {
+                                                                alert('Failed to update services: ' + response.error);
+                                                            }
+                                                        } catch (err) {
+                                                            console.error(err);
+                                                            alert('Error updating services');
+                                                        } finally {
+                                                            setLoading(false);
+                                                        }
+                                                    }}
+                                                    className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg"
+                                                >
+                                                    Save Select Services
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
