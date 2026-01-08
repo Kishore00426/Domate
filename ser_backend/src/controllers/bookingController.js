@@ -91,6 +91,10 @@ export const updateBookingStatus = async (req, res) => {
     booking.status = status;
     await booking.save();
 
+    // Populate for frontend update
+    await booking.populate("user", "username email");
+    await booking.populate("service", "title");
+
     return res.json({ success: true, booking });
   } catch (err) {
     return res.status(500).json({ success: false, error: err.message });
@@ -231,6 +235,10 @@ export const completeBooking = async (req, res) => {
     };
 
     await booking.save();
+
+    // Populate for frontend update
+    await booking.populate("user", "username email");
+    await booking.populate("service", "title");
     res.json({ success: true, booking });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
@@ -264,6 +272,10 @@ export const rateBooking = async (req, res) => {
 
     booking.status = "completed"; // Re-affirming status
     await booking.save();
+
+    // Populate for frontend update
+    await booking.populate("serviceProvider", "username email");
+    await booking.populate("service", "title");
 
     res.json({ success: true, booking });
   } catch (err) {

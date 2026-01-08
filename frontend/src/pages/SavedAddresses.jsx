@@ -44,14 +44,20 @@ const SavedAddresses = () => {
         e.preventDefault();
         try {
             if (editingId) {
-                await updateAddress(editingId, formData);
+                const response = await updateAddress(editingId, formData);
+                if (response.success) {
+                    setAddresses(prev => prev.map(addr => addr._id === editingId ? response.address : addr));
+                }
             } else {
-                await addAddress(formData);
+                const response = await addAddress(formData);
+                if (response.success) {
+                    setAddresses(prev => [...prev, response.address]);
+                }
             }
             setShowForm(false);
             setEditingId(null);
             setFormData({ street: '', city: '', state: '', postalCode: '', country: 'India' });
-            fetchAddresses();
+            // fetchAddresses(); // Removed re-fetch for better performance
         } catch (error) {
             console.error("Failed to save address", error);
             alert("Failed to save address: " + (error.response?.data?.error || error.message));
@@ -84,18 +90,15 @@ const SavedAddresses = () => {
     return (
         <HomeLayout>
             <div className="pt-[100px] px-4 pb-20 max-w-4xl mx-auto">
-                <div className="sticky top-24 z-10 mb-6">
+                <div className="flex items-center gap-4 mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                     <button
                         onClick={() => navigate('/account')}
-                        className="group flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-all duration-200"
+                        className="p-3 -ml-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+                        title="Back to Dashboard"
                     >
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        Back to Dashboard
+                        <ArrowLeft className="w-6 h-6" />
                     </button>
-                </div>
-
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="p-3 bg-green-50 text-green-600 rounded-xl">
+                    <div className="p-4 bg-green-50 text-green-600 rounded-2xl">
                         <MapPin className="w-8 h-8" />
                     </div>
                     <div>

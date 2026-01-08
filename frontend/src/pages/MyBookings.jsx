@@ -78,136 +78,185 @@ const MyBookings = () => {
 
     return (
         <HomeLayout>
-            <div className="pt-[10px] px-4 pb-20 max-w-4xl mx-auto">
-                <div className="sticky top-28 z-10 mb-6">
-                    <button
-                        onClick={() => navigate('/account')}
-                        className="group flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-all duration-200"
-                    >
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        Back to Dashboard
-                    </button>
-                </div>
+            <div className="min-h-screen bg-gray-50/30 pt-[10px] md:mt-30 px-4 pb-20">
+                <div className="max-w-4xl mx-auto">
+                    <div className="flex items-center gap-4 mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                        <button
+                            onClick={() => navigate('/account')}
+                            className="p-3 -ml-2 hover:bg-gray-100 p-4 bg-blue-50 text-blue-600 rounded-2xl rounded-full transition-colors text-gray-600"
+                            title="Back to Dashboard"
+                        >
+                            <ArrowLeft className="w-6 h-6" />
+                        </button>
 
-                <div className="flex items-center gap-3 mb-8">
-                    <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                        <Calendar className="w-8 h-8" />
+                        <div>
+                            <h1 className="text-2xl font-bold text-soft-black">My Bookings</h1>
+                            <p className="text-gray-500">View and track your service appointments</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-soft-black">My Bookings</h1>
-                        <p className="text-gray-500">View and track your service appointments</p>
-                    </div>
-                </div>
 
-                <div className="space-y-4">
-                    {bookings.length > 0 ? (
-                        bookings.map(booking => (
-                            <div key={booking._id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                <div className="flex flex-col md:flex-row justify-between gap-6">
-                                    <div className="space-y-2">
-                                        <div className="flex items-start justify-between md:justify-start gap-4">
-                                            <h3 className="font-bold text-xl text-soft-black">{booking.service?.title || "Service Unavailable"}</h3>
-                                            <span className={`md:hidden px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(booking.status)}`}>
+                    <div className="space-y-4">
+                        {bookings.length > 0 ? (
+                            bookings.map(booking => (
+                                <div key={booking._id} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                                        <div className="space-y-2">
+                                            <div className="flex items-start justify-between md:justify-start gap-4">
+                                                <h3 className="font-bold text-xl text-soft-black">{booking.service?.title || "Service Unavailable"}</h3>
+                                                <span className={`md:hidden px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(booking.status)}`}>
+                                                    {booking.status}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 text-gray-600">
+                                                <User className="w-4 h-4 text-gray-400" />
+                                                <span className="text-sm">Provider: <span className="font-medium text-gray-800">{booking.serviceProvider?.username || "Unknown"}</span></span>
+                                            </div>
+
+                                            <div className="flex items-center gap-2 text-gray-600">
+                                                <Clock className="w-4 h-4 text-gray-400" />
+                                                <span className="text-sm">
+                                                    {new Date(booking.scheduledDate).toLocaleDateString()} at {new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+
+                                            {booking.notes && (
+                                                <div className="bg-gray-50 p-3 rounded-lg mt-2 text-sm text-gray-600 italic border border-gray-100">
+                                                    "{booking.notes}"
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex flex-col justify-between items-end gap-4 min-w-[150px]">
+                                            <span className={`hidden md:inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(booking.status)}`}>
                                                 {booking.status}
                                             </span>
+
+                                            {booking.status === 'completed' && (
+                                                <div className="flex flex-col items-end gap-2">
+                                                    {booking.invoice && (
+                                                        <div className="text-right">
+                                                            <p className="text-sm font-bold text-soft-black">Total: ₹{booking.invoice.totalAmount}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {!booking.review ? (
+                                                        <button
+                                                            onClick={() => {
+                                                                setActiveBookingForReview(booking);
+                                                                setReviewForm({ rating: 0, comment: '' });
+                                                            }}
+                                                            className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2"
+                                                        >
+                                                            <Star className="w-4 h-4 fill-white" /> Rate Provider
+                                                        </button>
+                                                    ) : (
+                                                        <div className="flex items-center gap-1 text-yellow-500 font-bold bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+                                                            <Star className="w-4 h-4 fill-yellow-500" /> {booking.review.rating}/5
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {booking.status === 'accepted' && (
+                                                <button
+                                                    onClick={() => handleContactClick(booking.serviceProvider)}
+                                                    className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                                                >
+                                                    Contact Provider
+                                                </button>
+                                            )}
+                                            {booking.status === 'pending' && (
+                                                <button
+                                                    onClick={() => handleDelete(booking._id)}
+                                                    className="w-full md:w-auto text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                                                >
+                                                    Cancel Booking
+                                                </button>
+                                            )}
+                                            {booking.status === 'rejected' && (
+                                                <button
+                                                    onClick={() => handleDelete(booking._id)}
+                                                    className="w-full md:w-auto text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                                                >
+                                                    Delete
+                                                </button>
+                                            )}
                                         </div>
-
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <User className="w-4 h-4 text-gray-400" />
-                                            <span className="text-sm">Provider: <span className="font-medium text-gray-800">{booking.serviceProvider?.username || "Unknown"}</span></span>
-                                        </div>
-
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <Clock className="w-4 h-4 text-gray-400" />
-                                            <span className="text-sm">
-                                                {new Date(booking.scheduledDate).toLocaleDateString()} at {new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                        </div>
-
-                                        {booking.notes && (
-                                            <div className="bg-gray-50 p-3 rounded-lg mt-2 text-sm text-gray-600 italic border border-gray-100">
-                                                "{booking.notes}"
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="flex flex-col justify-between items-end gap-4 min-w-[150px]">
-                                        <span className={`hidden md:inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(booking.status)}`}>
-                                            {booking.status}
-                                        </span>
-
-                                        {booking.status === 'completed' && (
-                                            <div className="flex flex-col items-end gap-2">
-                                                {booking.invoice && (
-                                                    <div className="text-right">
-                                                        <p className="text-sm font-bold text-soft-black">Total: ₹{booking.invoice.totalAmount}</p>
-                                                    </div>
-                                                )}
-
-                                                {!booking.review ? (
-                                                    <button
-                                                        onClick={() => {
-                                                            setActiveBookingForReview(booking);
-                                                            setReviewForm({ rating: 0, comment: '' });
-                                                        }}
-                                                        className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2"
-                                                    >
-                                                        <Star className="w-4 h-4 fill-white" /> Rate Provider
-                                                    </button>
-                                                ) : (
-                                                    <div className="flex items-center gap-1 text-yellow-500 font-bold bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
-                                                        <Star className="w-4 h-4 fill-yellow-500" /> {booking.review.rating}/5
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {booking.status === 'accepted' && (
-                                            <button
-                                                onClick={() => handleContactClick(booking.serviceProvider)}
-                                                className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
-                                            >
-                                                Contact Provider
-                                            </button>
-                                        )}
-                                        {booking.status === 'pending' && (
-                                            <button
-                                                onClick={() => handleDelete(booking._id)}
-                                                className="w-full md:w-auto text-red-600 hover:bg-red-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-                                            >
-                                                Cancel Booking
-                                            </button>
-                                        )}
-                                        {booking.status === 'rejected' && (
-                                            <button
-                                                onClick={() => handleDelete(booking._id)}
-                                                className="w-full md:w-auto text-gray-500 hover:bg-gray-100 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
-                                            >
-                                                Delete
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-16 text-center text-gray-400 bg-gray-50/50 rounded-3xl border border-gray-100">
+                                <Calendar className="w-12 h-12 mb-3 text-gray-300" />
+                                <p className="text-lg">No bookings found.</p>
+                                <p className="text-sm">Book a service to get started!</p>
+                                <button
+                                    onClick={() => navigate('/services')}
+                                    className="mt-4 text-blue-600 font-medium hover:underline"
+                                >
+                                    Browse Services
+                                </button>
                             </div>
-                        ))
-                    ) : (
-                        <div className="flex flex-col items-center justify-center py-16 text-center text-gray-400 bg-gray-50/50 rounded-3xl border border-gray-100">
-                            <Calendar className="w-12 h-12 mb-3 text-gray-300" />
-                            <p className="text-lg">No bookings found.</p>
-                            <p className="text-sm">Book a service to get started!</p>
-                            <button
-                                onClick={() => navigate('/services')}
-                                className="mt-4 text-blue-600 font-medium hover:underline"
-                            >
-                                Browse Services
-                            </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
 
 
 
+
+            {/* Contact Modal */}
+            {showContactModal && selectedContact && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="text-lg font-bold text-soft-black">Provider Contact</h3>
+                            <button onClick={() => setShowContactModal(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="flex flex-col items-center mb-4">
+                                <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3">
+                                    <User className="w-8 h-8" />
+                                </div>
+                                <h4 className="text-xl font-bold text-soft-black">{selectedContact.username}</h4>
+                                <p className="text-sm text-gray-500">Service Provider</p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                                    <div className="bg-white p-2 rounded-full shadow-sm text-gray-600">
+                                        <Phone className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-bold uppercase">Phone</p>
+                                        <p className="font-medium text-gray-900">{selectedContact.phone || "Not available"}</p>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                                    <div className="bg-white p-2 rounded-full shadow-sm text-gray-600">
+                                        <Mail className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-gray-500 font-bold uppercase">Email</p>
+                                        <p className="font-medium text-gray-900">{selectedContact.email || "Not available"}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setShowContactModal(false)}
+                                className="w-full bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Review Modal */}
             {

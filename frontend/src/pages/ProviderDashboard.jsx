@@ -263,28 +263,7 @@ const ProviderDashboard = () => {
                                         </div>
                                     )}
 
-                                    {/* Stats from backend */}
-                                    {isProfileComplete && (
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            <div className="bg-white p-6 rounded-2xl shadow-sm">
-                                                <h3 className="text-gray-500 text-sm font-medium mb-1">Total Bookings</h3>
-                                                <p className="text-3xl font-bold text-soft-black">0</p>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-2xl shadow-sm">
-                                                <h3 className="text-gray-500 text-sm font-medium mb-1">Earnings</h3>
-                                                <p className="text-3xl font-bold text-soft-black">₹0</p>
-                                            </div>
-                                            <div className="bg-white p-6 rounded-2xl shadow-sm">
-                                                <h3 className="text-gray-500 text-sm font-medium mb-1">Rating</h3>
-                                                <p className="text-3xl font-bold text-soft-black">
-                                                    {providerDetails?.rating || 0}
-                                                    <span className="text-sm font-normal text-gray-400 ml-1">
-                                                        ({providerDetails?.totalReviews || 0} reviews)
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+
                                 </div>
                             )}
 
@@ -402,15 +381,14 @@ const ProviderDashboard = () => {
                                                 const postalCode = formData.get('postalCode');
 
                                                 if (contactNumber || street || city || state || postalCode) {
-                                                    await updateProfile({
+                                                    const uRes = await updateProfile({
                                                         phone: contactNumber,
                                                         street,
                                                         city,
                                                         state,
                                                         postalCode
                                                     });
-                                                    // Refresh user data
-                                                    const uRes = await getMe(); // Calls /user/profile which returns updated user
+                                                    // Optimistically update user data
                                                     if (uRes.success) setUser(uRes.user);
                                                 }
 
@@ -959,16 +937,16 @@ const ProviderDashboard = () => {
                                         )}
                                     </div>
 
-                                    {/* Upcoming Section */}
+                                    {/* Active Bookings Section */}
                                     <div>
                                         <h3 className="font-semibold text-lg mb-4 text-green-700 flex items-center gap-2">
-                                            <CheckCircle className="w-5 h-5" /> Upcoming Schedule
+                                            <CheckCircle className="w-5 h-5" /> Active Bookings
                                         </h3>
-                                        {bookings.filter(b => b.status === 'accepted').length === 0 ? (
-                                            <p className="text-gray-400 text-sm italic">No upcoming bookings.</p>
+                                        {bookings.filter(b => ['accepted', 'in_progress'].includes(b.status)).length === 0 ? (
+                                            <p className="text-gray-400 text-sm italic">No active bookings.</p>
                                         ) : (
                                             <div className="space-y-4">
-                                                {bookings.filter(b => b.status === 'accepted')
+                                                {bookings.filter(b => ['accepted', 'in_progress'].includes(b.status))
                                                     .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))
                                                     .map(booking => (
                                                         <div key={booking._id} className="border border-green-100 bg-white rounded-2xl p-6 shadow-sm">
@@ -982,7 +960,7 @@ const ProviderDashboard = () => {
                                                                         {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                                                     </p>
                                                                     <div className="mt-2 text-xs text-green-700 font-bold px-3 py-1 bg-green-50 rounded-full inline-flex items-center gap-1 border border-green-100">
-                                                                        <CheckCircle className="w-3 h-3" /> Confirmed
+                                                                        <CheckCircle className="w-3 h-3" /> {booking.status === 'in_progress' ? 'In Progress' : 'Confirmed'}
                                                                     </div>
                                                                 </div>
 
@@ -1005,33 +983,6 @@ const ProviderDashboard = () => {
                                                             </div>
                                                         </div>
                                                     ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* COMPLETED SECTION (Optional to show history) */}
-                                    <div className="mt-12">
-                                        <h3 className="font-semibold text-lg mb-4 text-gray-400 flex items-center gap-2">
-                                            <Briefcase className="w-5 h-5" /> Completed Jobs
-                                        </h3>
-                                        {bookings.filter(b => b.status === 'completed').length === 0 ? (
-                                            <p className="text-gray-400 text-sm italic">No completed jobs yet.</p>
-                                        ) : (
-                                            <div className="space-y-4 opacity-75">
-                                                {bookings.filter(b => b.status === 'completed').map(booking => (
-                                                    <div key={booking._id} className="border border-gray-200 bg-gray-50 rounded-2xl p-6">
-                                                        <div className="flex justify-between items-center">
-                                                            <div>
-                                                                <h4 className="font-bold text-soft-black">{booking.service?.title}</h4>
-                                                                <p className="text-sm text-gray-500">Completed on: {new Date(booking.completedAt || booking.updatedAt).toLocaleDateString()}</p>
-                                                                <p className="text-sm font-semibold mt-1">Total: ₹{booking.invoice?.totalAmount}</p>
-                                                            </div>
-                                                            <div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-bold">
-                                                                Completed
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
                                             </div>
                                         )}
                                     </div>

@@ -9,28 +9,24 @@ const MyPlans = () => {
     return (
         <HomeLayout>
             <div className="pt-[100px] px-4 pb-20 max-w-4xl mx-auto">
-                <div className="sticky top-24 z-10 mb-6">
+                <div className="flex items-center gap-4 mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                     <button
                         onClick={() => navigate('/account')}
-                        className="group flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-all duration-200"
+                        className="p-3 -ml-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+                        title="Back to Dashboard"
                     >
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        Back to Dashboard
+                        <ArrowLeft className="w-6 h-6" />
                     </button>
+                    <div className="p-4 bg-indigo-50 text-indigo-600 rounded-2xl">
+                        <FileText className="w-8 h-8" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-soft-black">My Plans</h1>
+                        <p className="text-gray-500">View and manage your subscription plans</p>
+                    </div>
                 </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 border-b border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                                <FileText className="w-6 h-6" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-soft-black">My Plans</h1>
-                                <p className="text-gray-500 mt-1">View and manage your subscription plans</p>
-                            </div>
-                        </div>
-                    </div>
 
                     <div className="p-12 text-center">
                         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
