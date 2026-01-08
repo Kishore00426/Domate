@@ -972,7 +972,10 @@ const ProviderDashboard = () => {
                                                                             <button
                                                                                 onClick={() => {
                                                                                     setActiveBookingForCompletion(booking);
-                                                                                    setInvoiceForm({ servicePrice: '', serviceCharge: '' });
+                                                                                    setInvoiceForm({
+                                                                                        servicePrice: booking.service?.price || '',
+                                                                                        serviceCharge: providerDetails?.consultFee || ''
+                                                                                    });
                                                                                 }}
                                                                                 className="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md"
                                                                             >
@@ -1021,6 +1024,20 @@ const ProviderDashboard = () => {
                                                                             }`}>
                                                                             {booking.status.toUpperCase()}
                                                                         </span>
+                                                                        <div className="text-right">
+                                                                            <p className="text-lg font-bold text-soft-black">₹{booking.invoice?.totalAmount}</p>
+                                                                            <div className="flex gap-2 justify-end mt-1">
+                                                                                <button
+                                                                                    onClick={() => setActiveBookingForCompletion(booking)}
+                                                                                    className="text-xs font-bold text-black border border-gray-200 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                                                                >
+                                                                                    View Invoice
+                                                                                </button>
+                                                                                <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold inline-block">
+                                                                                    Completed
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1031,89 +1048,166 @@ const ProviderDashboard = () => {
                                     </div>
                                 )
                             }
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        </div >
-                    </div >
-                </div >
+            {/* INVOICE MODAL (Create or View) */}
+            {
+                activeBookingForCompletion && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                                <h3 className="text-lg font-bold text-soft-black">
+                                    {activeBookingForCompletion.status === 'completed' ? 'Invoice Details' : 'Complete Job & Invoice'}
+                                </h3>
+                                <button onClick={() => { setActiveBookingForCompletion(null); setInvoiceForm({ servicePrice: '', serviceCharge: '' }); }} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                            </div>
 
-                {/* INVOICE MODAL */}
-                {
-                    activeBookingForCompletion && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                            <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
-                                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                                    <h3 className="text-lg font-bold text-soft-black">Complete Job & Invoice</h3>
-                                    <button onClick={() => setActiveBookingForCompletion(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                                        <X className="w-5 h-5 text-gray-500" />
-                                    </button>
+                            <div className="p-8 grid grid-cols-1 md:grid-cols-5 gap-8">
+                                {/* Left Column: Context (2 cols) */}
+                                <div className="md:col-span-2 space-y-6">
+                                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 h-full">
+                                        <h4 className="font-bold text-gray-400 text-sm uppercase tracking-wider mb-6">Booking Context</h4>
+
+                                        <div className="space-y-6">
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">Service Provided</p>
+                                                <p className="font-bold text-xl text-soft-black">{activeBookingForCompletion?.service?.title}</p>
+                                            </div>
+
+                                            <div>
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">Customer Details</p>
+                                                <p className="font-medium text-lg text-gray-700">{activeBookingForCompletion?.user?.username}</p>
+                                                {activeBookingForCompletion?.user?.phone && <p className="text-sm text-gray-500">{activeBookingForCompletion.user.phone}</p>}
+                                            </div>
+
+                                            <div className="pt-6 border-t border-gray-200">
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">Invoice Number</p>
+                                                <p className="font-mono text-lg text-gray-700 tracking-widest">INV-{activeBookingForCompletion?._id?.slice(-6).toUpperCase()}</p>
+                                            </div>
+
+                                            {activeBookingForCompletion.status === 'completed' && (
+                                                <div>
+                                                    <p className="text-xs text-gray-500 uppercase font-bold mb-1">Date Issued</p>
+                                                    <p className="text-sm text-gray-700">{new Date(activeBookingForCompletion.updatedAt).toLocaleDateString()}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
 
-                                <div className="p-8 space-y-6">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Service Price (₹)</label>
-                                        <input
-                                            type="number"
-                                            value={invoiceForm.servicePrice}
-                                            onChange={(e) => setInvoiceForm({ ...invoiceForm, servicePrice: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-medium"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Service Charge / Extra (₹)</label>
-                                        <input
-                                            type="number"
-                                            value={invoiceForm.serviceCharge}
-                                            onChange={(e) => setInvoiceForm({ ...invoiceForm, serviceCharge: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-medium"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                        <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-                                            <span>Subtotal</span>
-                                            <span>₹{Number(invoiceForm.servicePrice || 0).toFixed(2)}</span>
+                                {/* Right Column: Financials (3 cols) */}
+                                <div className="md:col-span-3">
+                                    {activeBookingForCompletion.status === 'completed' ? (
+                                        // READ ONLY VIEW
+                                        <div className="bg-white rounded-2xl h-full flex flex-col justify-center">
+                                            <div className="space-y-4">
+                                                <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                                                    <span className="text-gray-600 font-medium">Base Service Price</span>
+                                                    <span className="font-bold text-lg">₹{activeBookingForCompletion.invoice?.servicePrice}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                                                    <span className="text-gray-600 font-medium">Visiting / Extra Fee</span>
+                                                    <span className="font-bold text-lg">₹{activeBookingForCompletion.invoice?.serviceCharge}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center py-3 border-b border-gray-100 text-gray-500">
+                                                    <span>GST (18%)</span>
+                                                    <span>₹{activeBookingForCompletion.invoice?.gst}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center py-6 text-2xl font-bold bg-green-50 px-6 rounded-2xl mt-6 border border-green-100">
+                                                    <span className="text-green-800">Total Paid</span>
+                                                    <span className="text-green-700">₹{activeBookingForCompletion.invoice?.totalAmount}</span>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-                                            <span>Service Charge</span>
-                                            <span>₹{Number(invoiceForm.serviceCharge || 0).toFixed(2)}</span>
+                                    ) : (
+                                        // EDITABLE VIEW (For Generation)
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="col-span-2 md:col-span-1">
+                                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Service Price (₹)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={invoiceForm.servicePrice}
+                                                        onChange={(e) => setInvoiceForm({ ...invoiceForm, servicePrice: e.target.value })}
+                                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-bold"
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+
+                                                <div className="col-span-2 md:col-span-1">
+                                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">
+                                                        {
+                                                            ['electrician', 'plumber', 'carpenter'].some(c => activeBookingForCompletion?.service?.category?.name?.toLowerCase().includes(c))
+                                                                ? "Visiting / Fee (₹)"
+                                                                : "Extra Charges (₹)"
+                                                        }
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        value={invoiceForm.serviceCharge}
+                                                        onChange={(e) => setInvoiceForm({ ...invoiceForm, serviceCharge: e.target.value })}
+                                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-bold"
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                                                <h4 className="font-bold text-gray-400 text-xs uppercase tracking-wider mb-4">Payment Summary</h4>
+                                                <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+                                                    <span>Subtotal</span>
+                                                    <span>₹{Number(invoiceForm.servicePrice || 0).toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+                                                    <span>Extra Fees</span>
+                                                    <span>₹{Number(invoiceForm.serviceCharge || 0).toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
+                                                    <span>GST (18%)</span>
+                                                    <span>₹{((Number(invoiceForm.servicePrice || 0) + Number(invoiceForm.serviceCharge || 0)) * 0.18).toFixed(2)}</span>
+                                                </div>
+                                                <div className="border-t border-gray-200 pt-4 flex justify-between items-center font-bold text-2xl text-soft-black">
+                                                    <span>Total</span>
+                                                    <span>₹{((Number(invoiceForm.servicePrice || 0) + Number(invoiceForm.serviceCharge || 0)) * 1.18).toFixed(2)}</span>
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                onClick={async () => {
+                                                    if (!invoiceForm.servicePrice) return alert("Please enter service price");
+
+                                                    const res = await completeBooking(activeBookingForCompletion._id, {
+                                                        servicePrice: invoiceForm.servicePrice,
+                                                        serviceCharge: invoiceForm.serviceCharge || 0
+                                                    });
+
+                                                    if (res.success) {
+                                                        setBookings(prev => prev.map(b => b._id === activeBookingForCompletion._id ? { ...res.booking, service: b.service, user: b.user } : b));
+                                                        setActiveBookingForCompletion(null);
+                                                        alert("Job completed and invoice generated!");
+                                                    } else {
+                                                        alert(res.error);
+                                                    }
+                                                }}
+                                                className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-colors shadow-lg flex items-center justify-center gap-2"
+                                            >
+                                                <span>Generate Invoice & Complete</span>
+                                                <CheckCircle className="w-5 h-5" />
+                                            </button>
                                         </div>
-                                        <div className="border-t border-gray-200 my-2 pt-2 flex justify-between items-center font-bold text-lg text-soft-black">
-                                            <span>Total Amount</span>
-                                            <span>₹{(Number(invoiceForm.servicePrice || 0) + Number(invoiceForm.serviceCharge || 0)).toFixed(2)}</span>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        onClick={async () => {
-                                            if (!invoiceForm.servicePrice) return alert("Please enter service price");
-
-                                            const res = await completeBooking(activeBookingForCompletion._id, {
-                                                servicePrice: invoiceForm.servicePrice,
-                                                serviceCharge: invoiceForm.serviceCharge || 0
-                                            });
-
-                                            if (res.success) {
-                                                setBookings(prev => prev.map(b => b._id === activeBookingForCompletion._id ? { ...res.booking, service: b.service, user: b.user } : b));
-                                                setActiveBookingForCompletion(null);
-                                                alert("Job completed and invoice generated!");
-                                            } else {
-                                                alert(res.error);
-                                            }
-                                        }}
-                                        className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-colors shadow-lg"
-                                    >
-                                        Generate Invoice & Complete
-                                    </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
-                    )
-                }
-            </div >
-        </HomeLayout >
+                    </div>
+                )
+            }
+        </HomeLayout>
     );
 };
 
