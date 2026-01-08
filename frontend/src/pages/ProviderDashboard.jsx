@@ -137,31 +137,31 @@ const ProviderDashboard = () => {
                                 <nav className="flex flex-col">
                                     <button
                                         onClick={() => setActiveTab('overview')}
-                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 transition-colors ${activeTab === 'overview' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
+                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'overview' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
                                         <User className="w-5 h-5" /> Overview
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('profile')}
-                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 transition-colors ${activeTab === 'profile' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
+                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'profile' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
                                         <Briefcase className="w-5 h-5" /> Professional Details
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('services')}
-                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 transition-colors ${activeTab === 'services' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
+                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'services' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
                                         <Briefcase className="w-5 h-5" /> My Services
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('bookings')}
-                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 transition-colors ${activeTab === 'bookings' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
+                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'bookings' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
                                         <Briefcase className="w-5 h-5" /> Bookings
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('documents')}
-                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 transition-colors ${activeTab === 'documents' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
+                                        className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'documents' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
                                         <Upload className="w-5 h-5" /> Documents & Verification
                                     </button>

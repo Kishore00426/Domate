@@ -1,4 +1,5 @@
 import ServiceProvider from "../models/ServiceProvider.js";
+import Address from "../models/Address.js";
 
 /**
  * Update provider bio details + certificates/proofs
@@ -32,9 +33,18 @@ export const updateProviderBio = async (req, res) => {
     const addressProofFiles = req.files?.addressProof || [];
     const idProofFiles = req.files?.idProof || [];
 
+    // ✅ Save address to Address collection
+    if (req.body.address) {
+      await Address.findOneAndUpdate(
+        { user: req.user._id },
+        { street: req.body.address }, // mapping single string address to street
+        { upsert: true, new: true }
+      );
+    }
+
     const updateData = {
       phone: req.body.phone,
-      address: req.body.address,
+      // address: req.body.address, // Removed from ServiceProvider
       experience: req.body.experience,
       nativePlace: req.body.nativePlace,
       currentPlace: req.body.currentPlace,
@@ -55,7 +65,12 @@ export const updateProviderBio = async (req, res) => {
       { upsert: true, new: true }
     );
 
-    res.json({ success: true, provider });
+    // Attach address for frontend consistency
+    const addressDoc = await Address.findOne({ user: req.user._id });
+    const providerObj = provider.toObject();
+    providerObj.address = addressDoc ? addressDoc.street : "";
+
+    res.json({ success: true, provider: providerObj });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -140,7 +155,13 @@ export const getProviderByUser = async (req, res) => {
     if (!provider) {
       return res.status(404).json({ success: false, error: "Provider not found" });
     }
-    res.json({ success: true, provider });
+
+    // Attach address for frontend consistency
+    const addressDoc = await Address.findOne({ user: req.params.userId });
+    const providerObj = provider.toObject();
+    providerObj.address = addressDoc ? addressDoc.street : "";
+
+    res.json({ success: true, provider: providerObj });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -156,7 +177,13 @@ export const getMyProviderProfile = async (req, res) => {
     if (!provider) {
       return res.status(404).json({ success: false, error: "Provider profile not found" });
     }
-    res.json({ success: true, provider });
+
+    // Attach address for frontend consistency
+    const addressDoc = await Address.findOne({ user: req.user._id });
+    const providerObj = provider.toObject();
+    providerObj.address = addressDoc ? addressDoc.street : "";
+
+    res.json({ success: true, provider: providerObj });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
