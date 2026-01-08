@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
-import { getUserBookings, deleteBooking, rateBooking } from '../api/bookings';
-import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star } from 'lucide-react';
+import { getUserBookings, deleteBooking, rateBooking, confirmBooking } from '../api/bookings';
+import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star, CheckCircle } from 'lucide-react';
 
 
 
@@ -37,8 +37,10 @@ const MyBookings = () => {
     const getStatusColor = (status) => {
         switch (status) {
             case 'pending': return 'bg-yellow-100 text-yellow-700';
-            case 'accepted': return 'bg-green-100 text-green-700';
+            case 'accepted': return 'bg-blue-100 text-blue-700'; // Changed to blue/neutral
             case 'rejected': return 'bg-red-100 text-red-700';
+            case 'work_completed': return 'bg-purple-100 text-purple-700'; // Distinct color
+            case 'completed': return 'bg-green-100 text-green-700';
             default: return 'bg-gray-100 text-gray-700';
         }
     };
@@ -73,6 +75,25 @@ const MyBookings = () => {
         } catch (err) {
             console.error(err);
             alert("Failed to delete booking");
+        }
+    };
+
+    const handleConfirmBooking = async (bookingId) => {
+        if (!window.confirm("Confirm that the provider has completed the work?")) return;
+
+        try {
+            const res = await confirmBooking(bookingId);
+            if (res.success) {
+                // Update local state to 'completed'
+                setBookings(prev => prev.map(b =>
+                    b._id === bookingId ? { ...b, status: 'completed' } : b
+                ));
+            } else {
+                alert(res.error);
+            }
+        } catch (err) {
+            console.error("Confirmation failed", err);
+            alert("Failed to confirm booking");
         }
     };
 
@@ -131,6 +152,24 @@ const MyBookings = () => {
                                             <span className={`hidden md:inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(booking.status)}`}>
                                                 {booking.status}
                                             </span>
+
+                                            {booking.status === 'work_completed' && (
+                                                <div className="flex flex-col items-end gap-2">
+                                                    {booking.invoice && (
+                                                        <div className="text-right">
+                                                            <p className="text-sm font-bold text-soft-black">Total: ₹{booking.invoice.totalAmount}</p>
+                                                        </div>
+                                                    )}
+
+                                                    <button
+                                                        onClick={() => handleConfirmBooking(booking._id)}
+                                                        className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2 animate-pulse"
+                                                    >
+                                                        <CheckCircle className="w-4 h-4" /> Complete Order
+                                                    </button>
+                                                    <p className="text-xs text-gray-500 text-right mt-1">Provider has marked job as done</p>
+                                                </div>
+                                            )}
 
                                             {booking.status === 'completed' && (
                                                 <div className="flex flex-col items-end gap-2">

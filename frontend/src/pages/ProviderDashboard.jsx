@@ -942,11 +942,11 @@ const ProviderDashboard = () => {
                                         <h3 className="font-semibold text-lg mb-4 text-green-700 flex items-center gap-2">
                                             <CheckCircle className="w-5 h-5" /> Active Bookings
                                         </h3>
-                                        {bookings.filter(b => ['accepted', 'in_progress'].includes(b.status)).length === 0 ? (
-                                            <p className="text-gray-400 text-sm italic">No active bookings.</p>
+                                        {bookings.filter(b => b.status === 'accepted' || b.status === 'work_completed').length === 0 ? (
+                                            <p className="text-gray-400 text-sm italic">No upcoming bookings.</p>
                                         ) : (
                                             <div className="space-y-4">
-                                                {bookings.filter(b => ['accepted', 'in_progress'].includes(b.status))
+                                                {bookings.filter(b => b.status === 'accepted')
                                                     .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))
                                                     .map(booking => (
                                                         <div key={booking._id} className="border border-green-100 bg-white rounded-2xl p-6 shadow-sm">
@@ -970,15 +970,21 @@ const ProviderDashboard = () => {
                                                                             <p className="font-medium text-gray-700">Contact: {booking.user.phone}</p>
                                                                         </div>
                                                                     )}
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setActiveBookingForCompletion(booking);
-                                                                            setInvoiceForm({ servicePrice: '', serviceCharge: '' });
-                                                                        }}
-                                                                        className="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md"
-                                                                    >
-                                                                        Complete Job
-                                                                    </button>
+                                                                    {booking.status === 'work_completed' ? (
+                                                                        <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100 flex items-center gap-2">
+                                                                            <Clock className="w-3 h-3" /> Waiting for Confirmation
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() => {
+                                                                                setActiveBookingForCompletion(booking);
+                                                                                setInvoiceForm({ servicePrice: '', serviceCharge: '' });
+                                                                            }}
+                                                                            className="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md"
+                                                                        >
+                                                                            Complete Job
+                                                                        </button>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1053,7 +1059,7 @@ const ProviderDashboard = () => {
                                         });
 
                                         if (res.success) {
-                                            setBookings(prev => prev.map(b => b._id === activeBookingForCompletion._id ? res.booking : b));
+                                            setBookings(prev => prev.map(b => b._id === activeBookingForCompletion._id ? { ...res.booking, service: b.service, user: b.user } : b));
                                             setActiveBookingForCompletion(null);
                                             alert("Job completed and invoice generated!");
                                         } else {
