@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import HomeLayout from '../layouts/HomeLayout';
-
 import { useNavigate } from 'react-router-dom';
-
 import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote } from 'lucide-react';
 import { getMyProviderProfile, updateProviderBio, updateProviderServices, deleteProviderDocument } from '../api/providers';
 import { getMe, updateProfile } from '../api/auth';
@@ -14,7 +14,7 @@ const ProviderDashboard = () => {
     const [user, setUser] = useState(null);
     const [providerDetails, setProviderDetails] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview'); // overview, profile, services, documents
+    const [activeTab, setActiveTab] = useState('overview');
 
     // New state for Services Tab
     const [allServices, setAllServices] = useState([]);
@@ -26,6 +26,62 @@ const ProviderDashboard = () => {
         addressProof: [],
         certificate: []
     });
+
+    // Invoice / Completion State
+    const [activeBookingForCompletion, setActiveBookingForCompletion] = useState(null);
+    const [invoiceForm, setInvoiceForm] = useState({ servicePrice: '', serviceCharge: '' });
+    const [isEditing, setIsEditing] = useState(false);
+    const [bioForm, setBioForm] = useState("");
+
+
+
+    const downloadInvoice = (booking) => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.text("INVOICE", 105, 20, null, null, "center");
+
+        doc.setFontSize(10);
+        doc.text(`Invoice #: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
+        doc.text(`Date: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
+
+        doc.setFontSize(12);
+        doc.text("Billed To:", 14, 50);
+        doc.setFontSize(10);
+        doc.text(`Name: ${booking.user?.username || 'Customer'}`, 14, 56);
+        if (booking.user?.phone) doc.text(`Phone: ${booking.user.phone}`, 14, 61);
+
+        doc.setFontSize(12);
+        doc.text("Service Details:", 14, 75);
+        doc.setFontSize(10);
+        doc.text(`Service: ${booking.service?.title}`, 14, 81);
+        doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
+
+        const tableColumn = ["Description", "Amount (INR)"];
+        const tableRows = [
+            ["Service Price", `Rs. ${booking.invoice?.servicePrice}`],
+            ["Visiting / Extra Charges", `Rs. ${booking.invoice?.serviceCharge}`],
+            ["GST (18%)", `Rs. ${booking.invoice?.gst}`],
+            ["Total Amount", `Rs. ${booking.invoice?.totalAmount}`]
+        ];
+
+        doc.autoTable({
+            startY: 95,
+            head: [tableColumn],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0] },
+            foot: [['Grand Total', `Rs. ${booking.invoice?.totalAmount}`]],
+            footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+        });
+
+        doc.text("Thank you for choosing our service!", 105, doc.lastAutoTable.finalY + 20, null, null, "center");
+
+        doc.save(`Invoice_${booking._id.slice(-6)}.pdf`);
+    };
+
+
+
 
     const handleFileChange = (e) => {
         const { name, files } = e.target;
@@ -83,9 +139,7 @@ const ProviderDashboard = () => {
         );
     };
 
-    // State for Completion Modal
-    const [activeBookingForCompletion, setActiveBookingForCompletion] = useState(null);
-    const [invoiceForm, setInvoiceForm] = useState({ servicePrice: '', serviceCharge: '' });
+
 
     // UI State for Editing
     const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -1122,6 +1176,13 @@ const ProviderDashboard = () => {
                                                     <span className="text-green-800">Total Paid</span>
                                                     <span className="text-green-700">₹{activeBookingForCompletion.invoice?.totalAmount}</span>
                                                 </div>
+
+                                                <button
+                                                    onClick={() => downloadInvoice(activeBookingForCompletion)}
+                                                    className="w-full bg-black text-white py-3 rounded-xl font-bold mt-4 hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                                                >
+                                                    <Upload className="w-4 h-4 rotate-180" /> Download PDF
+                                                </button>
                                             </div>
                                         </div>
                                     ) : (

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getUserBookings, deleteBooking, rateBooking, confirmBooking } from '../api/bookings';
@@ -20,6 +22,7 @@ const MyBookings = () => {
 
     useEffect(() => {
         const fetchBookings = async () => {
+            // ... (existing code, not changing, but showing context for placement)
             try {
                 const data = await getUserBookings();
                 if (data.success) {
@@ -33,6 +36,53 @@ const MyBookings = () => {
         };
         fetchBookings();
     }, []);
+
+    const downloadInvoice = (booking) => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.text("INVOICE", 105, 20, null, null, "center");
+
+        doc.setFontSize(10);
+        doc.text(`Invoice #: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
+        doc.text(`Date: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
+
+        doc.setFontSize(12);
+        doc.text("Billed To:", 14, 50);
+        doc.setFontSize(10);
+        doc.text(`Name: ${booking.user?.username || 'Customer'}`, 14, 56);
+        // Note: booking.user in MyBookings is likely the logged in user, logic same as ProviderDashboard 
+        // assuming populate works similarly or we rely on what's in booking object
+        if (booking.user?.contactNumber) doc.text(`Phone: ${booking.user.contactNumber}`, 14, 61);
+
+        doc.setFontSize(12);
+        doc.text("Service Details:", 14, 75);
+        doc.setFontSize(10);
+        doc.text(`Service: ${booking.service?.title}`, 14, 81);
+        doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
+
+        const tableColumn = ["Description", "Amount (INR)"];
+        const tableRows = [
+            ["Service Price", `Rs. ${booking.invoice?.servicePrice}`],
+            ["Visiting / Extra Charges", `Rs. ${booking.invoice?.serviceCharge}`],
+            ["GST (18%)", `Rs. ${booking.invoice?.gst}`],
+            ["Total Amount", `Rs. ${booking.invoice?.totalAmount}`]
+        ];
+
+        doc.autoTable({
+            startY: 95,
+            head: [tableColumn],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0] },
+            foot: [['Grand Total', `Rs. ${booking.invoice?.totalAmount}`]],
+            footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+        });
+
+        doc.text("Thank you for choosing our service!", 105, doc.lastAutoTable.finalY + 20, null, null, "center");
+
+        doc.save(`Invoice_${booking._id.slice(-6)}.pdf`);
+    };
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -174,8 +224,14 @@ const MyBookings = () => {
                                             {booking.status === 'completed' && (
                                                 <div className="flex flex-col items-end gap-2">
                                                     {booking.invoice && (
-                                                        <div className="text-right">
+                                                        <div className="text-right flex flex-col items-end gap-2">
                                                             <p className="text-sm font-bold text-soft-black">Total: ₹{booking.invoice.totalAmount}</p>
+                                                            <button
+                                                                onClick={() => downloadInvoice(booking)}
+                                                                className="text-xs text-white bg-black px-3 py-1 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1"
+                                                            >
+                                                                Download PDF
+                                                            </button>
                                                         </div>
                                                     )}
 

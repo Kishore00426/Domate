@@ -40,16 +40,6 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                                             className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-soft-black"
                                             placeholder="Location"
                                         />
-                                        <select
-                                            name="addressTag"
-                                            value={tempData.addressTag}
-                                            onChange={handleChange}
-                                            className="px-2 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 text-sm bg-white text-soft-black"
-                                        >
-                                            {addressTags.map(tag => (
-                                                <option key={tag} value={tag}>{tag}</option>
-                                            ))}
-                                        </select>
                                     </div>
                                 </div>
                             ) : (
@@ -57,9 +47,6 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                                     <h2 className="text-xl font-bold text-soft-black">{user.name}</h2>
                                     <div className="flex items-center justify-center gap-2 mb-6">
                                         <p className="text-gray-500 text-sm">{user.location}</p>
-                                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
-                                            {user.addressTag}
-                                        </span>
                                     </div>
                                 </>
                             )}

@@ -62,6 +62,7 @@ export const updateUserProfileAndAddress = async (req, res) => {
     const updateData = {};
     if (username) updateData.username = username;
     if (email) updateData.email = email;
+    if (phone) updateData.contactNumber = phone;
 
     let updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
       new: true,
@@ -96,6 +97,7 @@ export const updateUserProfileAndAddress = async (req, res) => {
         _id: updatedUser._id,
         username: updatedUser.username,
         email: updatedUser.email,
+        contactNumber: updatedUser.contactNumber,
         role: updatedUser.role ? updatedUser.role.name : null,
         address: updatedAddress
           ? {
