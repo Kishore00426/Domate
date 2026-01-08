@@ -8,7 +8,9 @@ import {
   getUserBookings,
   getProviderBookings,
   getProviderContact,
-  deleteBooking
+  deleteBooking,
+  completeBooking,
+  rateBooking
 } from "../controllers/bookingController.js";
 
 const router = express.Router();
@@ -63,6 +65,22 @@ router.put(
   authenticate,
   authorize(["service_provider"]),
   updateBookingStatus
+);
+
+// Provider marks booking as completed (with invoice)
+router.post(
+  "/:id/complete",
+  authenticate,
+  authorize(["service_provider"]),
+  completeBooking
+);
+
+// User rates a completed booking
+router.post(
+  "/:id/rate",
+  authenticate,
+  authorize(["user"]),
+  rateBooking
 );
 
 export default router;
