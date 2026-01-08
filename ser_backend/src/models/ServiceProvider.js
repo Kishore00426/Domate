@@ -23,6 +23,9 @@ const serviceProviderSchema = new mongoose.Schema({
   currentPlace: { type: String },
   emergencyContact: emergencyContactSchema,
 
+  // ✅ Provider specific charges
+  consultFee: { type: Number, default: 0 },
+
   // ✅ multiple services supported (linked to Service model)
   services: [{
     type: mongoose.Schema.Types.ObjectId,

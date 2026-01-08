@@ -271,7 +271,7 @@ const MyBookings = () => {
                                     </div>
                                     <div>
                                         <p className="text-xs text-gray-500 font-bold uppercase">Phone</p>
-                                        <p className="font-medium text-gray-900">{selectedContact.phone || "Not available"}</p>
+                                        <p className="font-medium text-gray-900">{selectedContact.contactNumber || selectedContact.phone || "Not available"}</p>
                                     </div>
                                 </div>
 

@@ -105,16 +105,21 @@ export const updateBookingStatus = async (req, res) => {
 export const getUserBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ user: req.user._id })
-      .populate("serviceProvider", "username email") // User info
-      .populate("service", "title");
+      .populate("serviceProvider", "username email contactNumber")
+      .populate({
+        path: "service",
+        select: "title price category",
+        populate: { path: "category", select: "name" }
+      });
 
-    // Enhance bookings with phone from ServiceProvider
+    // Enhance bookings with phone from ServiceProvider (Fallback if User.contactNumber is empty)
     const bookingsWithPhone = await Promise.all(bookings.map(async (b) => {
       const bookingObj = b.toObject();
       if (bookingObj.serviceProvider) {
         try {
           const provider = await ServiceProvider.findOne({ user: bookingObj.serviceProvider._id });
           bookingObj.serviceProvider.phone = provider?.phone || null;
+          bookingObj.serviceProvider.consultFee = provider?.consultFee || 0;
         } catch (e) {
           bookingObj.serviceProvider.phone = null;
         }
@@ -133,10 +138,14 @@ export const getProviderBookings = async (req, res) => {
   try {
     // Get bookings
     const bookings = await Booking.find({ serviceProvider: req.user._id })
-      .populate("user", "username email") // phone is in Address now
-      .populate("service", "title");
+      .populate("user", "username email contactNumber")
+      .populate({
+        path: "service",
+        select: "title price category",
+        populate: { path: "category", select: "name" }
+      });
 
-    // Enhance bookings with phone from Address
+    // Enhance bookings with phone from Address (Fallback)
     const bookingsWithPhone = await Promise.all(bookings.map(async (b) => {
       const bookingObj = b.toObject();
       if (bookingObj.user) {
@@ -178,10 +187,10 @@ export const getProviderContact = async (req, res) => {
 
     res.json({
       success: true,
-      providerContact: {
+      contact: {
         username: booking.serviceProvider.username,
         email: booking.serviceProvider.email,
-        phone: provider?.phone || "N/A"
+        phone: booking.serviceProvider.contactNumber || provider?.phone || "Not available"
       }
     });
   } catch (err) {
@@ -228,10 +237,17 @@ export const completeBooking = async (req, res) => {
 
     booking.status = "work_completed"; // Intermediate status
     // booking.completedAt = new Date(); // User confirms completion now
+
+    const price = Number(servicePrice);
+    const charge = Number(serviceCharge);
+    const gst = (price + charge) * 0.18; // 18% GST
+    const total = price + charge + gst;
+
     booking.invoice = {
-      servicePrice: Number(servicePrice),
-      serviceCharge: Number(serviceCharge),
-      totalAmount: Number(servicePrice) + Number(serviceCharge)
+      servicePrice: price,
+      serviceCharge: charge,
+      gst: parseFloat(gst.toFixed(2)),
+      totalAmount: parseFloat(total.toFixed(2))
     };
 
     await booking.save();

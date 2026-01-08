@@ -85,6 +85,7 @@ export const updateProviderBio = async (req, res) => {
       experience: req.body.experience,
       nativePlace: req.body.nativePlace,
       currentPlace: req.body.currentPlace,
+      consultFee: req.body.consultFee, // ✅ Save/Update consult fee
       emergencyContact,
       certificates: certificateFiles.map(file => `/uploads/providers/${file.filename}`),
       addressProofs: addressProofFiles.map(file => `/uploads/providers/${file.filename}`),

@@ -3,7 +3,7 @@ import HomeLayout from '../layouts/HomeLayout';
 
 import { useNavigate } from 'react-router-dom';
 
-import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2 } from 'lucide-react';
+import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote } from 'lucide-react';
 import { getMyProviderProfile, updateProviderBio, updateProviderServices, deleteProviderDocument } from '../api/providers';
 import { getMe, updateProfile } from '../api/auth';
 import { getProviderBookings, updateBookingStatus, completeBooking } from '../api/bookings';
@@ -349,6 +349,13 @@ const ProviderDashboard = () => {
                                                                     <p className="font-semibold text-soft-black">{providerDetails?.experience ? `${providerDetails.experience} Years` : 'Not added'}</p>
                                                                 </div>
                                                             </div>
+                                                            <div className="flex items-start gap-3">
+                                                                <div className="p-2 bg-gray-50 rounded-lg"><Banknote className="w-4 h-4 text-gray-600" /></div>
+                                                                <div>
+                                                                    <p className="text-xs text-gray-500 mb-0.5">Visiting Fee</p>
+                                                                    <p className="font-semibold text-soft-black">₹{providerDetails?.consultFee || '0'}</p>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -443,6 +450,16 @@ const ProviderDashboard = () => {
                                                         type="text"
                                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
                                                         placeholder="e.g. 5"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-sm font-semibold text-soft-black mb-2">Visiting / Consult Fee (₹)</label>
+                                                    <input
+                                                        name="consultFee"
+                                                        defaultValue={providerDetails?.consultFee}
+                                                        type="number"
+                                                        className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
+                                                        placeholder="e.g. 500"
                                                     />
                                                 </div>
                                             </div>
@@ -978,7 +995,10 @@ const ProviderDashboard = () => {
                                                                         <button
                                                                             onClick={() => {
                                                                                 setActiveBookingForCompletion(booking);
-                                                                                setInvoiceForm({ servicePrice: '', serviceCharge: '' });
+                                                                                setInvoiceForm({
+                                                                                    servicePrice: booking.service?.price || '',
+                                                                                    serviceCharge: providerDetails?.consultFee || ''
+                                                                                });
                                                                             }}
                                                                             className="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md"
                                                                         >
@@ -989,6 +1009,36 @@ const ProviderDashboard = () => {
                                                             </div>
                                                         </div>
                                                     ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* COMPLETED SECTION (Restored) */}
+                                    <div className="mt-12">
+                                        <h3 className="font-semibold text-lg mb-4 text-gray-400 flex items-center gap-2">
+                                            <Briefcase className="w-5 h-5" /> Completed Jobs History
+                                        </h3>
+                                        {bookings.filter(b => b.status === 'completed').length === 0 ? (
+                                            <p className="text-gray-400 text-sm italic">No completed jobs yet.</p>
+                                        ) : (
+                                            <div className="space-y-4 opacity-75">
+                                                {bookings.filter(b => b.status === 'completed').map(booking => (
+                                                    <div key={booking._id} className="border border-gray-200 bg-gray-50 rounded-2xl p-6">
+                                                        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                                                            <div>
+                                                                <h4 className="font-bold text-soft-black">{booking.service?.title}</h4>
+                                                                <p className="text-sm text-gray-500">Customer: {booking.user?.username}</p>
+                                                                <p className="text-sm text-gray-400">Completed on: {new Date(booking.completedAt || booking.updatedAt).toLocaleDateString()}</p>
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="text-lg font-bold text-soft-black">₹{booking.invoice?.totalAmount}</p>
+                                                                <div className="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-bold inline-block mt-1">
+                                                                    Completed
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
@@ -1012,42 +1062,64 @@ const ProviderDashboard = () => {
                             </div>
 
                             <div className="p-8 space-y-6">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Service Price (₹)</label>
-                                    <input
-                                        type="number"
-                                        value={invoiceForm.servicePrice}
-                                        onChange={(e) => setInvoiceForm({ ...invoiceForm, servicePrice: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-medium"
-                                        placeholder="0.00"
-                                    />
-                                </div>
+                                {(() => {
+                                    const categoryName = activeBookingForCompletion?.service?.category?.name?.toLowerCase() || '';
+                                    const isConsultation = ['electrician', 'plumber', 'carpenter'].some(c => categoryName.includes(c));
 
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Service Charge / Extra (₹)</label>
-                                    <input
-                                        type="number"
-                                        value={invoiceForm.serviceCharge}
-                                        onChange={(e) => setInvoiceForm({ ...invoiceForm, serviceCharge: e.target.value })}
-                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-medium"
-                                        placeholder="0.00"
-                                    />
-                                </div>
+                                    const price = Number(invoiceForm.servicePrice || 0);
+                                    const charge = Number(invoiceForm.serviceCharge || 0);
+                                    const gst = (price + charge) * 0.18;
+                                    const total = price + charge + gst;
 
-                                <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                                    <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-                                        <span>Subtotal</span>
-                                        <span>₹{Number(invoiceForm.servicePrice || 0).toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-                                        <span>Service Charge</span>
-                                        <span>₹{Number(invoiceForm.serviceCharge || 0).toFixed(2)}</span>
-                                    </div>
-                                    <div className="border-t border-gray-200 my-2 pt-2 flex justify-between items-center font-bold text-lg text-soft-black">
-                                        <span>Total Amount</span>
-                                        <span>₹{(Number(invoiceForm.servicePrice || 0) + Number(invoiceForm.serviceCharge || 0)).toFixed(2)}</span>
-                                    </div>
-                                </div>
+                                    return (
+                                        <>
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                    Service Price (Base Cost)
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={invoiceForm.servicePrice}
+                                                    onChange={(e) => setInvoiceForm({ ...invoiceForm, servicePrice: e.target.value })}
+                                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-medium"
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                                    {isConsultation ? "Visiting / Consultation Fee (₹)" : "Additional Service Charge (₹)"}
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={invoiceForm.serviceCharge}
+                                                    onChange={(e) => setInvoiceForm({ ...invoiceForm, serviceCharge: e.target.value })}
+                                                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none text-lg font-medium"
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+
+                                            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
+                                                <div className="flex justify-between items-center text-sm text-gray-500">
+                                                    <span>Subtotal</span>
+                                                    <span>₹{price.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm text-gray-500">
+                                                    <span>{isConsultation ? "Consultation Fee" : "Extra Charges"}</span>
+                                                    <span>₹{charge.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-sm text-gray-500">
+                                                    <span>GST (18%)</span>
+                                                    <span>₹{gst.toFixed(2)}</span>
+                                                </div>
+                                                <div className="border-t border-gray-200 pt-2 flex justify-between items-center font-bold text-lg text-soft-black">
+                                                    <span>Total Amount</span>
+                                                    <span>₹{total.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
 
                                 <button
                                     onClick={async () => {

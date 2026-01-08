@@ -16,7 +16,8 @@ const bookingSchema = new mongoose.Schema(
     // Invoice Details (Provider fills this)
     invoice: {
       servicePrice: { type: Number },
-      serviceCharge: { type: Number },
+      serviceCharge: { type: Number }, // Visiting/Consultation or Extra
+      gst: { type: Number }, // Calculated Tax
       totalAmount: { type: Number }
     },
 
