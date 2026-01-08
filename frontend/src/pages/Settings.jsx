@@ -33,13 +33,15 @@ const Settings = () => {
     return (
         <HomeLayout>
             <div className="pt-[100px] px-4 pb-20 max-w-4xl mx-auto">
-                <button
-                    onClick={() => navigate('/account')}
-                    className="flex items-center text-gray-600 hover:text-black mb-6 transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5 mr-2" />
-                    Back to Dashboard
-                </button>
+                <div className="sticky top-24 z-10 mb-6">
+                    <button
+                        onClick={() => navigate('/account')}
+                        className="group flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-all duration-200"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Dashboard
+                    </button>
+                </div>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 border-b border-gray-100">

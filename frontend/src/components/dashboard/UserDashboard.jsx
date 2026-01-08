@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, MapPin, Mail, Phone, Calendar, CreditCard, Settings, HelpCircle, Info, FileText } from 'lucide-react';
+import { User, MapPin, Mail, Phone, Calendar, CreditCard, Settings, HelpCircle, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, handleCancel, handleSave, handleChange, addressTags }) => {
@@ -215,18 +215,7 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </div>
 
-                            <div className="p-6 flex justify-between items-center hover:bg-gray-50 cursor-pointer transition-colors">
-                                <div className="flex items-center gap-4">
-                                    <div className="p-2 bg-gray-50 text-gray-600 rounded-lg">
-                                        <Info className="w-5 h-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-semibold text-soft-black">About Us</h3>
-                                        <p className="text-xs text-gray-500">Learn more about Domate</p>
-                                    </div>
-                                </div>
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                            </div>
+
                         </div>
                     </div>
                 </div>

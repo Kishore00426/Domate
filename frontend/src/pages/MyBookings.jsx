@@ -78,14 +78,16 @@ const MyBookings = () => {
 
     return (
         <HomeLayout>
-            <div className="pt-[100px] px-4 pb-20 max-w-4xl mx-auto">
-                <button
-                    onClick={() => navigate('/account')}
-                    className="flex items-center text-gray-600 hover:text-black mb-6 transition-colors"
-                >
-                    <ArrowLeft className="w-5 h-5 mr-2" />
-                    Back to Dashboard
-                </button>
+            <div className="pt-[10px] px-4 pb-20 max-w-4xl mx-auto">
+                <div className="sticky top-28 z-10 mb-6">
+                    <button
+                        onClick={() => navigate('/account')}
+                        className="group flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium transition-all duration-200"
+                    >
+                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Dashboard
+                    </button>
+                </div>
 
                 <div className="flex items-center gap-3 mb-8">
                     <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
