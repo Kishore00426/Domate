@@ -94,3 +94,13 @@ export const rateBooking = async (bookingId, reviewData) => {
         return { success: false, error: error.response?.data?.error || "Failed to rate booking" };
     }
 };
+
+export const confirmBooking = async (bookingId) => {
+    try {
+        const response = await api.put(`/bookings/${bookingId}/confirm`);
+        return response.data;
+    } catch (error) {
+        console.error("Error confirming booking:", error);
+        return { success: false, error: error.response?.data?.error || "Failed to confirm booking" };
+    }
+};

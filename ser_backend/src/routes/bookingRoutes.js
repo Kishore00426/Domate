@@ -10,6 +10,7 @@ import {
   getProviderContact,
   deleteBooking,
   completeBooking,
+  confirmBooking, // ✅ Import new controller
   rateBooking
 } from "../controllers/bookingController.js";
 
@@ -81,6 +82,14 @@ router.post(
   authenticate,
   authorize(["user"]),
   rateBooking
+);
+
+// User confirms completion
+router.put(
+  "/:id/confirm",
+  authenticate,
+  authorize(["user"]),
+  confirmBooking
 );
 
 export default router;

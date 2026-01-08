@@ -203,7 +203,7 @@ export const deleteBooking = async (req, res) => {
   }
 };
 
-// ---------------- PROVIDER CHECKS BOOKING ----------------
+// ---------------- PROVIDER MARKS JOB AS DONE ----------------
 export const completeBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -222,8 +222,8 @@ export const completeBooking = async (req, res) => {
       return res.status(400).json({ success: false, error: "Booking must be accepted before completion" });
     }
 
-    booking.status = "completed";
-    booking.completedAt = new Date();
+    booking.status = "work_completed"; // Intermediate status
+    // booking.completedAt = new Date(); // User confirms completion now
     booking.invoice = {
       servicePrice: Number(servicePrice),
       serviceCharge: Number(serviceCharge),
@@ -231,6 +231,30 @@ export const completeBooking = async (req, res) => {
     };
 
     await booking.save();
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- USER CONFIRMS COMPLETION ----------------
+export const confirmBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const booking = await Booking.findOne({ _id: id, user: req.user._id });
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found or access denied" });
+    }
+
+    if (booking.status !== "work_completed") {
+      return res.status(400).json({ success: false, error: "Provider must mark job as done first" });
+    }
+
+    booking.status = "completed";
+    booking.completedAt = new Date();
+    await booking.save();
+
     res.json({ success: true, booking });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
