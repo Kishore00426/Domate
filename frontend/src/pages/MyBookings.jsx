@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
-import { getUserBookings, deleteBooking } from '../api/bookings';
-import { Calendar, User, ArrowLeft, Clock, Mail, Phone } from 'lucide-react';
+import { getUserBookings, deleteBooking, rateBooking } from '../api/bookings';
+import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star } from 'lucide-react';
 
 
 
@@ -13,6 +13,10 @@ const MyBookings = () => {
 
     const [showContactModal, setShowContactModal] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
+
+    // Review Modal State
+    const [activeBookingForReview, setActiveBookingForReview] = useState(null);
+    const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' });
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -130,6 +134,32 @@ const MyBookings = () => {
                                             {booking.status}
                                         </span>
 
+                                        {booking.status === 'completed' && (
+                                            <div className="flex flex-col items-end gap-2">
+                                                {booking.invoice && (
+                                                    <div className="text-right">
+                                                        <p className="text-sm font-bold text-soft-black">Total: ₹{booking.invoice.totalAmount}</p>
+                                                    </div>
+                                                )}
+
+                                                {!booking.review ? (
+                                                    <button
+                                                        onClick={() => {
+                                                            setActiveBookingForReview(booking);
+                                                            setReviewForm({ rating: 0, comment: '' });
+                                                        }}
+                                                        className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2"
+                                                    >
+                                                        <Star className="w-4 h-4 fill-white" /> Rate Provider
+                                                    </button>
+                                                ) : (
+                                                    <div className="flex items-center gap-1 text-yellow-500 font-bold bg-yellow-50 px-3 py-1 rounded-full border border-yellow-100">
+                                                        <Star className="w-4 h-4 fill-yellow-500" /> {booking.review.rating}/5
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
                                         {booking.status === 'accepted' && (
                                             <button
                                                 onClick={() => handleContactClick(booking.serviceProvider)}
@@ -174,50 +204,69 @@ const MyBookings = () => {
                 </div>
             </div>
 
-            {/* Contact Modal */}
-            {showContactModal && selectedContact && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-sm p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="text-center mb-6">
-                            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <User className="w-8 h-8 text-gray-500" />
-                            </div>
-                            <h3 className="text-xl font-bold text-soft-black">{selectedContact.username}</h3>
-                            <p className="text-sm text-gray-500">Service Provider</p>
-                        </div>
 
-                        <div className="space-y-4 mb-6">
-                            <div className="p-4 bg-gray-50 rounded-xl flex items-center gap-3">
-                                <div className="p-2 bg-white rounded-lg shadow-sm">
-                                    <Mail className="w-5 h-5 text-gray-600" />
-                                </div>
-                                <div className="overflow-hidden">
-                                    <p className="text-xs text-gray-500 uppercase font-bold">Email</p>
-                                    <p className="font-medium text-gray-900 truncate">{selectedContact.email}</p>
-                                </div>
+
+
+            {/* Review Modal */}
+            {
+                activeBookingForReview && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                        <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                                <h3 className="text-lg font-bold text-soft-black">Rate Your Experience</h3>
+                                <button onClick={() => setActiveBookingForReview(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
                             </div>
 
-                            <div className="p-4 bg-gray-50 rounded-xl flex items-center gap-3">
-                                <div className="p-2 bg-white rounded-lg shadow-sm">
-                                    <Phone className="w-5 h-5 text-gray-600" />
+                            <div className="p-8 space-y-6">
+                                <div className="flex justify-center gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            onClick={() => setReviewForm({ ...reviewForm, rating: star })}
+                                            className="p-1 transition-transform hover:scale-110"
+                                        >
+                                            <Star
+                                                className={`w-10 h-10 ${star <= reviewForm.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                                            />
+                                        </button>
+                                    ))}
                                 </div>
+
                                 <div>
-                                    <p className="text-xs text-gray-500 uppercase font-bold">Phone</p>
-                                    <p className="font-medium text-gray-900">{selectedContact.phone || 'N/A'}</p>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Leave a Comment</label>
+                                    <textarea
+                                        value={reviewForm.comment}
+                                        onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-black outline-none h-32 resize-none"
+                                        placeholder="How was the service provided?"
+                                    ></textarea>
                                 </div>
+
+                                <button
+                                    onClick={async () => {
+                                        if (!reviewForm.rating) return alert("Please select a star rating");
+
+                                        const res = await rateBooking(activeBookingForReview._id, reviewForm);
+                                        if (res.success) {
+                                            setBookings(prev => prev.map(b => b._id === activeBookingForReview._id ? res.booking : b));
+                                            setActiveBookingForReview(null);
+                                            alert("Thank you for your feedback!");
+                                        } else {
+                                            alert(res.error);
+                                        }
+                                    }}
+                                    className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-colors shadow-lg"
+                                >
+                                    Submit Review
+                                </button>
                             </div>
                         </div>
-
-                        <button
-                            onClick={() => setShowContactModal(false)}
-                            className="w-full bg-soft-black text-white py-3 rounded-xl font-semibold hover:bg-gray-800 transition-colors"
-                        >
-                            Close
-                        </button>
                     </div>
-                </div>
-            )}
-        </HomeLayout>
+                )
+            }
+        </HomeLayout >
     );
 };
 

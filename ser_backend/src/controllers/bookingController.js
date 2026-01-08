@@ -202,3 +202,71 @@ export const deleteBooking = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+// ---------------- PROVIDER CHECKS BOOKING ----------------
+export const completeBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { servicePrice, serviceCharge } = req.body;
+
+    if (!servicePrice || serviceCharge === undefined) {
+      return res.status(400).json({ success: false, error: "Please provide service price and charge" });
+    }
+
+    const booking = await Booking.findOne({ _id: id, serviceProvider: req.user._id });
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found or access denied" });
+    }
+
+    if (booking.status !== "accepted") {
+      return res.status(400).json({ success: false, error: "Booking must be accepted before completion" });
+    }
+
+    booking.status = "completed";
+    booking.completedAt = new Date();
+    booking.invoice = {
+      servicePrice: Number(servicePrice),
+      serviceCharge: Number(serviceCharge),
+      totalAmount: Number(servicePrice) + Number(serviceCharge)
+    };
+
+    await booking.save();
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- USER RATES BOOKING ----------------
+export const rateBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rating, comment } = req.body;
+
+    if (!rating) {
+      return res.status(400).json({ success: false, error: "Rating is required" });
+    }
+
+    const booking = await Booking.findOne({ _id: id, user: req.user._id });
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found or access denied" });
+    }
+
+    if (booking.status !== "completed") {
+      return res.status(400).json({ success: false, error: "Can only rate completed bookings" });
+    }
+
+    booking.review = {
+      rating: Number(rating),
+      comment: comment || "",
+      createdAt: new Date()
+    };
+
+    booking.status = "completed"; // Re-affirming status
+    await booking.save();
+
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};

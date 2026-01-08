@@ -74,3 +74,23 @@ export const deleteBooking = async (bookingId) => {
         return { success: false, error: error.response?.data?.error || "Failed to delete booking" };
     }
 };
+
+export const completeBooking = async (bookingId, invoiceData) => {
+    try {
+        const response = await api.post(`/bookings/${bookingId}/complete`, invoiceData);
+        return response.data;
+    } catch (error) {
+        console.error("Error completing booking:", error);
+        return { success: false, error: error.response?.data?.error || "Failed to complete booking" };
+    }
+};
+
+export const rateBooking = async (bookingId, reviewData) => {
+    try {
+        const response = await api.post(`/bookings/${bookingId}/rate`, reviewData);
+        return response.data;
+    } catch (error) {
+        console.error("Error rating booking:", error);
+        return { success: false, error: error.response?.data?.error || "Failed to rate booking" };
+    }
+};
