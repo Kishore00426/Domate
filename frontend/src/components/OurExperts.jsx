@@ -89,10 +89,6 @@ const OurExperts = () => {
                                     <div className="font-medium text-left text-gray-300">
                                         {expert.experience} Yrs Exp
                                     </div>
-                                    <div className="flex items-center gap-1 font-bold">
-                                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                                        <span>{expert.rating || "New"}</span>
-                                    </div>
                                 </div>
 
                                 {/* Expertise */}

@@ -57,35 +57,15 @@ export const updateBookingStatus = async (req, res) => {
   try {
     const { status } = req.body;
 
-    if (!["accepted", "rejected"].includes(status)) {
+    // Allow more statuses: 'accepted', 'rejected', 'in_progress', 'arrived'
+    if (!["accepted", "rejected", "in_progress", "arrived"].includes(status)) {
       return res.status(400).json({ success: false, error: "Invalid status" });
     }
 
     const booking = await Booking.findById(req.params.id);
-    if (!booking) {
-      return res.status(404).json({ success: false, error: "Booking not found" });
-    }
-
-    const rawUserId = req.user?._id ?? req.user?.id;
-    if (!rawUserId) {
-      return res.status(401).json({ success: false, error: "Not authenticated: user id missing" });
-    }
-
-    const authUserId = mongoose.Types.ObjectId.isValid(rawUserId)
-      ? new mongoose.Types.ObjectId(rawUserId)
-      : null;
-
-    if (!authUserId) {
-      return res.status(400).json({ success: false, error: "Invalid authenticated user id" });
-    }
-
-    // ✅ Authorization check
-    if (!booking.serviceProvider.equals(authUserId)) {
-      console.log('❌ AUTH MISMATCH! Booking Provider:', booking.serviceProvider, 'Auth User:', authUserId);
-      return res.status(403).json({
-        success: false,
-        error: `Access denied: cannot modify another provider. Booking belongs to ${booking.serviceProvider}, you are ${authUserId}`
-      });
+    // ... existing code ...
+    if (booking.serviceProvider.toString() !== req.user._id.toString()) {
+      // ... existing code ...
     }
 
     booking.status = status;
@@ -100,112 +80,7 @@ export const updateBookingStatus = async (req, res) => {
     return res.status(500).json({ success: false, error: err.message });
   }
 };
-
-// ---------------- USER VIEWS THEIR BOOKINGS ----------------
-export const getUserBookings = async (req, res) => {
-  try {
-    const bookings = await Booking.find({ user: req.user._id })
-      .populate("serviceProvider", "username email") // User info
-      .populate("service", "title");
-
-    // Enhance bookings with phone from ServiceProvider
-    const bookingsWithPhone = await Promise.all(bookings.map(async (b) => {
-      const bookingObj = b.toObject();
-      if (bookingObj.serviceProvider) {
-        try {
-          const provider = await ServiceProvider.findOne({ user: bookingObj.serviceProvider._id });
-          bookingObj.serviceProvider.phone = provider?.phone || null;
-        } catch (e) {
-          bookingObj.serviceProvider.phone = null;
-        }
-      }
-      return bookingObj;
-    }));
-
-    res.json({ success: true, bookings: bookingsWithPhone });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-// ---------------- PROVIDER VIEWS INCOMING BOOKINGS ----------------
-export const getProviderBookings = async (req, res) => {
-  try {
-    // Get bookings
-    const bookings = await Booking.find({ serviceProvider: req.user._id })
-      .populate("user", "username email") // phone is in Address now
-      .populate("service", "title");
-
-    // Enhance bookings with phone from Address
-    const bookingsWithPhone = await Promise.all(bookings.map(async (b) => {
-      const bookingObj = b.toObject();
-      if (bookingObj.user) {
-        try {
-          const address = await Address.findOne({ user: bookingObj.user._id });
-          bookingObj.user.phone = address?.phone || null;
-        } catch (e) {
-          bookingObj.user.phone = null;
-        }
-      }
-      return bookingObj;
-    }));
-
-    res.json({ success: true, bookings: bookingsWithPhone });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-// ---------------- USER GETS PROVIDER CONTACT (ONLY IF ACCEPTED) ----------------
-export const getProviderContact = async (req, res) => {
-  try {
-    const booking = await Booking.findById(req.params.id)
-      .populate("serviceProvider", "username email");
-
-    if (!booking) {
-      return res.status(404).json({ success: false, error: "Booking not found" });
-    }
-
-    if (booking.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, error: "Not authorized" });
-    }
-
-    if (booking.status !== "accepted") {
-      return res.json({ success: false, message: "Booking not accepted yet" });
-    }
-
-    const provider = await ServiceProvider.findOne({ user: booking.serviceProvider._id });
-
-    res.json({
-      success: true,
-      providerContact: {
-        username: booking.serviceProvider.username,
-        email: booking.serviceProvider.email,
-        phone: provider?.phone || "N/A"
-      }
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
-
-// ---------------- USER DELETES BOOKING ----------------
-export const deleteBooking = async (req, res) => {
-  try {
-    const booking = await Booking.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user._id // Ensure ownership
-    });
-
-    if (!booking) {
-      return res.status(404).json({ success: false, error: "Booking not found or access denied" });
-    }
-
-    res.json({ success: true, message: "Booking deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
-  }
-};
+// ...
 
 // ---------------- PROVIDER MARKS JOB AS DONE ----------------
 export const completeBooking = async (req, res) => {
@@ -222,8 +97,9 @@ export const completeBooking = async (req, res) => {
       return res.status(404).json({ success: false, error: "Booking not found or access denied" });
     }
 
-    if (booking.status !== "accepted") {
-      return res.status(400).json({ success: false, error: "Booking must be accepted before completion" });
+    // Allow completion from 'accepted', 'arrived', or 'in_progress'
+    if (!["accepted", "arrived", "in_progress"].includes(booking.status)) {
+      return res.status(400).json({ success: false, error: "Booking must be in progress or accepted before completion" });
     }
 
     booking.status = "work_completed"; // Intermediate status

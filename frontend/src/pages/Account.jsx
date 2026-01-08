@@ -31,7 +31,8 @@ const Account = () => {
                     name: userData.user.username,
                     email: userData.user.email,
                     location: userData.user.address?.city || "Unknown Location",
-                    phone: userData.user.address?.phone || prev.phone,
+                    phone: userData.user.contactNumber || "",
+                    addressTag: "Home", // Default as not in DB yet
                     role: userData.user.role // Very important for conditional rendering
                 }));
 

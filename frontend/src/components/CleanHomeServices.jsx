@@ -76,10 +76,7 @@ const CleanHomeServices = () => {
                                         No Image
                                     </div>
                                 )}
-                                <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md flex items-center gap-1 text-xs font-bold shadow-sm">
-                                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                                    <span>4.8</span> {/* Hardcoded rating for now as it's not in service model yet */}
-                                </div>
+
                             </div>
 
                             {/* Content */}

@@ -242,13 +242,7 @@ const UserManagement = () => {
                                                     <p className="text-gray-500 text-xs uppercase font-bold">Experience</p>
                                                     <p className="font-semibold text-soft-black">{selectedProviderDetails.experience || 0} Years</p>
                                                 </div>
-                                                <div>
-                                                    <p className="text-gray-500 text-xs uppercase font-bold">Rating</p>
-                                                    <p className="font-semibold text-soft-black flex items-center gap-1">
-                                                        {selectedProviderDetails.rating || 'N/A'}
-                                                        <span className="text-gray-400 font-normal">({selectedProviderDetails.totalReviews || 0})</span>
-                                                    </p>
-                                                </div>
+
                                             </div>
 
                                             <div>
