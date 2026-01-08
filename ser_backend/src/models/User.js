@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
@@ -7,7 +8,8 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: mongoose.Schema.Types.ObjectId, ref: "Role", default: null },
     // Provider specific fields
-    phone: { type: String },
+    contactNumber: { type: String }, // standardized phone
+    // phone: { type: String }, // Removed in favor of contactNumber
     location: { type: String },
     category: { type: String },
     experience: { type: Number },

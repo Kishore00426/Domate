@@ -1,5 +1,37 @@
 import ServiceProvider from "../models/ServiceProvider.js";
 import Address from "../models/Address.js";
+import User from "../models/User.js"; // ✅ Import User for phone updates
+
+// ... existing code ...
+
+/**
+ * Delete a specific document from provider profile
+ * query: ?type=certificate|addressProof|idProof&filePath=...
+ */
+export const deleteProviderDocument = async (req, res) => {
+  try {
+    const { type, filePath } = req.body; // Expecting body or query? using body for safety
+    if (!['certificates', 'addressProofs', 'idProofs'].includes(type)) {
+      return res.status(400).json({ success: false, error: "Invalid document type" });
+    }
+
+    // Logic to remove from array
+    const update = {};
+    update[type] = filePath;
+
+    const provider = await ServiceProvider.findOneAndUpdate(
+      { user: req.user._id },
+      { $pull: update },
+      { new: true }
+    );
+
+    // Optional: Delete file from disk using fs.unlink if needed (skipping for now to avoid complexity with paths)
+
+    res.json({ success: true, provider });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
 
 /**
  * Update provider bio details + certificates/proofs
@@ -42,8 +74,13 @@ export const updateProviderBio = async (req, res) => {
       );
     }
 
+    // ✅ Update User contactNumber if phone is provided
+    if (req.body.phone) {
+      await User.findByIdAndUpdate(req.user._id, { contactNumber: req.body.phone });
+    }
+
     const updateData = {
-      phone: req.body.phone,
+      // phone: req.body.phone, // Removed from ServiceProvider
       // address: req.body.address, // Removed from ServiceProvider
       experience: req.body.experience,
       nativePlace: req.body.nativePlace,
@@ -168,22 +205,26 @@ export const getProviderByUser = async (req, res) => {
 };
 
 /**
+ * Get provider profile by ID (for admin or public view)
+ */
+export const getProviderProfile = async (req, res) => {
+  try {
+    const provider = await ServiceProvider.findOne({ user: req.params.id }).populate('services').populate('user', 'username email contactNumber'); // ✅ Populating contactNumber
+    if (!provider) return res.status(404).json({ success: false, error: "Provider not found" });
+    res.json({ success: true, provider });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+/**
  * Get logged-in provider’s own profile
  */
 export const getMyProviderProfile = async (req, res) => {
   try {
-    const provider = await ServiceProvider.findOne({ user: req.user._id })
-      .populate("user services");
-    if (!provider) {
-      return res.status(404).json({ success: false, error: "Provider profile not found" });
-    }
-
-    // Attach address for frontend consistency
-    const addressDoc = await Address.findOne({ user: req.user._id });
-    const providerObj = provider.toObject();
-    providerObj.address = addressDoc ? addressDoc.street : "";
-
-    res.json({ success: true, provider: providerObj });
+    const provider = await ServiceProvider.findOne({ user: req.user._id }).populate('services').populate('user', 'username email contactNumber'); // ✅ Populating contactNumber
+    if (!provider) return res.status(404).json({ success: false, error: "Provider profile not found" });
+    res.json({ success: true, provider });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

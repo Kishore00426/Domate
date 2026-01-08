@@ -115,10 +115,10 @@ export const deleteUser = async (req, res) => {
 export const getPendingProviders = async (req, res) => {
   try {
     // Fetch providers with approvalStatus = 'pending'
-    const providers = await ServiceProvider.find({ approvalStatus: "pending" })
+    let providers = await ServiceProvider.find({ approvalStatus: "pending" })
       .populate({
         path: "user",
-        select: "username email role providerStatus", // only return useful fields
+        select: "username email role providerStatus contactNumber", // ✅ select contactNumber
         populate: { path: "role", select: "name" }
       })
       .populate({
@@ -126,7 +126,21 @@ export const getPendingProviders = async (req, res) => {
         populate: { path: "category", select: "name" }
       });
 
-    res.json({ success: true, providers });
+    // ✅ Manually populate Address city for location display
+    const providersWithAddress = await Promise.all(providers.map(async (provider) => {
+      const pObj = provider.toObject();
+      if (provider.user?._id) {
+        const address = await import("../models/Address.js").then(({ default: Address }) =>
+          Address.findOne({ user: provider.user._id })
+        );
+        pObj.location = address ? address.city : "N/A";
+        // Also ensure phone fallback if needed (though we rely on contactNumber)
+        pObj.phone = provider.user.contactNumber || "N/A";
+      }
+      return pObj;
+    }));
+
+    res.json({ success: true, providers: providersWithAddress });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

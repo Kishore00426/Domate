@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import HomeLayout from '../layouts/HomeLayout';
 import { getMe } from '../api/auth';
 import { useNavigate } from 'react-router-dom';
-import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin } from 'lucide-react';
-import { getMyProviderProfile, updateProviderBio, updateProviderServices } from '../api/providers';
+import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2 } from 'lucide-react';
+import { getMyProviderProfile, updateProviderBio, updateProviderServices, deleteProviderDocument } from '../api/providers';
 import { getProviderBookings, updateBookingStatus } from '../api/bookings';
 import { getAllServices } from '../api/services';
 
@@ -256,7 +256,7 @@ const ProviderDashboard = () => {
                                                 <label className="block text-sm font-semibold text-soft-black mb-2">Phone Number</label>
                                                 <input
                                                     name="phone"
-                                                    defaultValue={providerDetails?.phone}
+                                                    defaultValue={providerDetails?.user?.contactNumber || providerDetails?.phone}
                                                     type="tel"
                                                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
                                                     placeholder="Enter phone number"
@@ -457,115 +457,128 @@ const ProviderDashboard = () => {
                                     <h2 className="text-xl font-bold text-soft-black mb-6">Verification Documents</h2>
                                     <p className="text-gray-500 mb-6">Upload clear copies of your documents. You can upload multiple files for certificates if needed.</p>
 
-                                    <form onSubmit={async (e) => {
-                                        e.preventDefault();
-                                        setLoading(true);
-                                        try {
-                                            const formData = new FormData(e.target);
-                                            // Append existing data to not overwrite bio with empty
-                                            // Note: Backend might need logic to partial update, or we send everything.
-                                            // The backend controller for updateProviderBio takes bio fields + files.
-                                            // If we only send files, we might wipe bio fields if not careful?
-                                            // Controller code: updateData = { phone: req.body.phone ... }
-                                            // It uses req.body.phone directly. If undefined, it might set to undefined.
-                                            // So we must include current bio data in this form submission too!
-                                            // Hidden inputs are easiest way.
-
-                                            const response = await updateProviderBio(formData);
-                                            if (response.success) {
-                                                setProviderDetails(response.provider);
-                                                alert('Documents uploaded successfully! Status is pending verification.');
-                                            } else {
-                                                alert('Failed to upload documents: ' + response.error);
-                                            }
-                                        } catch (err) {
-                                            console.error("Error uploading documents", err);
-                                            alert('Error uploading documents');
-                                        } finally {
-                                            setLoading(false);
-                                        }
-                                    }}>
-                                        {/* Hidden fields to preserve bio data */}
-                                        <input type="hidden" name="phone" value={providerDetails?.phone || ''} />
-                                        <input type="hidden" name="address" value={providerDetails?.address || ''} />
-                                        <input type="hidden" name="experience" value={providerDetails?.experience || ''} />
-                                        <input type="hidden" name="nativePlace" value={providerDetails?.nativePlace || ''} />
-                                        <input type="hidden" name="currentPlace" value={providerDetails?.currentPlace || ''} />
-                                        <input type="hidden" name="emergencyContact" value={JSON.stringify(providerDetails?.emergencyContact || {})} />
-
-                                        <div className="space-y-6">
-                                            {/* ID Proof */}
-                                            <div className="border border-gray-200 rounded-2xl p-6">
-                                                <h3 className="font-semibold text-soft-black mb-2">ID Proof</h3>
-                                                <p className="text-xs text-gray-500 mb-4">Aadhaar, PAN, or Driving License</p>
-
-                                                {providerDetails?.idProofs?.length > 0 && (
-                                                    <div className="mb-4 flex flex-wrap gap-2">
-                                                        {providerDetails.idProofs.map((file, idx) => (
-                                                            <div key={idx} className="bg-gray-100 px-3 py-1 text-xs rounded-full flex items-center gap-2">
-                                                                <CheckCircle className="w-3 h-3 text-green-600" /> Document {idx + 1}
+                                    {/* Document Display Helper */}
+                                    {(() => {
+                                        const renderDocs = (docs, type, label) => {
+                                            if (!docs || docs.length === 0) return null;
+                                            return (
+                                                <div className="mb-4 flex flex-wrap gap-2">
+                                                    {docs.map((file, idx) => {
+                                                        const fileName = file.split('/').pop() || `Document ${idx + 1}`;
+                                                        return (
+                                                            <div key={idx} className="bg-gray-100 pl-4 pr-2 py-2 text-sm rounded-full flex items-center gap-2 border border-gray-200">
+                                                                <CheckCircle className="w-4 h-4 text-green-600" />
+                                                                <span className="font-medium text-gray-700 max-w-[150px] truncate" title={fileName}>{fileName}</span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={async () => {
+                                                                        if (!window.confirm('Delete this document?')) return;
+                                                                        try {
+                                                                            const data = await deleteProviderDocument({ type, filePath: file });
+                                                                            if (data.success) {
+                                                                                setProviderDetails(data.provider);
+                                                                            } else {
+                                                                                alert(data.error || 'Failed to delete');
+                                                                            }
+                                                                        } catch (e) {
+                                                                            console.error(e);
+                                                                            alert('Error deleting document');
+                                                                        }
+                                                                    }}
+                                                                    className="ml-1 p-1 hover:bg-red-100 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
                                                             </div>
-                                                        ))}
+                                                        );
+                                                    })}
+                                                </div>
+                                            );
+                                        };
+
+                                        return (
+                                            <form onSubmit={async (e) => {
+                                                e.preventDefault();
+                                                setLoading(true);
+                                                try {
+                                                    const formData = new FormData(e.target);
+                                                    // Append existing data to not overwrite bio with empty
+                                                    const response = await updateProviderBio(formData);
+                                                    if (response.success) {
+                                                        setProviderDetails(response.provider);
+                                                        alert('Documents uploaded successfully!');
+                                                    } else {
+                                                        alert('Failed to upload documents: ' + response.error);
+                                                    }
+                                                } catch (err) {
+                                                    console.error("Error uploading documents", err);
+                                                    alert('Error uploading documents');
+                                                } finally {
+                                                    setLoading(false);
+                                                }
+                                            }}>
+                                                {/* Hidden fields to preserve bio data */}
+                                                <input type="hidden" name="phone" value={providerDetails?.phone || ''} />
+                                                <input type="hidden" name="address" value={providerDetails?.address || ''} />
+                                                <input type="hidden" name="experience" value={providerDetails?.experience || ''} />
+                                                <input type="hidden" name="nativePlace" value={providerDetails?.nativePlace || ''} />
+                                                <input type="hidden" name="currentPlace" value={providerDetails?.currentPlace || ''} />
+                                                <input type="hidden" name="emergencyContact" value={JSON.stringify(providerDetails?.emergencyContact || {})} />
+
+                                                <div className="space-y-6">
+                                                    {/* ID Proof */}
+                                                    <div className="border border-gray-200 rounded-2xl p-6">
+                                                        <h3 className="font-semibold text-soft-black mb-2 flex items-center justify-between">
+                                                            ID Proof
+                                                            {renderDocs(providerDetails?.idProofs, 'idProofs', 'ID Proof')}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500 mb-4">Aadhaar, PAN, or Driving License</p>
+
+                                                        <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+                                                            <input type="file" name="idProof" multiple className="hidden" accept="image/*,.pdf" />
+                                                            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                                            <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
+                                                            <span className="text-xs text-gray-400">JPG, PNG, PDF (Max 5MB)</span>
+                                                        </label>
                                                     </div>
-                                                )}
 
-                                                <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                                                    <input type="file" name="idProof" multiple className="hidden" accept="image/*,.pdf" />
-                                                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                    <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
-                                                    <span className="text-xs text-gray-400">JPG, PNG, PDF (Max 5MB)</span>
-                                                </label>
-                                            </div>
+                                                    {/* Address Proof */}
+                                                    <div className="border border-gray-200 rounded-2xl p-6">
+                                                        <h3 className="font-semibold text-soft-black mb-2 flex items-center justify-between">
+                                                            Address Proof
+                                                            {renderDocs(providerDetails?.addressProofs, 'addressProofs', 'Address Proof')}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500 mb-4">Utility Bill, Rental Agreement</p>
 
-                                            {/* Address Proof */}
-                                            <div className="border border-gray-200 rounded-2xl p-6">
-                                                <h3 className="font-semibold text-soft-black mb-2">Address Proof</h3>
-                                                <p className="text-xs text-gray-500 mb-4">Utility Bill, Rental Agreement</p>
-
-                                                {providerDetails?.addressProofs?.length > 0 && (
-                                                    <div className="mb-4 flex flex-wrap gap-2">
-                                                        {providerDetails.addressProofs.map((file, idx) => (
-                                                            <div key={idx} className="bg-gray-100 px-3 py-1 text-xs rounded-full flex items-center gap-2">
-                                                                <CheckCircle className="w-3 h-3 text-green-600" /> Document {idx + 1}
-                                                            </div>
-                                                        ))}
+                                                        <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+                                                            <input type="file" name="addressProof" multiple className="hidden" accept="image/*,.pdf" />
+                                                            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                                            <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
+                                                        </label>
                                                     </div>
-                                                )}
 
-                                                <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                                                    <input type="file" name="addressProof" multiple className="hidden" accept="image/*,.pdf" />
-                                                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                    <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
-                                                </label>
-                                            </div>
+                                                    {/* Certificates */}
+                                                    <div className="border border-gray-200 rounded-2xl p-6">
+                                                        <h3 className="font-semibold text-soft-black mb-2 flex items-center justify-between">
+                                                            Professional Certificates
+                                                            {renderDocs(providerDetails?.certificates, 'certificates', 'Certificate')}
+                                                        </h3>
+                                                        <p className="text-xs text-gray-500 mb-4">Training certificates, awards, etc.</p>
 
-                                            {/* Certificates */}
-                                            <div className="border border-gray-200 rounded-2xl p-6">
-                                                <h3 className="font-semibold text-soft-black mb-2">Professional Certificates</h3>
-                                                <p className="text-xs text-gray-500 mb-4">Training certificates, awards, etc.</p>
-
-                                                {providerDetails?.certificates?.length > 0 && (
-                                                    <div className="mb-4 flex flex-wrap gap-2">
-                                                        {providerDetails.certificates.map((file, idx) => (
-                                                            <div key={idx} className="bg-gray-100 px-3 py-1 text-xs rounded-full flex items-center gap-2">
-                                                                <CheckCircle className="w-3 h-3 text-green-600" /> Document {idx + 1}
-                                                            </div>
-                                                        ))}
+                                                        <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+                                                            <input type="file" name="certificate" multiple className="hidden" accept="image/*,.pdf" />
+                                                            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                                                            <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
+                                                        </label>
                                                     </div>
-                                                )}
 
-                                                <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
-                                                    <input type="file" name="certificate" multiple className="hidden" accept="image/*,.pdf" />
-                                                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                    <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
-                                                </label>
-                                            </div>
-
-                                            <button type="submit" className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors w-full shadow-lg">
-                                                Upload Documents & Submit
-                                            </button>
-                                        </div>
-                                    </form>
+                                                    <button type="submit" className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors w-full shadow-lg">
+                                                        Upload Documents & Submit
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        );
+                                    })()}
                                 </div>
                             )}
 

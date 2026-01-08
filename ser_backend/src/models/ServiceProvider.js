@@ -16,7 +16,7 @@ const serviceDescriptionSchema = new mongoose.Schema({
 const serviceProviderSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
 
-  phone: { type: String },
+  // phone: { type: String }, // Removed, use User.contactNumber
   // address: { type: String }, // Removed in favor of Address collection
   experience: { type: String }, // or Number if you prefer
   nativePlace: { type: String },

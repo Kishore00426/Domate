@@ -154,7 +154,7 @@ const ProviderVerification = () => {
                                     <h3 className="text-lg font-bold text-soft-black">{selectedProvider.user?.username}</h3>
                                     <div className="flex items-center gap-4 text-sm text-gray-600">
                                         <div className="flex items-center gap-1"><Mail className="w-3 h-3" /> {selectedProvider.user?.email}</div>
-                                        <div className="flex items-center gap-1"><Phone className="w-3 h-3" /> {selectedProvider.phone || 'N/A'}</div>
+                                        <div className="flex items-center gap-1"><Phone className="w-3 h-3" /> {selectedProvider.phone || selectedProvider.user?.contactNumber || 'N/A'}</div>
                                     </div>
                                     <div className="flex items-center gap-1 text-sm text-gray-600">
                                         <MapPin className="w-3 h-3" /> {selectedProvider.location || 'Location not provided'}

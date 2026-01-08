@@ -6,8 +6,9 @@ const addressSchema = new mongoose.Schema({
   city: { type: String },
   state: { type: String },
   postalCode: { type: String },
+  postalCode: { type: String },
   country: { type: String },
-  phone: { type: String },
+  // phone: { type: String }, // Removed, use User.contactNumber
   createdAt: { type: Date, default: Date.now }
 });
 

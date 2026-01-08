@@ -67,3 +67,14 @@ export const getAllVerifiedProviders = async () => {
         return { success: false, error: error.message };
     }
 };
+
+// Delete provider document
+export const deleteProviderDocument = async (data) => {
+    try {
+        const response = await api.post('/providers/delete-document', data);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting provider document:", error);
+        return { success: false, error: error.message };
+    }
+};

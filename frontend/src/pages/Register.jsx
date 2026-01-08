@@ -143,11 +143,13 @@ const Register = () => {
             try {
                 // Map frontend fields to backend requirements
                 // Backend expects: username, email, password, role
+                // Backend expects: username, email, password, role
                 const payload = {
                     username: formData.name,
                     email: formData.email,
                     password: formData.password,
-                    role: role
+                    role: role,
+                    mobile: formData.mobile // ✅ Sending mobile
                 };
                 // ... rest of submit
 

@@ -8,7 +8,7 @@ import path from "path";
 // Register (works for both user and service provider)
 export const register = async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password, role, mobile } = req.body;
 
     const existing = await User.findOne({ email });
     if (existing) {
@@ -26,7 +26,8 @@ export const register = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: roleDoc._id
+      role: roleDoc._id,
+      contactNumber: mobile, // ✅ Save mobile as contactNumber
     });
 
     res.status(201).json({
