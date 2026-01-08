@@ -90,7 +90,7 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                                             className="w-full px-2 py-1 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black/5 text-soft-black"
                                         />
                                     ) : (
-                                        user.phone
+                                        user.phone || <span className="text-red-400 italic font-medium text-xs">Phone number not provided</span>
                                     )}
                                 </div>
                                 <div className="flex items-center gap-3 text-sm text-gray-600">

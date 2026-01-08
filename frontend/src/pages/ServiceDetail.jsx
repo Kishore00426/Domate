@@ -288,10 +288,6 @@ const ServiceDetail = () => {
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="font-bold text-soft-black truncate">{provider.user?.username || 'Service Provider'}</h3>
                                                         <div className="flex items-center gap-3 text-sm mt-1">
-                                                            <div className="flex items-center gap-1 bg-yellow-400/10 px-2 py-0.5 rounded-md">
-                                                                <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
-                                                                <span className="font-semibold text-yellow-700">{provider.rating || 'New'}</span>
-                                                            </div>
                                                             <span className="text-gray-500 text-xs px-2 py-0.5 bg-gray-100 rounded-md">
                                                                 {provider.experience ? `${provider.experience} exp` : 'Trained'}
                                                             </span>
