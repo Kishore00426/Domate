@@ -968,24 +968,7 @@ const ProviderDashboard = () => {
                                                                         )}
 
                                                                         {/* Action Buttons based on Status */}
-                                                                        {booking.status === 'accepted' && (
-                                                                            <div className="flex gap-2">
-                                                                                <button
-                                                                                    onClick={async () => {
-                                                                                        if (!window.confirm('Start Work?')) return;
-                                                                                        const res = await updateBookingStatus(booking._id, 'in_progress');
-                                                                                        if (res.success) {
-                                                                                            setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, status: 'in_progress' } : b));
-                                                                                        } else alert(res.error);
-                                                                                    }}
-                                                                                    className="bg-purple-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-purple-700 transition-colors"
-                                                                                >
-                                                                                    Start Work
-                                                                                </button>
-                                                                            </div>
-                                                                        )}
-
-                                                                        {(booking.status === 'arrived' || booking.status === 'in_progress') && (
+                                                                        {['accepted', 'arrived', 'in_progress'].includes(booking.status) && (
                                                                             <button
                                                                                 onClick={() => {
                                                                                     setActiveBookingForCompletion(booking);

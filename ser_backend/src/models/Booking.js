@@ -7,7 +7,7 @@ const bookingSchema = new mongoose.Schema(
     service: { type: mongoose.Schema.Types.ObjectId, ref: "Service", required: true },
     status: {
       type: String,
-      enum: ["pending", "accepted", "rejected", "work_completed", "completed", "cancelled"],
+      enum: ["pending", "accepted", "rejected", "in_progress", "arrived", "work_completed", "completed", "cancelled"],
       default: "pending"
     },
     scheduledDate: { type: Date },

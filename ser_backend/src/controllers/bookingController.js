@@ -52,6 +52,84 @@ export const createBooking = async (req, res) => {
   }
 };
 
+// ---------------- GET USER BOOKINGS ----------------
+export const getUserBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ user: req.user._id })
+      .populate("serviceProvider", "username email contactNumber")
+      .populate("service", "title price image")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, bookings });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- GET PROVIDER BOOKINGS ----------------
+export const getProviderBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ serviceProvider: req.user._id })
+      .populate("user", "username email contactNumber")
+      .populate("service", "title")
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, bookings });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- GET PROVIDER CONTACT ----------------
+export const getProviderContact = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const booking = await Booking.findOne({ _id: id, user: req.user._id })
+      .populate("serviceProvider", "username email contactNumber");
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found" });
+    }
+
+    if (["accepted", "arrived", "in_progress", "work_completed", "completed"].includes(booking.status)) {
+      res.json({
+        success: true,
+        contact: {
+          username: booking.serviceProvider.username,
+          email: booking.serviceProvider.email,
+          contactNumber: booking.serviceProvider.contactNumber
+        }
+      });
+    } else {
+      res.status(403).json({ success: false, error: "Contact details available only after booking acceptance" });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- DELETE BOOKING ----------------
+export const deleteBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const booking = await Booking.findOne({ _id: id, user: req.user._id });
+
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found" });
+    }
+
+    // Allow delete only if pending, cancelled or rejected
+    if (!["pending", "cancelled", "rejected"].includes(booking.status)) {
+      return res.status(400).json({ success: false, error: "Cannot delete active booking" });
+    }
+
+    await Booking.deleteOne({ _id: id });
+    res.json({ success: true, message: "Booking deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // ---------------- PROVIDER UPDATES BOOKING STATUS ----------------
 export const updateBookingStatus = async (req, res) => {
   try {
