@@ -159,8 +159,8 @@ export const deleteBooking = async (req, res) => {
       return res.status(404).json({ success: false, error: "Booking not found" });
     }
 
-    // Allow delete only if pending, cancelled or rejected
-    if (!["pending", "cancelled", "rejected"].includes(booking.status)) {
+    // Allow delete pending, cancelled, rejected, or accepted
+    if (!["pending", "cancelled", "rejected", "accepted"].includes(booking.status)) {
       return res.status(400).json({ success: false, error: "Cannot delete active booking" });
     }
 

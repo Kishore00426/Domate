@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getUserBookings, deleteBooking, rateBooking, confirmBooking } from '../api/bookings';
@@ -19,6 +19,7 @@ const MyBookings = () => {
     // Review Modal State
     const [activeBookingForReview, setActiveBookingForReview] = useState(null);
     const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' });
+    const [activeBookingForInvoice, setActiveBookingForInvoice] = useState(null);
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -38,50 +39,64 @@ const MyBookings = () => {
     }, []);
 
     const downloadInvoice = (booking) => {
-        const doc = new jsPDF();
+        try {
+            if (!booking || !booking.invoice) {
+                alert("Invoice data is incomplete.");
+                return;
+            }
 
-        doc.setFontSize(20);
-        doc.text("INVOICE", 105, 20, null, null, "center");
+            const doc = new jsPDF();
 
-        doc.setFontSize(10);
-        doc.text(`Invoice #: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
-        doc.text(`Date: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
+            doc.setFontSize(20);
+            doc.text("INVOICE", 105, 20, null, null, "center");
 
-        doc.setFontSize(12);
-        doc.text("Billed To:", 14, 50);
-        doc.setFontSize(10);
-        doc.text(`Name: ${booking.user?.username || 'Customer'}`, 14, 56);
-        // Note: booking.user in MyBookings is likely the logged in user, logic same as ProviderDashboard 
-        // assuming populate works similarly or we rely on what's in booking object
-        if (booking.user?.contactNumber) doc.text(`Phone: ${booking.user.contactNumber}`, 14, 61);
+            doc.setFontSize(10);
+            const invoiceId = booking._id ? booking._id.slice(-6).toUpperCase() : 'UNKNOWN';
+            doc.text(`Invoice #: INV-${invoiceId}`, 14, 30);
+            doc.text(`Date: ${new Date(booking.updatedAt || Date.now()).toLocaleDateString()}`, 14, 35);
 
-        doc.setFontSize(12);
-        doc.text("Service Details:", 14, 75);
-        doc.setFontSize(10);
-        doc.text(`Service: ${booking.service?.title}`, 14, 81);
-        doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
+            doc.setFontSize(12);
+            doc.text("Billed To:", 14, 50);
+            doc.setFontSize(10);
 
-        const tableColumn = ["Description", "Amount (INR)"];
-        const tableRows = [
-            ["Service Price", `Rs. ${booking.invoice?.servicePrice}`],
-            ["Visiting / Extra Charges", `Rs. ${booking.invoice?.serviceCharge}`],
-            ["GST (18%)", `Rs. ${booking.invoice?.gst}`],
-            ["Total Amount", `Rs. ${booking.invoice?.totalAmount}`]
-        ];
+            const userName = booking.user?.username || 'Customer';
+            doc.text(`Name: ${userName}`, 14, 56);
 
-        doc.autoTable({
-            startY: 95,
-            head: [tableColumn],
-            body: tableRows,
-            theme: 'grid',
-            headStyles: { fillColor: [0, 0, 0] },
-            foot: [['Grand Total', `Rs. ${booking.invoice?.totalAmount}`]],
-            footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
-        });
+            if (booking.user?.contactNumber || booking.user?.phone) {
+                doc.text(`Phone: ${booking.user.contactNumber || booking.user.phone}`, 14, 61);
+            }
 
-        doc.text("Thank you for choosing our service!", 105, doc.lastAutoTable.finalY + 20, null, null, "center");
+            doc.setFontSize(12);
+            doc.text("Service Details:", 14, 75);
+            doc.setFontSize(10);
+            doc.text(`Service: ${booking.service?.title || 'Service'}`, 14, 81);
+            doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
 
-        doc.save(`Invoice_${booking._id.slice(-6)}.pdf`);
+            const tableColumn = ["Description", "Amount (INR)"];
+            const tableRows = [
+                ["Service Price", `Rs. ${Number(booking.invoice.servicePrice || 0).toFixed(2)}`],
+                ["Visiting / Extra Charges", `Rs. ${Number(booking.invoice.serviceCharge || 0).toFixed(2)}`],
+                ["GST (18%)", `Rs. ${Number(booking.invoice.gst || 0).toFixed(2)}`],
+                ["Total Amount", `Rs. ${Number(booking.invoice.totalAmount || 0).toFixed(2)}`]
+            ];
+
+            autoTable(doc, {
+                startY: 95,
+                head: [tableColumn],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 0, 0] },
+                foot: [['Grand Total', `Rs. ${Number(booking.invoice.totalAmount || 0).toFixed(2)}`]],
+                footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+            });
+
+            doc.text("Thank you for choosing our service!", 105, (doc.lastAutoTable?.finalY || 150) + 20, null, null, "center");
+
+            doc.save(`Invoice_${invoiceId}.pdf`);
+        } catch (error) {
+            console.error("PDF Generation Error:", error);
+            alert("Failed to generate PDF. Please try again or contact support.");
+        }
     };
 
     const getStatusColor = (status) => {
@@ -227,10 +242,10 @@ const MyBookings = () => {
                                                         <div className="text-right flex flex-col items-end gap-2">
                                                             <p className="text-sm font-bold text-soft-black">Total: ₹{booking.invoice.totalAmount}</p>
                                                             <button
-                                                                onClick={() => downloadInvoice(booking)}
-                                                                className="text-xs text-white bg-black px-3 py-1 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-1"
+                                                                onClick={() => setActiveBookingForInvoice(booking)}
+                                                                className="text-xs text-black border border-gray-200 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1"
                                                             >
-                                                                Download PDF
+                                                                View Details
                                                             </button>
                                                         </div>
                                                     )}
@@ -254,12 +269,20 @@ const MyBookings = () => {
                                             )}
 
                                             {booking.status === 'accepted' && (
-                                                <button
-                                                    onClick={() => handleContactClick(booking.serviceProvider)}
-                                                    className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
-                                                >
-                                                    Contact Provider
-                                                </button>
+                                                <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto">
+                                                    <button
+                                                        onClick={() => handleContactClick(booking.serviceProvider)}
+                                                        className="w-full md:w-auto bg-black text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors"
+                                                    >
+                                                        Contact Provider
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(booking._id)}
+                                                        className="w-full md:w-auto text-red-600 hover:bg-red-50 border border-red-100 px-4 py-2 rounded-xl text-sm font-medium transition-colors"
+                                                    >
+                                                        Delete Booking
+                                                    </button>
+                                                </div>
                                             )}
                                             {booking.status === 'pending' && (
                                                 <button
@@ -412,6 +435,86 @@ const MyBookings = () => {
                     </div>
                 )
             }
+
+            {/* Invoice Modal (Read Only) */}
+            {activeBookingForInvoice && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="text-lg font-bold text-soft-black">Invoice Details</h3>
+                            <button onClick={() => setActiveBookingForInvoice(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+
+                        <div className="p-8 grid grid-cols-1 md:grid-cols-5 gap-8">
+                            {/* Left Column: Context (2 cols) */}
+                            <div className="md:col-span-2 space-y-6">
+                                <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 h-full">
+                                    <h4 className="font-bold text-gray-400 text-sm uppercase tracking-wider mb-6">Booking Context</h4>
+
+                                    <div className="space-y-6">
+                                        <div>
+                                            <p className="text-xs text-gray-500 uppercase font-bold mb-1">Service Provided</p>
+                                            <p className="font-bold text-xl text-soft-black">{activeBookingForInvoice?.service?.title}</p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs text-gray-500 uppercase font-bold mb-1">Provider Details</p>
+                                            <p className="font-medium text-lg text-gray-700">{activeBookingForInvoice?.serviceProvider?.username}</p>
+                                            {activeBookingForInvoice?.serviceProvider?.phone && (
+                                                <p className="text-sm text-gray-500">{activeBookingForInvoice.serviceProvider.phone}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="pt-6 border-t border-gray-200">
+                                            <p className="text-xs text-gray-500 uppercase font-bold mb-1">Invoice Number</p>
+                                            <p className="font-mono text-lg text-gray-700 tracking-widest">INV-{activeBookingForInvoice?._id?.slice(-6).toUpperCase()}</p>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-xs text-gray-500 uppercase font-bold mb-1">Date Issued</p>
+                                            <p className="text-sm text-gray-700">{new Date(activeBookingForInvoice.updatedAt).toLocaleDateString()}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Column: Financials (3 cols) */}
+                            <div className="md:col-span-3">
+                                <div className="bg-white rounded-2xl h-full flex flex-col justify-center">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                                            <span className="text-gray-600 font-medium">Base Service Price</span>
+                                            <span className="font-bold text-lg">₹{activeBookingForInvoice.invoice?.servicePrice}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-3 border-b border-gray-100">
+                                            <span className="text-gray-600 font-medium">Visiting / Extra Fee</span>
+                                            <span className="font-bold text-lg">₹{activeBookingForInvoice.invoice?.serviceCharge}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-3 border-b border-gray-100 text-gray-500">
+                                            <span>GST (18%)</span>
+                                            <span>₹{activeBookingForInvoice.invoice?.gst}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-6 text-2xl font-bold bg-green-50 px-6 rounded-2xl mt-6 border border-green-100">
+                                            <span className="text-green-800">Total Paid</span>
+                                            <span className="text-green-700">₹{activeBookingForInvoice.invoice?.totalAmount}</span>
+                                        </div>
+
+                                        <button
+                                            onClick={() => downloadInvoice(activeBookingForInvoice)}
+                                            className="w-full bg-black text-white py-3 rounded-xl font-bold mt-4 hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            Download PDF
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </HomeLayout >
     );
 };
