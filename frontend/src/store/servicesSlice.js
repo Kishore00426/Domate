@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getAllServices } from '../api/services';
 
-// Async thunk to fetch services from the backend
 export const fetchServices = createAsyncThunk(
   'services/fetchServices',
   async () => {

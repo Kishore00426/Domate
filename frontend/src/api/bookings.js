@@ -27,7 +27,6 @@ export const updateBookingStatus = async (id, status) => {
 };
 
 
-// Create a new booking
 export const createBooking = async (bookingData) => {
     try {
         const response = await api.post('/bookings', bookingData);
@@ -41,7 +40,6 @@ export const createBooking = async (bookingData) => {
     }
 };
 
-// Get user's bookings
 export const getUserBookings = async () => {
     try {
         const response = await api.get('/bookings/my');

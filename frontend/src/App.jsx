@@ -10,7 +10,7 @@ import AdminLayout from './layouts/AdminLayout';
 import ServiceDetail from './pages/ServiceDetail';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import ProviderVerification from './pages/Admin/ProviderVerification';
-import ProviderDashboard from './pages/ProviderDashboard'; // Added
+import ProviderDashboard from './pages/ProviderDashboard';
 import AdminLogin from './pages/Admin/AdminLogin';
 import AdminRegister from './pages/Admin/AdminRegister';
 import CategoryManagement from './pages/Admin/CategoryManagement';

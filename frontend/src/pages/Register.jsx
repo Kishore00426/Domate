@@ -118,15 +118,9 @@ const Register = () => {
 
     const handleNext = () => {
         if (step === 1) {
-            // For providers, Step 1 is the ONLY step now.
-            // So we don't go to step 2, we just validate.
             if (validateStep1()) {
-                // In a wizard, next usually means go to next step. 
-                // But here we want to submit if it's provider.
-                // However, the UI has a "Submit" button separate from "Continue" usually.
-                // Let's adjust the button logic below instead.
-                setStep(2); // Keep this for USER flow if needed, OR just remove steps entirely?
-                // The user said "first page of register is enough". 
+                setStep(2);
+
             }
         }
         // Other steps removed for provider
@@ -142,14 +136,13 @@ const Register = () => {
         if (isValid) {
             try {
                 // Map frontend fields to backend requirements
-                // Backend expects: username, email, password, role
-                // Backend expects: username, email, password, role
+                // Map frontend fields to backend requirements
                 const payload = {
                     username: formData.name,
                     email: formData.email,
                     password: formData.password,
                     role: role,
-                    mobile: formData.mobile // ✅ Sending mobile
+                    mobile: formData.mobile
                 };
                 // ... rest of submit
 
@@ -208,7 +201,7 @@ const Register = () => {
                                 </p>
                             </div>
 
-                            {/* Step 1: Common Fields */}
+
                             {(step === 1) && (
                                 <div className="space-y-4">
                                     <div>
@@ -317,7 +310,7 @@ const Register = () => {
                                 </div>
                             )}
 
-                            {/* Step 2: Skills & Experience */}
+
                             {isProvider && step === 2 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
@@ -355,7 +348,7 @@ const Register = () => {
                                 </div>
                             )}
 
-                            {/* Step 3: Service Area */}
+
                             {isProvider && step === 3 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
@@ -404,7 +397,7 @@ const Register = () => {
                                 </div>
                             )}
 
-                            {/* Step 4: Provider Documents */}
+
                             {isProvider && step === 4 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
@@ -466,9 +459,8 @@ const Register = () => {
                                 </div>
                             )}
 
-                            {/* Buttons */}
                             <div className="mt-6 flex flex-col gap-3">
-                                {/* Single Step for Everyone Now (or at least for Provider) */}
+
                                 <button
                                     type="submit"
                                     className="w-full bg-soft-black text-white py-3 rounded-xl font-bold text-base hover:bg-black transition-transform active:scale-95 duration-200 shadow-lg cursor-pointer"
@@ -484,7 +476,7 @@ const Register = () => {
                         </div>
 
 
-                        {/* Address Side Panel (User Only) */}
+
                         {showAddress && !isProvider && (
                             <>
                                 <div className="hidden md:block w-[1px] bg-black my-10 opacity-20 h-4/5 self-center"></div>
@@ -599,4 +591,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default Register;   

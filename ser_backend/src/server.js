@@ -5,7 +5,6 @@ dotenv.config();
 import path from "path";
 import cors from "cors";
 
-// Import routes
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
@@ -21,7 +20,6 @@ const app = express();
 
 // ...
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -56,9 +54,7 @@ import fs from "fs";
       next();
     });
 
-    // Use absolute path for uploads to avoid CWD issues
     app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-    // Routes
     app.use("/api/auth", authRoutes);
     app.use("/api/user", userRoutes);
     app.use("/api/admin", adminRoutes);
@@ -66,7 +62,6 @@ import fs from "fs";
     app.use("/api/providers", serviceProviderRoutes);
     app.use("/api/bookings", bookingRoutes);
 
-    // Start server
     const port = process.env.PORT || 4000;
     app.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
