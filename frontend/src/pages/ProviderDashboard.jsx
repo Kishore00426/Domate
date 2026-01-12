@@ -15,6 +15,8 @@ const ProviderDashboard = () => {
     const [providerDetails, setProviderDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
+    const [bookingTab, setBookingTab] = useState('current'); // Booking Sub-tab State
+
 
     // New state for Services Tab
     const [allServices, setAllServices] = useState([]);
@@ -985,121 +987,147 @@ const ProviderDashboard = () => {
                             {
                                 activeTab === 'bookings' && (
                                     <div className="bg-white p-8 rounded-3xl shadow-sm">
-                                        <h2 className="text-xl font-bold text-soft-black mb-6">All Bookings</h2>
+                                        <div className="flex items-center justify-between mb-6">
+                                            <h2 className="text-xl font-bold text-soft-black">My Bookings</h2>
 
-                                        {/* Active Bookings Section */}
-                                        <div className="mb-10">
-                                            <h3 className="font-semibold text-lg mb-4 text-green-700 flex items-center gap-2">
-                                                <CheckCircle className="w-5 h-5" /> Active & Ongoing
-                                            </h3>
-                                            {bookings.filter(b => ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status)).length === 0 ? (
-                                                <p className="text-gray-400 text-sm italic">No active bookings.</p>
-                                            ) : (
-                                                <div className="space-y-4">
-                                                    {bookings.filter(b => ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status))
-                                                        .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))
-                                                        .map(booking => (
-                                                            <div key={booking._id} className="border border-green-100 bg-white rounded-2xl p-6 shadow-sm">
-                                                                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                                                                    <div>
-                                                                        <h4 className="font-bold text-soft-black mb-1">{booking.service?.title}</h4>
-                                                                        <p className="text-sm text-gray-700 font-medium mb-1">Customer: {booking.user?.username}</p>
-                                                                        <p className="text-sm text-gray-600 mb-2">
-                                                                            Date: {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
-                                                                            {' '}
-                                                                            {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                                                                        </p>
-                                                                        <div className="mt-2 text-xs text-green-700 font-bold px-3 py-1 bg-green-50 rounded-full inline-flex items-center gap-1 border border-green-100">
-                                                                            <CheckCircle className="w-3 h-3" /> {booking.status.replace('_', ' ').toUpperCase()}
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="flex flex-col items-end gap-2">
-                                                                        {booking.user?.phone && (
-                                                                            <div className="text-right text-sm text-gray-500 mb-2">
-                                                                                <p className="font-medium text-gray-700">Contact: {booking.user.phone}</p>
-                                                                            </div>
-                                                                        )}
-
-                                                                        {/* Action Buttons based on Status */}
-                                                                        {['accepted', 'arrived', 'in_progress'].includes(booking.status) && (
-                                                                            <button
-                                                                                onClick={() => {
-                                                                                    setActiveBookingForCompletion(booking);
-                                                                                    setInvoiceForm({
-                                                                                        servicePrice: booking.service?.price || '',
-                                                                                        serviceCharge: providerDetails?.consultFee || ''
-                                                                                    });
-                                                                                }}
-                                                                                className="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md"
-                                                                            >
-                                                                                Complete Job
-                                                                            </button>
-                                                                        )}
-
-                                                                        {booking.status === 'work_completed' && (
-                                                                            <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100 flex items-center gap-2">
-                                                                                <CheckCircle className="w-3 h-3" /> Waiting for Payment/Conf.
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                </div>
-                                            )}
+                                            <div className="flex bg-gray-100 p-1 rounded-xl">
+                                                <button
+                                                    onClick={() => setBookingTab('current')}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'current' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                                >
+                                                    Current
+                                                </button>
+                                                <button
+                                                    onClick={() => setBookingTab('all')}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'all' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                                >
+                                                    All Bookings
+                                                </button>
+                                            </div>
                                         </div>
 
-                                        {/* Past / Completed Bookings */}
-                                        <div>
-                                            <h3 className="font-semibold text-lg mb-4 text-gray-400 flex items-center gap-2">
-                                                <Briefcase className="w-5 h-5" /> Past Bookings
-                                            </h3>
-                                            {bookings.filter(b => ['completed', 'cancelled', 'rejected'].includes(b.status)).length === 0 ? (
-                                                <p className="text-gray-400 text-sm italic">No past bookings.</p>
-                                            ) : (
-                                                <div className="space-y-4">
-                                                    {bookings.filter(b => ['completed', 'cancelled', 'rejected'].includes(b.status))
-                                                        .sort((a, b) => new Date(b.scheduledDate) - new Date(a.scheduledDate))
-                                                        .map(booking => (
-                                                            <div key={booking._id} className="border border-gray-100 bg-gray-50/50 rounded-2xl p-6">
-                                                                <div className="flex justify-between items-center">
-                                                                    <div>
-                                                                        <h4 className="font-bold text-gray-700 mb-1">{booking.service?.title}</h4>
-                                                                        <p className="text-sm text-gray-500 mb-1">Customer: {booking.user?.username}</p>
-                                                                        <p className="text-xs text-gray-400">
-                                                                            {new Date(booking.scheduledDate).toLocaleDateString()}
-                                                                        </p>
-                                                                    </div>
-                                                                    <div>
-                                                                        <span className={`px-3 py-1 rounded-lg text-xs font-bold ${booking.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                                            booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                                                'bg-gray-200 text-gray-700'
-                                                                            }`}>
-                                                                            {booking.status.toUpperCase()}
-                                                                        </span>
-                                                                        <div className="text-right">
-                                                                            <p className="text-lg font-bold text-soft-black">₹{booking.invoice?.totalAmount}</p>
-                                                                            <div className="flex gap-2 justify-end mt-1">
+                                        {/* Active Bookings Section */}
+                                        {(bookingTab === 'current' || bookingTab === 'all') && (
+                                            <div className="mb-10 animate-in fade-in">
+
+                                                <h3 className="font-semibold text-lg mb-4 text-green-700 flex items-center gap-2">
+                                                    <CheckCircle className="w-5 h-5" /> Active & Ongoing
+                                                </h3>
+                                                {bookings.filter(b => ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status)).length === 0 ? (
+                                                    <p className="text-gray-400 text-sm italic">No active bookings.</p>
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        {bookings.filter(b => ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status))
+                                                            .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))
+                                                            .map(booking => (
+                                                                <div key={booking._id} className="border border-green-100 bg-white rounded-2xl p-6 shadow-sm">
+                                                                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                                                                        <div>
+                                                                            <h4 className="font-bold text-soft-black mb-1">{booking.service?.title}</h4>
+                                                                            <p className="text-sm text-gray-700 font-medium mb-1">Customer: {booking.user?.username}</p>
+                                                                            <p className="text-sm text-gray-600 mb-2">
+                                                                                Date: {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
+                                                                                {' '}
+                                                                                {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                            </p>
+                                                                            <div className="mt-2 text-xs text-green-700 font-bold px-3 py-1 bg-green-50 rounded-full inline-flex items-center gap-1 border border-green-100">
+                                                                                <CheckCircle className="w-3 h-3" /> {booking.status.replace('_', ' ').toUpperCase()}
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="flex flex-col items-end gap-2">
+                                                                            {booking.user?.phone && (
+                                                                                <div className="text-right text-sm text-gray-500 mb-2">
+                                                                                    <p className="font-medium text-gray-700">Contact: {booking.user.phone}</p>
+                                                                                </div>
+                                                                            )}
+
+                                                                            {/* Action Buttons based on Status */}
+                                                                            {['accepted', 'arrived', 'in_progress'].includes(booking.status) && (
                                                                                 <button
-                                                                                    onClick={() => setActiveBookingForCompletion(booking)}
-                                                                                    className="text-xs font-bold text-black border border-gray-200 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                                                                    onClick={() => {
+                                                                                        setActiveBookingForCompletion(booking);
+                                                                                        setInvoiceForm({
+                                                                                            servicePrice: booking.service?.price || '',
+                                                                                            serviceCharge: providerDetails?.consultFee || ''
+                                                                                        });
+                                                                                    }}
+                                                                                    className="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md"
                                                                                 >
-                                                                                    View Invoice
+                                                                                    Complete Job
                                                                                 </button>
-                                                                                <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold inline-block">
-                                                                                    Completed
+                                                                            )}
+
+                                                                            {booking.status === 'work_completed' && (
+                                                                                <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100 flex items-center gap-2">
+                                                                                    <CheckCircle className="w-3 h-3" /> Waiting for Payment/Conf.
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Past / Completed Bookings - Only show for ALL tab */}
+                                        {bookingTab === 'all' && (
+                                            <div className="animate-in fade-in">
+                                                <h3 className="font-semibold text-lg mb-4 text-gray-400 flex items-center gap-2">
+                                                    <Briefcase className="w-5 h-5" /> Past Bookings
+                                                </h3>
+                                                {bookings.filter(b => ['completed', 'cancelled', 'rejected'].includes(b.status)).length === 0 ? (
+                                                    <p className="text-gray-400 text-sm italic">No past bookings.</p>
+                                                ) : (
+                                                    <div className="space-y-4">
+                                                        {bookings.filter(b => ['completed', 'cancelled', 'rejected'].includes(b.status))
+                                                            .sort((a, b) => new Date(b.scheduledDate) - new Date(a.scheduledDate))
+                                                            .map(booking => (
+                                                                <div key={booking._id} className="border border-gray-100 bg-gray-50/50 rounded-2xl p-6">
+                                                                    <div className="flex justify-between items-center">
+                                                                        <div>
+                                                                            <h4 className="font-bold text-gray-700 mb-1">{booking.service?.title}</h4>
+                                                                            <p className="text-sm text-gray-500 mb-1">Customer: {booking.user?.username}</p>
+                                                                            <p className="text-xs text-gray-400">
+                                                                                {new Date(booking.scheduledDate).toLocaleDateString()}
+                                                                            </p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <span className={`px-3 py-1 rounded-lg text-xs font-bold ${booking.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                                                booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                                                                    'bg-gray-200 text-gray-700'
+                                                                                }`}>
+                                                                                {booking.status.toUpperCase()}
+                                                                            </span>
+                                                                            <div className="text-right">
+                                                                                <p className="text-lg font-bold text-soft-black">₹{booking.invoice?.totalAmount}</p>
+                                                                                <div className="flex gap-2 justify-end mt-1">
+                                                                                    <button
+                                                                                        onClick={() => setActiveBookingForCompletion(booking)}
+                                                                                        className="text-xs font-bold text-black border border-gray-200 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                                                                                    >
+                                                                                        View Invoice
+                                                                                    </button>
+                                                                                    {booking.status === 'completed' && (
+                                                                                        <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold inline-block">
+                                                                                            Completed
+                                                                                        </div>
+                                                                                    )}
                                                                                 </div>
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                        ))}
-                                                </div>
-                                            )}
-                                        </div>
+                                                            ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
                                     </div>
+
                                 )
                             }
                         </div>
