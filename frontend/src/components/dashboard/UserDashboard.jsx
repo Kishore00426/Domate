@@ -5,6 +5,10 @@ import { useNavigate } from 'react-router-dom';
 const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, handleCancel, handleSave, handleChange, addressTags }) => {
     const navigate = useNavigate();
 
+    const activeBookingsCount = bookings.filter(b =>
+        ['pending', 'accepted', 'work_completed'].includes(b.status)
+    ).length;
+
     return (
         <div className="pt-10 px-4 pb-20">
             <div className="max-w-6xl mx-auto">
@@ -120,7 +124,7 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
                                 onClick={() => navigate('/user/bookings')}
                                 className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer"
                             >
-                                <h3 className="text-2xl font-bold text-soft-black mb-1">{bookings.length}</h3>
+                                <h3 className="text-2xl font-bold text-soft-black mb-1">{activeBookingsCount}</h3>
                                 <p className="text-gray-500 text-sm">Active Bookings</p>
                             </div>
                             <div
