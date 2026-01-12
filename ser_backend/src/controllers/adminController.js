@@ -118,7 +118,7 @@ export const getPendingProviders = async (req, res) => {
     let providers = await ServiceProvider.find({ approvalStatus: "pending" })
       .populate({
         path: "user",
-        select: "username email role providerStatus contactNumber", // ✅ select contactNumber
+        select: "username email role providerStatus contactNumber",
         populate: { path: "role", select: "name" }
       })
       .populate({
@@ -126,7 +126,7 @@ export const getPendingProviders = async (req, res) => {
         populate: { path: "category", select: "name" }
       });
 
-    // ✅ Manually populate Address city for location display
+    //  Manually populate Address city for location display
     const providersWithAddress = await Promise.all(providers.map(async (provider) => {
       const pObj = provider.toObject();
       if (provider.user?._id) {
