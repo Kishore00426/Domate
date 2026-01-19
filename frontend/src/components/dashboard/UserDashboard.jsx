@@ -10,7 +10,7 @@ const UserDashboard = ({ user, bookings = [], isEditing, tempData, handleEdit, h
     ).length;
 
     return (
-        <div className="pt-10 px-4 pb-20">
+        <div className="pt-32 md:pt-10 px-4 pb-20">
             <div className="max-w-6xl mx-auto">
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:my-20">
