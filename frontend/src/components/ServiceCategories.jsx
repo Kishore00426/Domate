@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { getCategoryDetails, getAllCategories } from '../api/services';
+import { getImageUrl } from '../utils/imageUrl';
 
 const categories = [
   {
@@ -257,7 +258,7 @@ const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
                         >
                           <div className="w-16 h-16 bg-beige/50 rounded-full flex items-center justify-center group-hover:bg-beige transition-colors aspect-square overflow-hidden">
                             <img
-                              src={item.imageUrl || "/icons/default.png"}
+                              src={getImageUrl(item.imageUrl) || "/icons/default.png"}
                               alt={item.name}
                               className="w-full h-full object-cover"
                               onError={(e) => {
