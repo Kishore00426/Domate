@@ -1,11 +1,9 @@
 import mongoose from "mongoose";
 
-const privilegeSchema = new mongoose.Schema(
-  {
-    name: { type: String, unique: true, required: true, trim: true },
-    description: { type: String }
-  },
-  { timestamps: true }
-);
+const privilegeSchema = new mongoose.Schema({
+  name: { type: String, required: true, unique: true },
+  description: { type: String }
+}, { timestamps: true });
 
-export default mongoose.model("Privilege", privilegeSchema);
+export default mongoose.models.Privilege ||
+  mongoose.model("Privilege", privilegeSchema);

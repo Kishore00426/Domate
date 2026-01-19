@@ -1,11 +1,16 @@
 import express from "express";
-import { registerUser, loginUser, getMe } from "../controllers/authController.js";
-import { authenticate } from "../middleware/authenticate.js";
+import { register, login, getMe } from "../controllers/authController.js";
+import { authenticate } from "../middleware/Authenticate.js"; // Fixed casing
 
 const router = express.Router();
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+// Register (defaults to "user", but can accept "service_provider")
+router.post("/register", register);
+
+// Login (works for both user and service provider)
+router.post("/login", login);
+
+// Get logged-in user
 router.get("/me", authenticate, getMe);
 
 export default router;
