@@ -21,7 +21,7 @@ export const authorize = (allowedRoles = []) => {
     }
 
 
-    // ✅ Passed all checks
+    //  Passed all checks
     next();
   };
 };

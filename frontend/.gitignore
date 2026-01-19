@@ -27,5 +27,5 @@ dist-ssr
 postcss.config.js
 
 # Environment Variables
-.env
-.env.*
+# .env
+# .env.*

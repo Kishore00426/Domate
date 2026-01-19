@@ -1,6 +1,6 @@
 import express from "express";
 import { register, login, getMe } from "../controllers/authController.js";
-import { authenticate } from "../middleware/Authenticate.js";
+import { authenticate } from "../middleware/Authenticate.js"; // Fixed casing
 
 const router = express.Router();
 

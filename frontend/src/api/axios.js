@@ -30,7 +30,8 @@ api.interceptors.response.use(
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             // Redirect to login (optional, but good UX)
-            // Note: We can't use useNavigate here as this is not a React component
+            // Note: We can't use useNavigate here as this is not a 
+            // React component
             // window.location.href = '/login'; 
         }
         return Promise.reject(error);

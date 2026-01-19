@@ -1,6 +1,6 @@
 // routes/bookingRoutes.js
 import express from "express";
-import { authenticate } from "../middleware/Authenticate.js";
+import { authenticate } from "../middleware/Authenticate.js"; // Fixed casing
 import { authorize } from "../middleware/Authorize.js";
 import {
   createBooking,
