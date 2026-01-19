@@ -4,6 +4,7 @@ import HomeLayout from '../layouts/HomeLayout';
 import { getMe, updateProfile } from '../api/auth';
 import { getUserBookings } from '../api/bookings';
 import UserDashboard from '../components/dashboard/UserDashboard';
+import ProviderDashboard from './ProviderDashboard';
 
 const Account = () => {
     const navigate = useNavigate();
@@ -40,7 +41,7 @@ const Account = () => {
                 if (userData.user.role !== 'service_provider') {
                     const bookingsData = await getUserBookings();
                     if (bookingsData.success) {
-                        setBookings(bookingsData.bookings);
+                        setBookings(bookingsData.bookings || []);
                     }
                 }
 
