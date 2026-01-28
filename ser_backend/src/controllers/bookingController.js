@@ -308,3 +308,59 @@ export const rateBooking = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+// ---------------- USER UPDATES BOOKING DETAILS ----------------
+export const updateBookingDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledDate, notes } = req.body;
+
+    const booking = await Booking.findOne({ _id: id, user: req.user._id });
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found" });
+    }
+
+    // Only allow editing if pending
+    if (booking.status !== "pending") {
+      return res.status(400).json({ success: false, error: "Cannot edit booking details once processed" });
+    }
+
+    if (scheduledDate) booking.scheduledDate = scheduledDate;
+    if (notes !== undefined) booking.notes = notes;
+
+    await booking.save();
+
+    // Populate for frontend
+    await booking.populate("serviceProvider", "username email");
+    await booking.populate("service", "title");
+
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- PROVIDER UPDATES BOOKING DETAILS ----------------
+export const updateBookingDetailsProvider = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledDate } = req.body;
+
+    const booking = await Booking.findOne({ _id: id, serviceProvider: req.user._id });
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found" });
+    }
+
+    if (scheduledDate) booking.scheduledDate = scheduledDate;
+
+    await booking.save();
+
+    // Populate for frontend
+    await booking.populate("user", "username email contactNumber");
+    await booking.populate("service", "title");
+
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};

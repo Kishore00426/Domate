@@ -6,8 +6,13 @@ import { useNavigate } from 'react-router-dom';
 import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote } from 'lucide-react';
 import { getMyProviderProfile, updateProviderBio, updateProviderServices, deleteProviderDocument } from '../api/providers';
 import { getMe, updateProfile } from '../api/auth';
-import { getProviderBookings, updateBookingStatus, completeBooking } from '../api/bookings';
+import { getProviderBookings, updateBookingStatus, completeBooking, updateBookingDetailsProvider } from '../api/bookings';
 import { getAllServices } from '../api/services';
+import DataTable from 'react-data-table-component';
+
+// ... (rest of imports)
+
+// (ProviderBookingRow can be removed or kept if I completely replaced its usage inside columns cell renderers - I am keeping it for now as a reference or if some cells still use it, but my previous step replaced the table that used it. I will define inline cells for the columns to be self-contained in the new implementation)
 
 const ProviderDashboard = () => {
     const navigate = useNavigate();
@@ -16,6 +21,239 @@ const ProviderDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
     const [bookingTab, setBookingTab] = useState('current'); // Booking Sub-tab State
+
+    const customStyles = {
+        headRow: {
+            style: {
+                backgroundColor: '#f9fafb', // gray-50
+                borderBottomColor: '#f3f4f6', // gray-100
+                borderBottomWidth: '1px',
+            },
+        },
+        headCells: {
+            style: {
+                color: '#6b7280', // gray-500
+                fontSize: '0.75rem', // xs
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                paddingLeft: '16px',
+                paddingRight: '16px',
+            },
+        },
+        rows: {
+            style: {
+                fontSize: '0.875rem', // sm
+                color: '#374151', // gray-700
+                paddingTop: '12px',
+                paddingBottom: '12px',
+                '&:hover': {
+                    backgroundColor: '#f9fafb',
+                    transition: 'all 0.2s',
+                },
+            },
+        },
+        cells: {
+            style: {
+                paddingLeft: '16px',
+                paddingRight: '16px',
+            },
+        }
+    };
+
+    // Helper to update booking in local state
+    const updateBookingInList = (id, updates) => {
+        setBookings(prev => prev.map(b => b._id === id ? { ...b, ...updates } : b));
+    };
+
+    const statusConfig = {
+        accepted: { color: 'bg-green-100 text-green-700', label: 'Accepted' },
+        arrived: { color: 'bg-blue-100 text-blue-700', label: 'Arrived' },
+        in_progress: { color: 'bg-orange-100 text-orange-700', label: 'In Progress' },
+        work_completed: { color: 'bg-purple-100 text-purple-700', label: 'Work Completed' },
+        completed: { color: 'bg-gray-100 text-gray-700', label: 'Completed' },
+        cancelled: { color: 'bg-red-100 text-red-700', label: 'Cancelled' },
+        rejected: { color: 'bg-red-50 text-red-500', label: 'Rejected' }
+    };
+
+
+    const columns = [
+        {
+            name: 'Service & Customer',
+            selector: row => row.service?.title,
+            sortable: true,
+            cell: row => (
+                <div className="py-2">
+                    <h4 className="font-bold text-soft-black text-sm">{row.service?.title}</h4>
+                    <p className="text-xs text-gray-500 mt-1">Cust: <span className="font-medium text-gray-700">{row.user?.username}</span></p>
+                    {row.notes && (
+                        <p className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded border border-amber-100 max-w-[200px] truncate" title={row.notes}>
+                            "{row.notes}"
+                        </p>
+                    )}
+                </div>
+            ),
+            width: '250px'
+        },
+        {
+            name: 'Scheduled Date',
+            selector: row => row.scheduledDate,
+            sortable: true,
+            cell: row => <ProviderDateCell booking={row} onUpdate={updateBookingInList} />,
+            width: '200px'
+        },
+        {
+            name: 'Status',
+            selector: row => row.status,
+            sortable: true,
+            cell: row => <ProviderStatusCell booking={row} onUpdate={updateBookingInList} statusConfig={statusConfig} />,
+            width: '200px'
+        },
+        {
+            name: 'Contact',
+            cell: row => (
+                <div className="py-2">
+                    {row.user?.phone ? (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <div className="bg-gray-100 p-1.5 rounded-full"><User className="w-3 h-3" /></div>
+                            <span className="font-mono">{row.user.phone}</span>
+                        </div>
+                    ) : <span className="text-gray-400 text-xs italic">No info</span>}
+                    {row.user?.address?.city && (
+                        <div className="mt-1 text-xs text-gray-500 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {row.user.address.city}
+                        </div>
+                    )}
+                </div>
+            )
+        },
+        {
+            name: 'Actions',
+            cell: row => (
+                <div className="flex flex-col items-end space-y-2 w-full py-2">
+                    {['accepted', 'arrived', 'in_progress'].includes(row.status) && (
+                        <button
+                            onClick={() => {
+                                setActiveBookingForCompletion(row);
+                                setInvoiceForm({
+                                    servicePrice: row.service?.price || '',
+                                    serviceCharge: providerDetails?.consultFee || ''
+                                });
+                            }}
+                            className="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-800 transition-colors shadow-sm"
+                        >
+                            Complete Job
+                        </button>
+                    )}
+                    {row.status === 'work_completed' && (
+                        <span className="text-xs text-amber-600 font-medium block">Waiting Payment</span>
+                    )}
+                    {(row.status === 'completed' || row.status === 'cancelled') && row.invoice && (
+                        <div className="flex flex-col items-end gap-1">
+                            <p className="text-sm font-bold text-soft-black">₹{row.invoice.totalAmount}</p>
+                            <button
+                                onClick={() => setActiveBookingForCompletion(row)}
+                                className="text-xs text-blue-600 font-bold hover:underline"
+                            >
+                                View Invoice
+                            </button>
+                        </div>
+                    )}
+                </div>
+            ),
+            right: true
+        }
+    ];
+
+    const ProviderDateCell = ({ booking, onUpdate }) => {
+        const [isEditing, setIsEditing] = useState(false);
+        const [date, setDate] = useState(booking.scheduledDate ? new Date(booking.scheduledDate).toISOString().slice(0, 16) : '');
+
+        const canEdit = ['accepted', 'arrived', 'in_progress'].includes(booking.status);
+
+        const handleSave = async () => {
+            const res = await updateBookingDetailsProvider(booking._id, { scheduledDate: date });
+            if (res.success) {
+                onUpdate(booking._id, { scheduledDate: date });
+                setIsEditing(false);
+            } else alert(res.error);
+        };
+
+        if (isEditing) {
+            return (
+                <div className="flex flex-col gap-2 w-full animate-in fade-in zoom-in-95">
+                    <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} className="text-xs border rounded p-1 w-full" />
+                    <div className="flex gap-1">
+                        <button onClick={handleSave} className="bg-black text-white px-2 py-0.5 rounded text-[10px]">Save</button>
+                        <button onClick={() => setIsEditing(false)} className="bg-gray-200 px-2 py-0.5 rounded text-[10px]">Cancel</button>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="group flex items-center gap-2">
+                <div>
+                    <p className="text-sm font-medium text-gray-800">
+                        {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                        {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                    </p>
+                </div>
+                {canEdit && (
+                    <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-black transition-opacity">
+                        <Edit2 className="w-3 h-3" />
+                    </button>
+                )}
+            </div>
+        );
+    };
+
+    const ProviderStatusCell = ({ booking, onUpdate, statusConfig }) => {
+        const [isUpdating, setIsUpdating] = useState(false);
+        const currentStatus = statusConfig[booking.status] || { color: 'bg-gray-100 text-gray-600', label: booking.status };
+        const canEdit = ['accepted', 'arrived', 'in_progress'].includes(booking.status);
+
+        const handleChange = async (e) => {
+            const newStatus = e.target.value;
+            if (!newStatus) return;
+            setIsUpdating(true);
+            const res = await updateBookingStatus(booking._id, newStatus);
+            if (res.success) {
+                onUpdate(booking._id, { status: newStatus });
+            } else alert("Failed to update status");
+            setIsUpdating(false);
+        };
+
+        if (canEdit) {
+            return (
+                <div className="relative w-full">
+                    <select
+                        value={booking.status}
+                        onChange={handleChange}
+                        disabled={isUpdating}
+                        className={`appearance-none w-full pl-3 pr-8 py-1.5 rounded-lg text-xs font-bold border-0 cursor-pointer focus:ring-2 focus:ring-black/5 transaction-colors ${currentStatus.color}`}
+                    >
+                        <option value="accepted">Accepted</option>
+                        <option value="arrived">Arrived</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="work_completed">Work Completed</option>
+                    </select>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-50">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            );
+        }
+        return (
+            <div className={`px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1 ${currentStatus.color}`}>
+                {booking.status === 'work_completed' && <CheckCircle className="w-3 h-3" />}
+                {currentStatus.label}
+            </div>
+        );
+    };
 
 
     // New state for Services Tab
@@ -1007,124 +1245,27 @@ const ProviderDashboard = () => {
                                         </div>
 
                                         {/* Active Bookings Section */}
-                                        {(bookingTab === 'current' || bookingTab === 'all') && (
-                                            <div className="mb-10 animate-in fade-in">
-
-                                                <h3 className="font-semibold text-lg mb-4 text-green-700 flex items-center gap-2">
-                                                    <CheckCircle className="w-5 h-5" /> Active & Ongoing
-                                                </h3>
-                                                {bookings.filter(b => ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status)).length === 0 ? (
-                                                    <p className="text-gray-400 text-sm italic">No active bookings.</p>
-                                                ) : (
-                                                    <div className="space-y-4">
-                                                        {bookings.filter(b => ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status))
-                                                            .sort((a, b) => new Date(a.scheduledDate) - new Date(b.scheduledDate))
-                                                            .map(booking => (
-                                                                <div key={booking._id} className="border border-green-100 bg-white rounded-2xl p-6 shadow-sm">
-                                                                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
-                                                                        <div>
-                                                                            <h4 className="font-bold text-soft-black mb-1">{booking.service?.title}</h4>
-                                                                            <p className="text-sm text-gray-700 font-medium mb-1">Customer: {booking.user?.username}</p>
-                                                                            <p className="text-sm text-gray-600 mb-2">
-                                                                                Date: {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
-                                                                                {' '}
-                                                                                {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                                                                            </p>
-                                                                            <div className="mt-2 text-xs text-green-700 font-bold px-3 py-1 bg-green-50 rounded-full inline-flex items-center gap-1 border border-green-100">
-                                                                                <CheckCircle className="w-3 h-3" /> {booking.status.replace('_', ' ').toUpperCase()}
-                                                                            </div>
-                                                                        </div>
-
-                                                                        <div className="flex flex-col items-end gap-2">
-                                                                            {booking.user?.phone && (
-                                                                                <div className="text-right text-sm text-gray-500 mb-2">
-                                                                                    <p className="font-medium text-gray-700">Contact: {booking.user.phone}</p>
-                                                                                </div>
-                                                                            )}
-
-                                                                            {/* Action Buttons based on Status */}
-                                                                            {['accepted', 'arrived', 'in_progress'].includes(booking.status) && (
-                                                                                <button
-                                                                                    onClick={() => {
-                                                                                        setActiveBookingForCompletion(booking);
-                                                                                        setInvoiceForm({
-                                                                                            servicePrice: booking.service?.price || '',
-                                                                                            serviceCharge: providerDetails?.consultFee || ''
-                                                                                        });
-                                                                                    }}
-                                                                                    className="bg-black text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md"
-                                                                                >
-                                                                                    Complete Job
-                                                                                </button>
-                                                                            )}
-
-                                                                            {booking.status === 'work_completed' && (
-                                                                                <div className="bg-amber-50 text-amber-700 px-4 py-2 rounded-xl text-xs font-bold border border-amber-100 flex items-center gap-2">
-                                                                                    <CheckCircle className="w-3 h-3" /> Waiting for Payment/Conf.
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
+                                        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-2">
+                                            <DataTable
+                                                columns={columns}
+                                                data={bookings.filter(b => {
+                                                    if (bookingTab === 'current') return ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status);
+                                                    return ['completed', 'cancelled', 'rejected'].includes(b.status);
+                                                })}
+                                                pagination
+                                                paginationPerPage={10}
+                                                paginationRowsPerPageOptions={[5, 10, 20]}
+                                                customStyles={customStyles}
+                                                noDataComponent={
+                                                    <div className="p-12 text-center text-gray-400">
+                                                        <div className="flex flex-col items-center justify-center">
+                                                            <Briefcase className="w-12 h-12 mb-3 text-gray-300" />
+                                                            <p className="text-lg">No {bookingTab === 'current' ? 'active' : 'past'} bookings.</p>
+                                                        </div>
                                                     </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {/* Past / Completed Bookings - Only show for ALL tab */}
-                                        {bookingTab === 'all' && (
-                                            <div className="animate-in fade-in">
-                                                <h3 className="font-semibold text-lg mb-4 text-gray-400 flex items-center gap-2">
-                                                    <Briefcase className="w-5 h-5" /> Past Bookings
-                                                </h3>
-                                                {bookings.filter(b => ['completed', 'cancelled', 'rejected'].includes(b.status)).length === 0 ? (
-                                                    <p className="text-gray-400 text-sm italic">No past bookings.</p>
-                                                ) : (
-                                                    <div className="space-y-4">
-                                                        {bookings.filter(b => ['completed', 'cancelled', 'rejected'].includes(b.status))
-                                                            .sort((a, b) => new Date(b.scheduledDate) - new Date(a.scheduledDate))
-                                                            .map(booking => (
-                                                                <div key={booking._id} className="border border-gray-100 bg-gray-50/50 rounded-2xl p-6">
-                                                                    <div className="flex justify-between items-center">
-                                                                        <div>
-                                                                            <h4 className="font-bold text-gray-700 mb-1">{booking.service?.title}</h4>
-                                                                            <p className="text-sm text-gray-500 mb-1">Customer: {booking.user?.username}</p>
-                                                                            <p className="text-xs text-gray-400">
-                                                                                {new Date(booking.scheduledDate).toLocaleDateString()}
-                                                                            </p>
-                                                                        </div>
-                                                                        <div>
-                                                                            <span className={`px-3 py-1 rounded-lg text-xs font-bold ${booking.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                                                booking.status === 'cancelled' ? 'bg-red-100 text-red-700' :
-                                                                                    'bg-gray-200 text-gray-700'
-                                                                                }`}>
-                                                                                {booking.status.toUpperCase()}
-                                                                            </span>
-                                                                            <div className="text-right">
-                                                                                <p className="text-lg font-bold text-soft-black">₹{booking.invoice?.totalAmount}</p>
-                                                                                <div className="flex gap-2 justify-end mt-1">
-                                                                                    <button
-                                                                                        onClick={() => setActiveBookingForCompletion(booking)}
-                                                                                        className="text-xs font-bold text-black border border-gray-200 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
-                                                                                    >
-                                                                                        View Invoice
-                                                                                    </button>
-                                                                                    {booking.status === 'completed' && (
-                                                                                        <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold inline-block">
-                                                                                            Completed
-                                                                                        </div>
-                                                                                    )}
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
+                                                }
+                                            />
+                                        </div>
 
                                     </div>
 
