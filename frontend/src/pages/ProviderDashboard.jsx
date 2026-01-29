@@ -472,6 +472,85 @@ const ProviderDashboard = () => {
         }
     };
 
+    // Search and Export Logic
+    const [filterText, setFilterText] = useState('');
+    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
+
+    const filteredItems = bookings.filter(b => {
+        // Tab Filter
+        const isCurrent = ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status);
+        const isHistory = ['completed', 'cancelled', 'rejected'].includes(b.status);
+        const matchesTab = bookingTab === 'current' ? isCurrent : isHistory;
+
+        if (!matchesTab) return false;
+
+        // Search Filter
+        const searchText = filterText.toLowerCase();
+        return (
+            (b.service?.title?.toLowerCase() || '').includes(searchText) ||
+            (b.user?.username?.toLowerCase() || '').includes(searchText) ||
+            (b.status?.toLowerCase() || '').includes(searchText)
+        );
+    });
+
+    const handleDownloadExcel = async () => {
+        const XLSX = await import("xlsx");
+        const worksheet = XLSX.utils.json_to_sheet(filteredItems.map(b => ({
+            Service: b.service?.title,
+            Customer: b.user?.username,
+            Date: new Date(b.scheduledDate).toLocaleDateString(),
+            Status: b.status,
+            Phone: b.user?.phone || 'N/A',
+            Amount: b.invoice?.totalAmount || 'N/A'
+        })));
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
+        XLSX.writeFile(workbook, "Provider_Bookings.xlsx");
+    };
+
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+        doc.text("Provider Bookings Report", 14, 22);
+        const data = filteredItems.map(b => [
+            b.service?.title,
+            b.user?.username,
+            new Date(b.scheduledDate).toLocaleDateString(),
+            b.status,
+            b.invoice?.totalAmount ? `Rs. ${b.invoice.totalAmount}` : '-'
+        ]);
+        doc.autoTable({
+            head: [['Service', 'Customer', 'Date', 'Status', 'Amount']],
+            body: data,
+            startY: 30,
+        });
+        doc.save('Provider_Bookings_Report.pdf');
+    };
+
+    const subHeaderComponentMemo = React.useMemo(() => {
+        return (
+            <div className="flex flex-col md:flex-row items-center justify-between w-full p-4 gap-4 bg-white">
+                <div className="relative w-full md:w-64">
+                    <input
+                        type="text"
+                        placeholder="Search Customer, Title..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                        value={filterText}
+                        onChange={e => setFilterText(e.target.value)}
+                    />
+                    <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={handleDownloadExcel} className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors">
+                        Excel
+                    </button>
+                    <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">
+                        PDF
+                    </button>
+                </div>
+            </div>
+        );
+    }, [filterText, filteredItems]);
+
     return (
         <HomeLayout>
             <div className="bg-grey-50 min-h-screen py-10 px-4">
@@ -1248,19 +1327,20 @@ const ProviderDashboard = () => {
                                         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-2">
                                             <DataTable
                                                 columns={columns}
-                                                data={bookings.filter(b => {
-                                                    if (bookingTab === 'current') return ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status);
-                                                    return ['completed', 'cancelled', 'rejected'].includes(b.status);
-                                                })}
+                                                data={filteredItems}
                                                 pagination
+                                                paginationResetDefaultPage={resetPaginationToggle}
                                                 paginationPerPage={10}
                                                 paginationRowsPerPageOptions={[5, 10, 20]}
                                                 customStyles={customStyles}
+                                                subHeader
+                                                subHeaderComponent={subHeaderComponentMemo}
+                                                persistTableHead
                                                 noDataComponent={
                                                     <div className="p-12 text-center text-gray-400">
                                                         <div className="flex flex-col items-center justify-center">
                                                             <Briefcase className="w-12 h-12 mb-3 text-gray-300" />
-                                                            <p className="text-lg">No {bookingTab === 'current' ? 'active' : 'past'} bookings.</p>
+                                                            <p className="text-lg">No {bookingTab === 'current' ? 'active' : 'past'} bookings found {filterText && "matching your search"}.</p>
                                                         </div>
                                                     </div>
                                                 }
