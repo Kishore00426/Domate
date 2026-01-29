@@ -10,7 +10,11 @@ import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star, CheckCircle, Ed
 
 import DataTable from 'react-data-table-component';
 
+// Imports at top (to be added)
+import { NotesCell, DateCell } from '../components/MyBookingCells';
+
 const MyBookings = () => {
+    // ... existing state ...
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,6 +26,10 @@ const MyBookings = () => {
     const [activeBookingForReview, setActiveBookingForReview] = useState(null);
     const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' });
     const [activeBookingForInvoice, setActiveBookingForInvoice] = useState(null);
+
+    // Search and Export Logic
+    const [filterText, setFilterText] = useState('');
+    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
 
     const customStyles = {
         headRow: {
@@ -67,8 +75,55 @@ const MyBookings = () => {
         setBookings(prev => prev.map(b => b._id === updatedBooking._id ? { ...b, ...updatedBooking } : b));
     };
 
+    const handleContactClick = (provider) => {
+        setSelectedContact(provider);
+        setShowContactModal(true);
+    };
 
-    const columns = [
+    const handleDelete = async (bookingId) => {
+        if (!window.confirm("Are you sure you want to delete this booking?")) return;
+        try {
+            const res = await deleteBooking(bookingId);
+            if (res.success) {
+                setBookings(prev => prev.filter(b => b._id !== bookingId));
+            } else {
+                alert(res.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to delete booking");
+        }
+    };
+
+    const handleConfirmBooking = async (bookingId) => {
+        if (!window.confirm("Confirm that the provider has completed the work?")) return;
+        try {
+            const res = await confirmBooking(bookingId);
+            if (res.success) {
+                setBookings(prev => prev.map(b =>
+                    b._id === bookingId ? { ...b, status: 'completed' } : b
+                ));
+            } else {
+                alert(res.error);
+            }
+        } catch (err) {
+            console.error("Confirmation failed", err);
+            alert("Failed to confirm booking");
+        }
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'pending': return 'bg-yellow-100 text-yellow-700';
+            case 'accepted': return 'bg-blue-100 text-blue-700';
+            case 'rejected': return 'bg-red-100 text-red-700';
+            case 'work_completed': return 'bg-purple-100 text-purple-700';
+            case 'completed': return 'bg-green-100 text-green-700';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    };
+
+    const columns = React.useMemo(() => [
         {
             name: 'Service',
             selector: row => row.service?.title,
@@ -165,404 +220,7 @@ const MyBookings = () => {
             ),
             right: true
         }
-    ];
-
-    // Inline Edit Components for Cells
-    const NotesCell = ({ booking, onUpdate }) => {
-        const [isEditing, setIsEditing] = useState(false);
-        const [notes, setNotes] = useState(booking.notes || '');
-
-        const handleSave = async () => {
-            const res = await updateBookingDetails(booking._id, { notes });
-            if (res.success) {
-                onUpdate({ ...booking, notes });
-                setIsEditing(false);
-            } else alert(res.error);
-        };
-
-        if (isEditing) {
-            return (
-                <div className="flex items-center gap-1">
-                    <input value={notes} onChange={e => setNotes(e.target.value)} className="w-full text-xs border rounded p-1" />
-                    <button onClick={handleSave} className="text-green-600"><Save className="w-3 h-3" /></button>
-                    <button onClick={() => setIsEditing(false)} className="text-gray-400"><X className="w-3 h-3" /></button>
-                </div>
-            );
-        }
-        return (
-            <div className="flex items-center gap-2 group">
-                <p className="text-gray-600 text-sm italic truncate max-w-[120px]" title={booking.notes}>{booking.notes || '-'}</p>
-                {booking.status === 'pending' && (
-                    <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-black">
-                        <Edit2 className="w-3 h-3" />
-                    </button>
-                )}
-            </div>
-        );
-    };
-
-    const DateCell = ({ booking, onUpdate }) => {
-        const [isEditing, setIsEditing] = useState(false);
-        const [date, setDate] = useState(booking.scheduledDate ? new Date(booking.scheduledDate).toISOString().slice(0, 16) : '');
-
-        const handleSave = async () => {
-            const res = await updateBookingDetails(booking._id, { scheduledDate: date });
-            if (res.success) {
-                onUpdate({ ...booking, scheduledDate: date });
-                setIsEditing(false);
-            } else alert(res.error);
-        };
-
-        if (isEditing) {
-            return (
-                <div className="flex flex-col gap-1 w-full">
-                    <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} className="text-xs border rounded p-1" />
-                    <div className="flex gap-1">
-                        <button onClick={handleSave} className="bg-black text-white px-2 py-0.5 rounded text-[10px]">Save</button>
-                        <button onClick={() => setIsEditing(false)} className="bg-gray-200 px-2 py-0.5 rounded text-[10px]">Cancel</button>
-                    </div>
-                </div>
-            );
-        }
-        return (
-            <div className="flex items-center gap-2 group">
-                <div>
-                    <div className="flex items-center gap-1 text-gray-700 text-sm">
-                        <Calendar className="w-3 h-3" />
-                        <span>{new Date(booking.scheduledDate).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-gray-500 text-xs mt-0.5">
-                        <Clock className="w-3 h-3" />
-                        <span>{booking.scheduledTime}</span>
-                    </div>
-                </div>
-                {booking.status === 'pending' && (
-                    <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-600">
-                        <Edit2 className="w-3 h-3" />
-                    </button>
-                )}
-            </div>
-        );
-    };
-
-    useEffect(() => {
-        const fetchBookings = async () => {
-            // ... (existing code, not changing, but showing context for placement)
-            try {
-                const data = await getUserBookings();
-                if (data.success) {
-                    setBookings(data.bookings);
-                }
-            } catch (error) {
-                console.error("Failed to fetch bookings", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchBookings();
-    }, []);
-
-    const downloadInvoice = (booking) => {
-        try {
-            if (!booking || !booking.invoice) {
-                alert("Invoice data is incomplete.");
-                return;
-            }
-
-            const doc = new jsPDF();
-
-            doc.setFontSize(20);
-            doc.text("INVOICE", 105, 20, null, null, "center");
-
-            doc.setFontSize(10);
-            const invoiceId = booking._id ? booking._id.slice(-6).toUpperCase() : 'UNKNOWN';
-            doc.text(`Invoice #: INV-${invoiceId}`, 14, 30);
-            doc.text(`Date: ${new Date(booking.updatedAt || Date.now()).toLocaleDateString()}`, 14, 35);
-
-            doc.setFontSize(12);
-            doc.text("Billed To:", 14, 50);
-            doc.setFontSize(10);
-
-            const userName = booking.user?.username || 'Customer';
-            doc.text(`Name: ${userName}`, 14, 56);
-
-            if (booking.user?.contactNumber || booking.user?.phone) {
-                doc.text(`Phone: ${booking.user.contactNumber || booking.user.phone}`, 14, 61);
-            }
-
-            doc.setFontSize(12);
-            doc.text("Service Details:", 14, 75);
-            doc.setFontSize(10);
-            doc.text(`Service: ${booking.service?.title || 'Service'}`, 14, 81);
-            doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
-
-            const tableColumn = ["Description", "Amount (INR)"];
-            const tableRows = [
-                ["Service Price", `Rs. ${Number(booking.invoice.servicePrice || 0).toFixed(2)}`],
-                ["Visiting / Extra Charges", `Rs. ${Number(booking.invoice.serviceCharge || 0).toFixed(2)}`],
-                ["GST (18%)", `Rs. ${Number(booking.invoice.gst || 0).toFixed(2)}`],
-                ["Total Amount", `Rs. ${Number(booking.invoice.totalAmount || 0).toFixed(2)}`]
-            ];
-
-            autoTable(doc, {
-                startY: 95,
-                head: [tableColumn],
-                body: tableRows,
-                theme: 'grid',
-                headStyles: { fillColor: [0, 0, 0] },
-                foot: [['Grand Total', `Rs. ${Number(booking.invoice.totalAmount || 0).toFixed(2)}`]],
-                footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
-            });
-
-            doc.text("Thank you for choosing our service!", 105, (doc.lastAutoTable?.finalY || 150) + 20, null, null, "center");
-
-            doc.save(`Invoice_${invoiceId}.pdf`);
-        } catch (error) {
-            console.error("PDF Generation Error:", error);
-            alert("Failed to generate PDF. Please try again or contact support.");
-        }
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'pending': return 'bg-yellow-100 text-yellow-700';
-            case 'accepted': return 'bg-blue-100 text-blue-700'; // Changed to blue/neutral
-            case 'rejected': return 'bg-red-100 text-red-700';
-            case 'work_completed': return 'bg-purple-100 text-purple-700'; // Distinct color
-            case 'completed': return 'bg-green-100 text-green-700';
-            default: return 'bg-gray-100 text-gray-700';
-        }
-    };
-
-    if (loading) {
-        return (
-            <HomeLayout>
-                <div className="flex items-center justify-center min-h-[60vh]">
-                    <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
-                </div>
-            </HomeLayout>
-        );
-    }
-
-
-
-    const handleContactClick = (provider) => {
-        setSelectedContact(provider);
-        setShowContactModal(true);
-    };
-
-    const handleDelete = async (bookingId) => {
-        if (!window.confirm("Are you sure you want to delete this booking?")) return;
-
-        try {
-            const res = await deleteBooking(bookingId);
-            if (res.success) {
-                setBookings(prev => prev.filter(b => b._id !== bookingId));
-            } else {
-                alert(res.error);
-            }
-        } catch (err) {
-            console.error(err);
-            alert("Failed to delete booking");
-        }
-    };
-
-    const handleConfirmBooking = async (bookingId) => {
-        if (!window.confirm("Confirm that the provider has completed the work?")) return;
-
-        try {
-            const res = await confirmBooking(bookingId);
-            if (res.success) {
-                // Update local state to 'completed'
-                setBookings(prev => prev.map(b =>
-                    b._id === bookingId ? { ...b, status: 'completed' } : b
-                ));
-            } else {
-                alert(res.error);
-            }
-        } catch (err) {
-            console.error("Confirmation failed", err);
-            alert("Failed to confirm booking");
-        }
-    };
-
-    const BookingRow = ({ booking, onDelete, onConfirm, onContact, onViewInvoice, onRate, getStatusColor, setBookings }) => {
-        const [isEditingNotes, setIsEditingNotes] = useState(false);
-        const [editedNotes, setEditedNotes] = useState(booking.notes || '');
-
-        const [isEditingDate, setIsEditingDate] = useState(false);
-        const [editedDate, setEditedDate] = useState(booking.scheduledDate ? new Date(booking.scheduledDate).toISOString().slice(0, 16) : '');
-
-        const handleSaveNotes = async () => {
-            try {
-                const res = await updateBookingDetails(booking._id, { notes: editedNotes });
-                if (res.success) {
-                    setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, notes: editedNotes } : b));
-                    setIsEditingNotes(false);
-                } else {
-                    alert(res.error);
-                }
-            } catch (err) {
-                console.error("Failed to update notes", err);
-                alert("Failed to update notes");
-            }
-        };
-
-        const handleSaveDate = async () => {
-            try {
-                if (!editedDate) return;
-                const res = await updateBookingDetails(booking._id, { scheduledDate: editedDate });
-                if (res.success) {
-                    setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, scheduledDate: editedDate } : b));
-                    setIsEditingDate(false);
-                } else {
-                    alert(res.error);
-                }
-            } catch (err) {
-                console.error("Failed to update date", err);
-                alert("Failed to update date");
-            }
-        };
-
-        return (
-            <tr className="hover:bg-gray-50 transition-colors">
-                <td className="p-6">
-                    <div className="flex items-center gap-3">
-                        <img src={booking.service?.image || 'https://via.placeholder.com/40'} alt={booking.service?.title} className="w-10 h-10 rounded-lg object-cover" />
-                        <div>
-                            <p className="font-semibold text-soft-black">{booking.service?.title}</p>
-                            <p className="text-sm text-gray-500">{booking.service?.category?.name}</p>
-                        </div>
-                    </div>
-                </td>
-                <td className="p-6">
-                    <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-gray-500" />
-                        <p className="font-medium text-gray-700">{booking.serviceProvider?.username}</p>
-                    </div>
-                    <button
-                        onClick={() => onContact(booking.serviceProvider)}
-                        className="text-blue-600 text-sm hover:underline mt-1"
-                    >
-                        Contact Provider
-                    </button>
-                </td>
-                <td className="p-6">
-                    {isEditingDate ? (
-                        <div className="flex flex-col gap-2">
-                            <input
-                                type="datetime-local"
-                                value={editedDate}
-                                onChange={(e) => setEditedDate(e.target.value)}
-                                className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <div className="flex gap-1">
-                                <button onClick={handleSaveDate} className="p-1 px-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-600">Save</button>
-                                <button onClick={() => { setIsEditingDate(false); setEditedDate(booking.scheduledDate ? new Date(booking.scheduledDate).toISOString().slice(0, 16) : ''); }} className="p-1 px-2 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300">Cancel</button>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 group/date">
-                            <div>
-                                <div className="flex items-center gap-2 text-gray-700">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>{new Date(booking.scheduledDate).toLocaleDateString()}</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-gray-700 mt-1">
-                                    <Clock className="w-4 h-4" />
-                                    <span>{booking.scheduledTime}</span>
-                                </div>
-                            </div>
-                            {booking.status === 'pending' && (
-                                <button
-                                    onClick={() => setIsEditingDate(true)}
-                                    className="opacity-0 group-hover/date:opacity-100 p-1 text-gray-400 hover:text-blue-600 transition-opacity"
-                                    title="Reschedule"
-                                >
-                                    <Edit2 className="w-3 h-3" />
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </td>
-                <td className="p-6 max-w-xs">
-                    {isEditingNotes ? (
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="text"
-                                value={editedNotes}
-                                onChange={(e) => setEditedNotes(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                            <button onClick={handleSaveNotes} className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors">
-                                <Save className="w-4 h-4" />
-                            </button>
-                            <button onClick={() => {
-                                setIsEditingNotes(false);
-                                setEditedNotes(booking.notes || ''); // Revert changes
-                            }} className="p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 group/notes">
-                            <p className="text-gray-600 text-sm italic">{booking.notes || 'No notes'}</p>
-                            {booking.status === 'pending' && (
-                                <button onClick={() => setIsEditingNotes(true)} className="opacity-0 group-hover/notes:opacity-100 p-1 text-gray-500 hover:text-gray-900 rounded-full transition-opacity">
-                                    <Edit2 className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </td>
-                <td className="p-6">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(booking.status)}`}>
-                        {booking.status.replace(/_/g, ' ')}
-                    </span>
-                </td>
-                <td className="p-6 text-right">
-                    <div className="flex flex-col items-end space-y-2">
-                        {booking.status === 'work_completed' && (
-                            <button
-                                onClick={() => onConfirm(booking._id)}
-                                className="flex items-center gap-1 text-green-600 hover:text-green-800 font-medium text-sm"
-                            >
-                                <CheckCircle className="w-4 h-4" /> Confirm Completion
-                            </button>
-                        )}
-                        {booking.status === 'completed' && !booking.review && (
-                            <button
-                                onClick={() => onRate(booking)}
-                                className="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 font-medium text-sm"
-                            >
-                                <Star className="w-4 h-4" /> Rate Service
-                            </button>
-                        )}
-                        {booking.status === 'completed' && booking.invoice && (
-                            <button
-                                onClick={() => onViewInvoice(booking)}
-                                className="text-blue-600 hover:underline text-sm"
-                            >
-                                View Invoice
-                            </button>
-                        )}
-                        {(booking.status === 'pending' || booking.status === 'accepted') && (
-                            <button
-                                onClick={() => onDelete(booking._id)}
-                                className="text-red-600 hover:underline text-sm"
-                            >
-                                Cancel Booking
-                            </button>
-                        )}
-                    </div>
-                </td>
-            </tr>
-        );
-    };
-
-    // Search and Export Logic
-    const [filterText, setFilterText] = useState('');
-    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
+    ], [bookings]); // Re-create if bookings change (to keep handlers fresh, though ideally handlers should be stable or generic)
 
     const filteredItems = bookings.filter(
         item => item.service?.title?.toLowerCase().includes(filterText.toLowerCase()) ||
@@ -603,6 +261,7 @@ const MyBookings = () => {
         });
         doc.save('My_Bookings_Report.pdf');
     };
+
 
     const subHeaderComponentMemo = React.useMemo(() => {
         return (

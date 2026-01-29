@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import HomeLayout from '../layouts/HomeLayout';
 import { useNavigate } from 'react-router-dom';
 import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote } from 'lucide-react';
@@ -9,6 +9,7 @@ import { getMe, updateProfile } from '../api/auth';
 import { getProviderBookings, updateBookingStatus, completeBooking, updateBookingDetailsProvider } from '../api/bookings';
 import { getAllServices } from '../api/services';
 import DataTable from 'react-data-table-component';
+import { ProviderDateCell, ProviderStatusCell } from '../components/ProviderBookingCells';
 
 // ... (rest of imports)
 
@@ -61,23 +62,24 @@ const ProviderDashboard = () => {
         }
     };
 
-    // Helper to update booking in local state
-    const updateBookingInList = (id, updates) => {
+    // Helper to update booking in local state (Memoized)
+    const updateBookingInList = useCallback((id, updates) => {
         setBookings(prev => prev.map(b => b._id === id ? { ...b, ...updates } : b));
-    };
+    }, []);
 
-    const statusConfig = {
+    const statusConfig = useMemo(() => ({
         accepted: { color: 'bg-green-100 text-green-700', label: 'Accepted' },
         arrived: { color: 'bg-blue-100 text-blue-700', label: 'Arrived' },
         in_progress: { color: 'bg-orange-100 text-orange-700', label: 'In Progress' },
         work_completed: { color: 'bg-purple-100 text-purple-700', label: 'Work Completed' },
         completed: { color: 'bg-gray-100 text-gray-700', label: 'Completed' },
         cancelled: { color: 'bg-red-100 text-red-700', label: 'Cancelled' },
-        rejected: { color: 'bg-red-50 text-red-500', label: 'Rejected' }
-    };
+        rejected: { color: 'bg-red-50 text-red-500', label: 'Rejected' },
+        pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Pending' }
+    }), []);
 
 
-    const columns = [
+    const columns = useMemo(() => [
         {
             name: 'Service & Customer',
             selector: row => row.service?.title,
@@ -164,96 +166,7 @@ const ProviderDashboard = () => {
             ),
             right: true
         }
-    ];
-
-    const ProviderDateCell = ({ booking, onUpdate }) => {
-        const [isEditing, setIsEditing] = useState(false);
-        const [date, setDate] = useState(booking.scheduledDate ? new Date(booking.scheduledDate).toISOString().slice(0, 16) : '');
-
-        const canEdit = ['accepted', 'arrived', 'in_progress'].includes(booking.status);
-
-        const handleSave = async () => {
-            const res = await updateBookingDetailsProvider(booking._id, { scheduledDate: date });
-            if (res.success) {
-                onUpdate(booking._id, { scheduledDate: date });
-                setIsEditing(false);
-            } else alert(res.error);
-        };
-
-        if (isEditing) {
-            return (
-                <div className="flex flex-col gap-2 w-full animate-in fade-in zoom-in-95">
-                    <input type="datetime-local" value={date} onChange={e => setDate(e.target.value)} className="text-xs border rounded p-1 w-full" />
-                    <div className="flex gap-1">
-                        <button onClick={handleSave} className="bg-black text-white px-2 py-0.5 rounded text-[10px]">Save</button>
-                        <button onClick={() => setIsEditing(false)} className="bg-gray-200 px-2 py-0.5 rounded text-[10px]">Cancel</button>
-                    </div>
-                </div>
-            );
-        }
-
-        return (
-            <div className="group flex items-center gap-2">
-                <div>
-                    <p className="text-sm font-medium text-gray-800">
-                        {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                        {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                    </p>
-                </div>
-                {canEdit && (
-                    <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-black transition-opacity">
-                        <Edit2 className="w-3 h-3" />
-                    </button>
-                )}
-            </div>
-        );
-    };
-
-    const ProviderStatusCell = ({ booking, onUpdate, statusConfig }) => {
-        const [isUpdating, setIsUpdating] = useState(false);
-        const currentStatus = statusConfig[booking.status] || { color: 'bg-gray-100 text-gray-600', label: booking.status };
-        const canEdit = ['accepted', 'arrived', 'in_progress'].includes(booking.status);
-
-        const handleChange = async (e) => {
-            const newStatus = e.target.value;
-            if (!newStatus) return;
-            setIsUpdating(true);
-            const res = await updateBookingStatus(booking._id, newStatus);
-            if (res.success) {
-                onUpdate(booking._id, { status: newStatus });
-            } else alert("Failed to update status");
-            setIsUpdating(false);
-        };
-
-        if (canEdit) {
-            return (
-                <div className="relative w-full">
-                    <select
-                        value={booking.status}
-                        onChange={handleChange}
-                        disabled={isUpdating}
-                        className={`appearance-none w-full pl-3 pr-8 py-1.5 rounded-lg text-xs font-bold border-0 cursor-pointer focus:ring-2 focus:ring-black/5 transaction-colors ${currentStatus.color}`}
-                    >
-                        <option value="accepted">Accepted</option>
-                        <option value="arrived">Arrived</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="work_completed">Work Completed</option>
-                    </select>
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-current opacity-50">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                </div>
-            );
-        }
-        return (
-            <div className={`px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1 ${currentStatus.color}`}>
-                {booking.status === 'work_completed' && <CheckCircle className="w-3 h-3" />}
-                {currentStatus.label}
-            </div>
-        );
-    };
+    ], [providerDetails, updateBookingInList, statusConfig]);
 
 
     // New state for Services Tab
