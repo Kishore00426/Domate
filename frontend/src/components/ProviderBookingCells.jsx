@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { updateBookingDetails } from '../api/bookings';
+import { updateBookingDetailsProvider, updateBookingStatus } from '../api/bookings';
 
 export const ProviderDateCell = ({ booking, onUpdate }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [date, setDate] = useState(booking.scheduledDate ? new Date(booking.scheduledDate).toISOString().slice(0, 16) : '');
 
     const handleSave = async () => {
-        const res = await updateBookingDetails(booking._id, { scheduledDate: date });
+        const res = await updateBookingDetailsProvider(booking._id, { scheduledDate: date });
         if (res.success) {
             onUpdate(booking._id, { scheduledDate: date });
             setIsEditing(false);
@@ -42,7 +42,7 @@ export const ProviderStatusCell = ({ booking, onUpdate, statusConfig }) => {
         const newStatus = e.target.value;
         if (!window.confirm(`Change status to ${newStatus.replace(/_/g, ' ')}?`)) return;
 
-        const res = await updateBookingDetails(booking._id, { status: newStatus });
+        const res = await updateBookingStatus(booking._id, newStatus);
         if (res.success) {
             onUpdate(booking._id, { status: newStatus });
         } else alert(res.error);

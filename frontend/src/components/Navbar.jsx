@@ -198,7 +198,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                     ) : (
                         /* Landing Right Section */
                         <div className="hidden md:block">
-                            <Link to="/register" className="bg-soft-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-black transition-transform active:scale-95 duration-200 cursor-pointer block">
+                            <Link to="/login" className="bg-soft-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-black transition-transform active:scale-95 duration-200 cursor-pointer block">
                                 Get Started
                             </Link>
                         </div>
@@ -274,7 +274,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 Services
                             </button>
                             <Link to="/register?role=service_provider" className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg">Become a Professional</Link>
-                            <Link to="/register" className="bg-soft-black text-white px-5 py-3 rounded-xl text-sm font-medium w-full block text-center">
+                            <Link to="/login" className="bg-soft-black text-white px-5 py-3 rounded-xl text-sm font-medium w-full block text-center">
                                 Get Started
                             </Link>
                         </>

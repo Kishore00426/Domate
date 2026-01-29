@@ -22,6 +22,30 @@ const ProviderDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
     const [bookingTab, setBookingTab] = useState('current'); // Booking Sub-tab State
+    const [bookings, setBookings] = useState([]);
+
+    // Services State
+    const [allServices, setAllServices] = useState([]);
+    const [selectedServices, setSelectedServices] = useState([]);
+    const [serviceDescriptions, setServiceDescriptions] = useState({});
+
+    // Documents State
+    const [selectedFiles, setSelectedFiles] = useState({
+        idProof: [],
+        addressProof: [],
+        certificate: []
+    });
+
+    // Invoice / Completion State
+    const [activeBookingForCompletion, setActiveBookingForCompletion] = useState(null);
+    const [invoiceForm, setInvoiceForm] = useState({ servicePrice: '', serviceCharge: '' });
+    const [isEditing, setIsEditing] = useState(false);
+    const [bioForm, setBioForm] = useState("");
+
+    // UI State for Editing
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [isEditingServices, setIsEditingServices] = useState(false);
+    const [isEditingDocuments, setIsEditingDocuments] = useState(false);
 
     const customStyles = {
         headRow: {
@@ -99,6 +123,7 @@ const ProviderDashboard = () => {
         },
         {
             name: 'Scheduled Date',
+            id: 'date',
             selector: row => row.scheduledDate,
             sortable: true,
             cell: row => <ProviderDateCell booking={row} onUpdate={updateBookingInList} />,
@@ -168,23 +193,92 @@ const ProviderDashboard = () => {
         }
     ], [providerDetails, updateBookingInList, statusConfig]);
 
+    // Search and Export Logic
+    const [filterText, setFilterText] = useState('');
+    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
 
-    // New state for Services Tab
-    const [allServices, setAllServices] = useState([]);
-    const [selectedServices, setSelectedServices] = useState([]);
-    const [serviceDescriptions, setServiceDescriptions] = useState({});
-    const [bookings, setBookings] = useState([]);
-    const [selectedFiles, setSelectedFiles] = useState({
-        idProof: [],
-        addressProof: [],
-        certificate: []
+    const filteredItems = bookings.filter(b => {
+        // Tab Filter
+        // 'pending' maps to Overview usually, but if we are in "Current" tab in Bookings, we should probably show them or just accepted/active. 
+        // Let's assume 'current' = active (accepted, arrived, in_progress, work_completed)
+        // 'all' = everything.
+
+        if (bookingTab === 'all') return true;
+        if (bookingTab === 'pending') return b.status === 'pending';
+
+        const isCurrent = ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status);
+        // If strict 'current', show isCurrent.
+        if (bookingTab === 'current' && !isCurrent) return false;
+
+        // Search Filter
+        const searchText = filterText.toLowerCase();
+        return (
+            (b.service?.title?.toLowerCase() || '').includes(searchText) ||
+            (b.user?.username?.toLowerCase() || '').includes(searchText) ||
+            (b.status?.toLowerCase() || '').includes(searchText)
+        );
     });
 
-    // Invoice / Completion State
-    const [activeBookingForCompletion, setActiveBookingForCompletion] = useState(null);
-    const [invoiceForm, setInvoiceForm] = useState({ servicePrice: '', serviceCharge: '' });
-    const [isEditing, setIsEditing] = useState(false);
-    const [bioForm, setBioForm] = useState("");
+    const handleDownloadExcel = async () => {
+        const XLSX = await import("xlsx");
+        const worksheet = XLSX.utils.json_to_sheet(filteredItems.map(b => ({
+            Service: b.service?.title,
+            Customer: b.user?.username,
+            Date: new Date(b.scheduledDate).toLocaleDateString(),
+            Status: b.status,
+            Phone: b.user?.phone || 'N/A',
+            Amount: b.invoice?.totalAmount || 'N/A'
+        })));
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
+        XLSX.writeFile(workbook, "Provider_Bookings.xlsx");
+    };
+
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+        doc.text("Provider Bookings Report", 14, 22);
+        const data = filteredItems.map(b => [
+            b.service?.title,
+            b.user?.username,
+            new Date(b.scheduledDate).toLocaleDateString(),
+            b.status,
+            b.invoice?.totalAmount ? `Rs. ${b.invoice.totalAmount}` : '-'
+        ]);
+        autoTable(doc, {
+            head: [['Service', 'Customer', 'Date', 'Status', 'Amount']],
+            body: data,
+            startY: 30,
+        });
+        doc.save('Provider_Bookings_Report.pdf');
+    };
+
+    const subHeaderComponentMemo = React.useMemo(() => {
+        return (
+            <div className="flex flex-col md:flex-row items-center justify-between w-full p-4 gap-4 bg-white">
+                <div className="relative w-full md:w-64">
+                    <input
+                        type="text"
+                        placeholder="Search Customer, Title..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                        value={filterText}
+                        onChange={e => setFilterText(e.target.value)}
+                    />
+                    <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <div className="flex gap-2">
+                    <button onClick={handleDownloadExcel} className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors">
+                        Excel
+                    </button>
+                    <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">
+                        PDF
+                    </button>
+                </div>
+            </div>
+        );
+    }, [filterText, filteredItems]);
+
+
+
 
 
 
@@ -294,10 +388,7 @@ const ProviderDashboard = () => {
 
 
 
-    // UI State for Editing
-    const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const [isEditingServices, setIsEditingServices] = useState(false);
-    const [isEditingDocuments, setIsEditingDocuments] = useState(false);
+
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -385,89 +476,12 @@ const ProviderDashboard = () => {
         }
     };
 
-    // Search and Export Logic
-    const [filterText, setFilterText] = useState('');
-    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
 
-    const filteredItems = bookings.filter(b => {
-        // Tab Filter
-        const isCurrent = ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(b.status);
-        const isHistory = ['completed', 'cancelled', 'rejected'].includes(b.status);
-        const matchesTab = bookingTab === 'current' ? isCurrent : isHistory;
-
-        if (!matchesTab) return false;
-
-        // Search Filter
-        const searchText = filterText.toLowerCase();
-        return (
-            (b.service?.title?.toLowerCase() || '').includes(searchText) ||
-            (b.user?.username?.toLowerCase() || '').includes(searchText) ||
-            (b.status?.toLowerCase() || '').includes(searchText)
-        );
-    });
-
-    const handleDownloadExcel = async () => {
-        const XLSX = await import("xlsx");
-        const worksheet = XLSX.utils.json_to_sheet(filteredItems.map(b => ({
-            Service: b.service?.title,
-            Customer: b.user?.username,
-            Date: new Date(b.scheduledDate).toLocaleDateString(),
-            Status: b.status,
-            Phone: b.user?.phone || 'N/A',
-            Amount: b.invoice?.totalAmount || 'N/A'
-        })));
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
-        XLSX.writeFile(workbook, "Provider_Bookings.xlsx");
-    };
-
-    const handleDownloadPDF = () => {
-        const doc = new jsPDF();
-        doc.text("Provider Bookings Report", 14, 22);
-        const data = filteredItems.map(b => [
-            b.service?.title,
-            b.user?.username,
-            new Date(b.scheduledDate).toLocaleDateString(),
-            b.status,
-            b.invoice?.totalAmount ? `Rs. ${b.invoice.totalAmount}` : '-'
-        ]);
-        doc.autoTable({
-            head: [['Service', 'Customer', 'Date', 'Status', 'Amount']],
-            body: data,
-            startY: 30,
-        });
-        doc.save('Provider_Bookings_Report.pdf');
-    };
-
-    const subHeaderComponentMemo = React.useMemo(() => {
-        return (
-            <div className="flex flex-col md:flex-row items-center justify-between w-full p-4 gap-4 bg-white">
-                <div className="relative w-full md:w-64">
-                    <input
-                        type="text"
-                        placeholder="Search Customer, Title..."
-                        className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                        value={filterText}
-                        onChange={e => setFilterText(e.target.value)}
-                    />
-                    <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                </div>
-                <div className="flex gap-2">
-                    <button onClick={handleDownloadExcel} className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors">
-                        Excel
-                    </button>
-                    <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">
-                        PDF
-                    </button>
-                </div>
-            </div>
-        );
-    }, [filterText, filteredItems]);
 
     return (
         <HomeLayout>
             <div className="bg-grey-50 min-h-screen py-10 px-4">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-7xl mx-auto">
 
                     {/* Header */}
                     <div className="bg-white rounded-3xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 md:mt-18">
@@ -1222,10 +1236,16 @@ const ProviderDashboard = () => {
 
                                             <div className="flex bg-gray-100 p-1 rounded-xl">
                                                 <button
+                                                    onClick={() => setBookingTab('pending')}
+                                                    className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'pending' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                                >
+                                                    Pending
+                                                </button>
+                                                <button
                                                     onClick={() => setBookingTab('current')}
                                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'current' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                                 >
-                                                    Current
+                                                    Active
                                                 </button>
                                                 <button
                                                     onClick={() => setBookingTab('all')}
@@ -1245,6 +1265,8 @@ const ProviderDashboard = () => {
                                                 paginationResetDefaultPage={resetPaginationToggle}
                                                 paginationPerPage={10}
                                                 paginationRowsPerPageOptions={[5, 10, 20]}
+                                                defaultSortFieldId="date"
+                                                defaultSortAsc={false}
                                                 customStyles={customStyles}
                                                 subHeader
                                                 subHeaderComponent={subHeaderComponentMemo}

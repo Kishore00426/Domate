@@ -4,7 +4,7 @@ import autoTable from 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getUserBookings, deleteBooking, rateBooking, confirmBooking, updateBookingDetails } from '../api/bookings';
-import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star, CheckCircle, Edit2, Save } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star, CheckCircle, Edit2, Save, Eye, FileText, Trash2 } from 'lucide-react';
 
 
 
@@ -18,6 +18,7 @@ const MyBookings = () => {
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [bookingTab, setBookingTab] = useState('current');
 
     const [showContactModal, setShowContactModal] = useState(false);
     const [selectedContact, setSelectedContact] = useState(null);
@@ -26,6 +27,7 @@ const MyBookings = () => {
     const [activeBookingForReview, setActiveBookingForReview] = useState(null);
     const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' });
     const [activeBookingForInvoice, setActiveBookingForInvoice] = useState(null);
+    const [activeBookingForView, setActiveBookingForView] = useState(null);
 
     // Search and Export Logic
     const [filterText, setFilterText] = useState('');
@@ -69,6 +71,22 @@ const MyBookings = () => {
             },
         },
     };
+
+    useEffect(() => {
+        const fetchBookings = async () => {
+            try {
+                const res = await getUserBookings();
+                if (res.success) {
+                    setBookings(res.bookings);
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchBookings();
+    }, []);
 
     // Helper for updating individual booking in list
     const updateBookingInList = (updatedBooking) => {
@@ -160,6 +178,7 @@ const MyBookings = () => {
         },
         {
             name: 'Scheduled Date',
+            id: 'date',
             selector: row => row.scheduledDate,
             sortable: true,
             cell: row => <DateCell booking={row} onUpdate={updateBookingInList} />,
@@ -183,37 +202,50 @@ const MyBookings = () => {
         {
             name: 'Actions',
             cell: row => (
-                <div className="flex flex-col items-end space-y-2 w-full">
+                <div className="flex items-center justify-end gap-2 w-full">
                     {row.status === 'work_completed' && (
                         <button
                             onClick={() => handleConfirmBooking(row._id)}
-                            className="flex items-center gap-1 text-green-600 hover:text-green-800 font-medium text-xs bg-green-50 px-2 py-1 rounded"
+                            className="p-2 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors"
+                            title="Confirm Completion"
                         >
-                            <CheckCircle className="w-3 h-3" /> Confirm
+                            <CheckCircle className="w-4 h-4" />
                         </button>
                     )}
                     {row.status === 'completed' && !row.review && (
                         <button
                             onClick={() => setActiveBookingForReview(row)}
-                            className="flex items-center gap-1 text-yellow-600 hover:text-yellow-800 font-medium text-xs"
+                            className="p-2 bg-yellow-50 text-yellow-600 rounded-full hover:bg-yellow-100 transition-colors"
+                            title="Rate Service"
                         >
-                            <Star className="w-3 h-3" /> Rate
+                            <Star className="w-4 h-4" />
                         </button>
                     )}
                     {row.status === 'completed' && row.invoice && (
                         <button
                             onClick={() => setActiveBookingForInvoice(row)}
-                            className="text-blue-600 hover:underline text-xs"
+                            className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
+                            title="View Invoice"
                         >
-                            View Invoice
+                            <FileText className="w-4 h-4" />
                         </button>
                     )}
+
+                    <button
+                        onClick={() => setActiveBookingForView(row)}
+                        className="p-2 bg-gray-50 text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                        title="View Details"
+                    >
+                        <Eye className="w-4 h-4" />
+                    </button>
+
                     {(row.status === 'pending' || row.status === 'accepted') && (
                         <button
                             onClick={() => handleDelete(row._id)}
-                            className="text-red-500 hover:text-red-700 text-xs flex items-center gap-1"
+                            className="p-2 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors"
+                            title="Cancel Booking"
                         >
-                            <X className="w-3 h-3" /> Cancel
+                            <X className="w-4 h-4" />
                         </button>
                     )}
                 </div>
@@ -222,11 +254,26 @@ const MyBookings = () => {
         }
     ], [bookings]); // Re-create if bookings change (to keep handlers fresh, though ideally handlers should be stable or generic)
 
-    const filteredItems = bookings.filter(
-        item => item.service?.title?.toLowerCase().includes(filterText.toLowerCase()) ||
-            item.serviceProvider?.username?.toLowerCase().includes(filterText.toLowerCase()) ||
-            item.status?.toLowerCase().includes(filterText.toLowerCase())
-    );
+    const filteredItems = bookings.filter(item => {
+        // Tab Filter
+        if (bookingTab === 'all') {
+            // pass
+        } else if (bookingTab === 'pending') {
+            if (item.status !== 'pending') return false;
+        } else if (bookingTab === 'current') {
+            // Active: exclude pending
+            const isCurrent = ['accepted', 'in_progress', 'arrived', 'work_completed'].includes(item.status);
+            if (!isCurrent) return false;
+        }
+
+        // Search Filter
+        const searchText = filterText.toLowerCase();
+        return (
+            (item.service?.title?.toLowerCase() || '').includes(searchText) ||
+            (item.serviceProvider?.username?.toLowerCase() || '').includes(searchText) ||
+            (item.status?.toLowerCase() || '').includes(searchText)
+        );
+    });
 
     // Dynamic Import for xlsx
     const handleDownloadExcel = async () => {
@@ -262,6 +309,51 @@ const MyBookings = () => {
         doc.save('My_Bookings_Report.pdf');
     };
 
+    const downloadInvoice = (booking) => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.text("INVOICE", 105, 20, null, null, "center");
+
+        doc.setFontSize(10);
+        doc.text(`Invoice #: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
+        doc.text(`Date: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
+
+        doc.setFontSize(12);
+        doc.text("Billed To:", 14, 50);
+        doc.setFontSize(10);
+        doc.text(`Name: ${booking.user?.username || 'Customer'}`, 14, 56);
+        if (booking.user?.phone) doc.text(`Phone: ${booking.user.phone}`, 14, 61);
+
+        doc.setFontSize(12);
+        doc.text("Service Details:", 14, 75);
+        doc.setFontSize(10);
+        doc.text(`Service: ${booking.service?.title}`, 14, 81);
+        doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
+
+        const tableColumn = ["Description", "Amount (INR)"];
+        const tableRows = [
+            ["Service Price", `Rs. ${booking.invoice?.servicePrice}`],
+            ["Visiting / Extra Charges", `Rs. ${booking.invoice?.serviceCharge}`],
+            ["GST (18%)", `Rs. ${booking.invoice?.gst}`],
+            ["Total Amount", `Rs. ${booking.invoice?.totalAmount}`]
+        ];
+
+        autoTable(doc, {
+            startY: 95,
+            head: [tableColumn],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0] },
+            foot: [['Grand Total', `Rs. ${booking.invoice?.totalAmount}`]],
+            footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+        });
+
+        doc.text("Thank you for choosing our service!", 105, doc.lastAutoTable.finalY + 20, null, null, "center");
+
+        doc.save(`Invoice_${booking._id.slice(-6)}.pdf`);
+    };
+
 
     const subHeaderComponentMemo = React.useMemo(() => {
         return (
@@ -291,19 +383,42 @@ const MyBookings = () => {
     return (
         <HomeLayout>
             <div className="min-h-screen bg-gray-50/30 pt-[10px] md:mt-30 px-4 pb-20">
-                <div className="max-w-4xl mx-auto">
-                    <div className="flex items-center gap-4 mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                        <button
-                            onClick={() => navigate('/account')}
-                            className="p-3 -ml-2 hover:bg-gray-100 p-4 bg-blue-50 text-blue-600 rounded-2xl rounded-full transition-colors text-gray-600"
-                            title="Back to Dashboard"
-                        >
-                            <ArrowLeft className="w-6 h-6" />
-                        </button>
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center justify-between mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex-wrap gap-4">
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => navigate('/account')}
+                                className="p-3 -ml-2 hover:bg-gray-100 p-4 bg-blue-50 text-blue-600 rounded-2xl rounded-full transition-colors text-gray-600"
+                                title="Back to Dashboard"
+                            >
+                                <ArrowLeft className="w-6 h-6" />
+                            </button>
 
-                        <div>
-                            <h1 className="text-2xl font-bold text-soft-black">My Bookings</h1>
-                            <p className="text-gray-500">View and track your service appointments</p>
+                            <div>
+                                <h1 className="text-2xl font-bold text-soft-black">My Bookings</h1>
+                                <p className="text-gray-500">View and track your service appointments</p>
+                            </div>
+                        </div>
+
+                        <div className="flex bg-gray-100 p-1 rounded-xl">
+                            <button
+                                onClick={() => setBookingTab('pending')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'pending' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Pending
+                            </button>
+                            <button
+                                onClick={() => setBookingTab('current')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'current' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Active
+                            </button>
+                            <button
+                                onClick={() => setBookingTab('all')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'all' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                All Bookings
+                            </button>
                         </div>
                     </div>
 
@@ -316,6 +431,8 @@ const MyBookings = () => {
                             paginationResetDefaultPage={resetPaginationToggle}
                             paginationPerPage={10}
                             paginationRowsPerPageOptions={[5, 10, 20]}
+                            defaultSortFieldId="date"
+                            defaultSortAsc={false}
                             customStyles={customStyles}
                             subHeader
                             subHeaderComponent={subHeaderComponentMemo}
@@ -324,7 +441,7 @@ const MyBookings = () => {
                                 <div className="p-12 text-center text-gray-400">
                                     <div className="flex flex-col items-center justify-center">
                                         <Calendar className="w-12 h-12 mb-3 text-gray-300" />
-                                        <p className="text-lg">No bookings found {filterText && "matching your search"}.</p>
+                                        <p className="text-lg">No {bookingTab === 'pending' ? 'pending' : (bookingTab === 'current' ? 'active' : 'historical')} bookings found {filterText && "matching your search"}.</p>
                                         {!filterText && (
                                             <button onClick={() => navigate('/services')} className="mt-2 text-blue-600 font-medium hover:underline">
                                                 Browse Services
@@ -340,6 +457,69 @@ const MyBookings = () => {
 
 
 
+
+            {/* View Details Modal */}
+            {activeBookingForView && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="text-lg font-bold text-soft-black">Booking Details</h3>
+                            <button onClick={() => setActiveBookingForView(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="flex items-start gap-6">
+                                <img src={activeBookingForView.service?.image || 'https://via.placeholder.com/80'} alt="Service" className="w-20 h-20 rounded-xl object-cover shadow-sm" />
+                                <div>
+                                    <h4 className="text-xl font-bold text-soft-black mb-1">{activeBookingForView.service?.title}</h4>
+                                    <p className="text-sm text-gray-500 mb-2">{activeBookingForView.service?.category?.name}</p>
+                                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(activeBookingForView.status)}`}>
+                                        {activeBookingForView.status.replace(/_/g, ' ')}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 pt-4 border-t border-gray-100">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-400 uppercase mb-1">Provider</p>
+                                        <div className="flex items-center gap-2">
+                                            <User className="w-4 h-4 text-gray-400" />
+                                            <span className="font-medium text-soft-black">{activeBookingForView.serviceProvider?.username}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-bold text-gray-400 uppercase mb-1">Schedule</p>
+                                        <div className="flex items-center gap-2">
+                                            <Calendar className="w-4 h-4 text-gray-400" />
+                                            <span className="font-medium text-soft-black">
+                                                {activeBookingForView.scheduledDate ? new Date(activeBookingForView.scheduledDate).toLocaleDateString() : 'TBD'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {activeBookingForView.notes && (
+                                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                                        <p className="text-xs font-bold text-amber-600 uppercase mb-1">Your Notes</p>
+                                        <p className="text-sm text-gray-700 italic">"{activeBookingForView.notes}"</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end pt-2">
+                                <button
+                                    onClick={() => setActiveBookingForView(null)}
+                                    className="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Contact Modal */}
             {showContactModal && selectedContact && (

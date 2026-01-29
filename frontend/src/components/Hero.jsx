@@ -21,7 +21,7 @@ const Hero = () => {
 
                 {/* Get Started Button */}
                 <div className="mt-6">
-                    <Link to="/register" className="inline-block bg-soft-black text-white text-lg px-8 py-4 rounded-full font-medium hover:bg-black transition-all hover:-translate-y-1 shadow-lg active:scale-95 duration-200 cursor-pointer">
+                    <Link to="/login" className="inline-block bg-soft-black text-white text-lg px-8 py-4 rounded-full font-medium hover:bg-black transition-all hover:-translate-y-1 shadow-lg active:scale-95 duration-200 cursor-pointer">
                         Get Started
                     </Link>
                 </div>
