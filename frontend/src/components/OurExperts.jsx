@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Star, User, Award, Briefcase } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getAllVerifiedProviders } from '../api/providers';
 import { getImageUrl } from '../utils/imageUrl';
 
 const OurExperts = () => {
+    const { t } = useTranslation();
     const [experts, setExperts] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -47,10 +49,10 @@ const OurExperts = () => {
                 <div className="mb-8 pl-2">
                     <h2 className="text-2xl md:text-3xl font-bold text-soft-black flex items-center gap-2">
                         <Award className="w-6 h-6 text-black" />
-                        Meet Our Experts
+                        {t('home.experts.title')}
                     </h2>
                     <p className="text-gray-500 mt-2 text-sm md:text-base">
-                        Highly rated professionals ready to help you.
+                        {t('home.experts.subtitle')}
                     </p>
                 </div>
 
@@ -87,13 +89,13 @@ const OurExperts = () => {
                                 {/* Experience & Ratings Row */}
                                 <div className="flex items-center justify-between text-white/90 text-sm mb-3">
                                     <div className="font-medium text-left text-gray-300">
-                                        {expert.experience} Yrs Exp
+                                        {expert.experience} {t('home.experts.experience')}
                                     </div>
                                 </div>
 
                                 {/* Expertise */}
                                 <div className="text-left">
-                                    <p className="text-xs text-white/60 uppercase font-semibold mb-2">Expertise</p>
+                                    <p className="text-xs text-white/60 uppercase font-semibold mb-2">{t('home.experts.expertise')}</p>
                                     <div className="flex flex-wrap gap-2">
                                         {expert.services?.slice(0, 2).map((service, idx) => (
                                             <span

@@ -123,6 +123,13 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 </div>
                             )}
 
+                            <button
+                                onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en')}
+                                className="text-sm font-bold text-gray-600 hover:text-soft-black transition-colors uppercase px-2"
+                            >
+                                {i18n.language === 'en' ? 'TA' : 'EN'}
+                            </button>
+
                             {!isServiceProvider && (
                                 <>
                                     <Link
@@ -244,6 +251,17 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                             <Link to="/notifications" className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl text-black font-medium">
                                 <Bell className="w-5 h-5" /> Notifications
                             </Link>
+
+                            <button
+                                onClick={() => {
+                                    changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
+                                    setIsOpen(false);
+                                }}
+                                className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl text-black font-medium w-full text-left"
+                            >
+                                <span className="w-5 text-center font-bold text-sm bg-gray-200 rounded">{i18n.language === 'en' ? 'TA' : 'EN'}</span>
+                                {i18n.language === 'en' ? 'Switch to Tamil' : 'ஆங்கிலத்திற்கு மாறவும்'}
+                            </button>
 
                             <div className="p-2">
                                 <input type="text" placeholder="Search..." className="w-full px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 shadow-md text-black placeholder:text-gray-500" />

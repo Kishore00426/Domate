@@ -46,6 +46,71 @@ const resources = {
                 privacy: "Privacy Policy",
                 social: "Social",
                 rights: "All rights reserved."
+            },
+            login: {
+                welcome: "Welcome Back",
+                subtitle: "Login to your DoMate account.",
+                emailLabel: "Email Address",
+                emailPlaceholder: "name@example.com",
+                passwordLabel: "Password",
+                passwordPlaceholder: "••••••••",
+                loginButton: "Login",
+                noAccount: "Don't have an account?",
+                signUp: "Sign up",
+                errors: {
+                    emailRequired: "Email is required",
+                    emailInvalid: "Email is invalid",
+                    passwordRequired: "Password is required",
+                    passwordLength: "Password must be at least 6 characters",
+                    loginFailed: "Login failed. Please try again.",
+                    networkError: "Unable to connect to the server. Please check your internet connection or try again later."
+                }
+            },
+            home: {
+                carousel: {
+                    slide1: {
+                        title: "Expert Home Services",
+                        subtitle: "From cleaning to repairs, we have you covered."
+                    },
+                    slide2: {
+                        title: "Festive Season begins",
+                        subtitle: "We are here to make your festive season a healthy & memorable one."
+                    },
+                    slide3: {
+                        title: "Skilled Electricians",
+                        subtitle: "Safe and reliable electrical repairs."
+                    },
+                    bookNow: "Book Now"
+                },
+                categories: {
+                    title: "What are you looking for?",
+                    items: {
+                        salonSpa: "Salon & Spa",
+                        cleaning: "Cleaning",
+                        handyman: "Handyman Services",
+                        acAppliance: "AC & Appliance Repair",
+                        mosquito: "Mosquito & Safety nets",
+                        painting: "Painting & Waterproofing",
+                        disinfection: "Disinfection Services",
+                        packersMovers: "Packers & Movers"
+                    },
+                    modal: {
+                        noServices: "No services available for this category yet.",
+                        close: "Close"
+                    }
+                },
+                cleaning: {
+                    title: "Sparkle & Shine: Premium Cleaning for Your Home",
+                    subtitle: "Experience the joy of a spotless home with our top-rated cleaning professionals.",
+                    startsAt: "Starts at",
+                    bookNow: "Book Now"
+                },
+                experts: {
+                    title: "Meet Our Experts",
+                    subtitle: "Highly rated professionals ready to help you.",
+                    experience: "Yrs Exp",
+                    expertise: "Expertise"
+                }
             }
         }
     },
@@ -93,6 +158,71 @@ const resources = {
                 privacy: "தனியுரிமைக் கொள்கை",
                 social: "சமூகம்",
                 rights: "அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை."
+            },
+            login: {
+                welcome: "மீண்டும் வருக",
+                subtitle: "உங்கள் DoMate கணக்கில் உள்நுழையவும்.",
+                emailLabel: "மின்னஞ்சல் முகவரி",
+                emailPlaceholder: "name@example.com",
+                passwordLabel: "கடவுச்சொல்",
+                passwordPlaceholder: "••••••••",
+                loginButton: "உள்நுழைய",
+                noAccount: "கணக்கு இல்லையா?",
+                signUp: "பதிவு செய்க",
+                errors: {
+                    emailRequired: "மின்னஞ்சல் தேவை",
+                    emailInvalid: "மின்னஞ்சல் தவறானது",
+                    passwordRequired: "கடவுச்சொல் தேவை",
+                    passwordLength: "கடவுச்சொல் குறைந்தது 6 எழுத்துக்கள் இருக்க வேண்டும்",
+                    loginFailed: "உள்நுழைவு தோல்வியடைந்தது. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
+                    networkError: "சேவையகத்துடன் இணைக்க முடியவில்லை. இணைய இணைப்பைச் சரிபார்க்கவும்."
+                }
+            },
+            home: {
+                carousel: {
+                    slide1: {
+                        title: "நிபுணத்துவ வீட்டுச் சேவைகள்",
+                        subtitle: "சுத்தம் செய்வது முதல் பழுது பார்ப்பது வரை, அனைத்தும் எங்களிடம்."
+                    },
+                    slide2: {
+                        title: "பண்டிகை காலம் தொடங்குகிறது",
+                        subtitle: "உங்கள் பண்டிகை காலத்தை ஆரோக்கியமாகவும் மறக்கமுடியாததாகவும் மாற்ற நாங்கள் இருக்கிறோம்."
+                    },
+                    slide3: {
+                        title: "திறமையான எலக்ட்ரீஷியன்கள்",
+                        subtitle: "பாதுகாப்பான மற்றும் நம்பகமான மின்சார பழுதுபார்ப்பு."
+                    },
+                    bookNow: "முன்பதிவு செய்யவும்"
+                },
+                categories: {
+                    title: "நீங்கள் எதைத் தேடுகிறீர்கள்?",
+                    items: {
+                        salonSpa: "சலூன் & ஸ்பா",
+                        cleaning: "சுத்தம்",
+                        handyman: "கைவினைஞர் சேவைகள்",
+                        acAppliance: "ஏசி & உபகரணங்கள் பழுது",
+                        mosquito: "கொசு & பாதுகாப்பு வலைகள்",
+                        painting: "ஓவியம் & வாட்டர்ப்ரூஃபிங்",
+                        disinfection: "கிருமிநாசினி சேவைகள்",
+                        packersMovers: "பேக்கர்ஸ் & மூவர்ஸ்"
+                    },
+                    modal: {
+                        noServices: "இந்த வகைக்கு சேவைகள் எதுவும் இல்லை.",
+                        close: "மூடு"
+                    }
+                },
+                cleaning: {
+                    title: "ஸ்பார்கிள் & ஷைன்: உங்கள் வீட்டிற்கான பிரீமியம் சுத்தம்",
+                    subtitle: "எங்கள் சிறந்த தரமதிப்பீடு பெற்ற சுத்தம் செய்யும் நிபுணர்களுடன் உங்கள் வீடு பளிச்சிடுவதை அனுபவியுங்கள்.",
+                    startsAt: "ஆரம்ப விலை",
+                    bookNow: "முன்பதிவு செய்யவும்"
+                },
+                experts: {
+                    title: "எங்கள் நிபுணர்களை சந்திக்கவும்",
+                    subtitle: "உங்களுக்கு உதவ தயாராக இருக்கும் உயர் தரமதிப்பீடு பெற்ற நிபுணர்கள்.",
+                    experience: "வருட அனுபவம்",
+                    expertise: "நிபுணத்துவம்"
+                }
             }
         }
     }

@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Star, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getAllServices } from '../api/services';
 import { getImageUrl } from '../utils/imageUrl';
 
 const CleanHomeServices = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -49,10 +51,10 @@ const CleanHomeServices = () => {
                 <div className="mb-8 pl-2">
                     <h2 className="text-2xl md:text-3xl font-bold text-soft-black flex items-center gap-2">
                         <Sparkles className="w-6 h-6 text-yellow-500 fill-yellow-500" />
-                        Sparkle & Shine: Premium Cleaning for Your Home
+                        {t('home.cleaning.title')}
                     </h2>
                     <p className="text-gray-500 mt-2 text-sm md:text-base">
-                        Experience the joy of a spotless home with our top-rated cleaning professionals.
+                        {t('home.cleaning.subtitle')}
                     </p>
                 </div>
 
@@ -88,8 +90,8 @@ const CleanHomeServices = () => {
                                     {service.description || service.detailedDescription}
                                 </p>
                                 <div className="text-sm font-medium text-gray-900 flex items-center justify-between">
-                                    <div>Starts at <span className="font-bold">₹{service.price}</span></div>
-                                    <span className="text-xs text-blue-600 font-semibold group-hover:underline">Book Now &rarr;</span>
+                                    <div>{t('home.cleaning.startsAt')} <span className="font-bold">₹{service.price}</span></div>
+                                    <span className="text-xs text-blue-600 font-semibold group-hover:underline">{t('home.cleaning.bookNow')} &rarr;</span>
                                 </div>
                             </div>
                         </div>
