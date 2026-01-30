@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { User, MapPin, Home, Menu, X, Search, LogOut, LayoutGrid, Bell } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,7 +12,12 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const { t, i18n } = useTranslation();
     const isDashboard = variant === 'dashboard';
+
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+    };
 
     const handleLogout = () => {
         localStorage.clear(); // Remove all cache data
@@ -75,9 +81,9 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                             }}
                             className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors cursor-pointer"
                         >
-                            Services
+                            {t('navbar.services')}
                         </button>
-                        <Link to="/register?role=service_provider" className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors">Become a Professional</Link>
+                        <Link to="/register?role=service_provider" className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors">{t('navbar.becomeProfessional')}</Link>
                     </div>
                 )}
 
@@ -197,9 +203,15 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                         </div>
                     ) : (
                         /* Landing Right Section */
-                        <div className="hidden md:block">
+                        <div className="hidden md:flex items-center gap-4">
+                            <button
+                                onClick={() => changeLanguage(i18n.language === 'en' ? 'ta' : 'en')}
+                                className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors uppercase"
+                            >
+                                {i18n.language === 'en' ? 'TA' : 'EN'}
+                            </button>
                             <Link to="/login" className="bg-soft-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-black transition-transform active:scale-95 duration-200 cursor-pointer block">
-                                Get Started
+                                {t('navbar.getStarted')}
                             </Link>
                         </div>
                     )}
@@ -271,12 +283,21 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 }}
                                 className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg text-left w-full cursor-pointer"
                             >
-                                Services
+                                {t('navbar.services')}
                             </button>
-                            <Link to="/register?role=service_provider" className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg">Become a Professional</Link>
+                            <Link to="/register?role=service_provider" className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg">{t('navbar.becomeProfessional')}</Link>
                             <Link to="/login" className="bg-soft-black text-white px-5 py-3 rounded-xl text-sm font-medium w-full block text-center">
-                                Get Started
+                                {t('navbar.getStarted')}
                             </Link>
+                            <button
+                                onClick={() => {
+                                    changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
+                                    setIsOpen(false);
+                                }}
+                                className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg w-full text-left uppercase"
+                            >
+                                {i18n.language === 'en' ? 'Switch to Tamil' : 'ஆங்கிலத்திற்கு மாறவும்'}
+                            </button>
                         </>
                     )}
                 </div>
