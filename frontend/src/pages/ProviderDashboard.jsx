@@ -39,6 +39,25 @@ const ProviderDashboard = () => {
     // Invoice / Completion State
     const [activeBookingForCompletion, setActiveBookingForCompletion] = useState(null);
     const [invoiceForm, setInvoiceForm] = useState({ servicePrice: '', serviceCharge: '' });
+    const [activeBookingForEdit, setActiveBookingForEdit] = useState(null);
+    const [statusToUpdate, setStatusToUpdate] = useState('');
+
+    const handleUpdateStatus = async () => {
+        if (!activeBookingForEdit || !statusToUpdate) return;
+        try {
+            const res = await updateBookingStatus(activeBookingForEdit._id, statusToUpdate);
+            if (res.success) {
+                updateBookingInList({ ...activeBookingForEdit, status: statusToUpdate });
+                setActiveBookingForEdit(null);
+                setStatusToUpdate('');
+            } else {
+                alert(res.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Failed to update status");
+        }
+    };
     const [isEditing, setIsEditing] = useState(false);
     const [bioForm, setBioForm] = useState("");
 
@@ -158,7 +177,21 @@ const ProviderDashboard = () => {
         {
             name: 'Actions',
             cell: row => (
-                <div className="flex flex-col items-end space-y-2 w-full py-2">
+                <div className="flex items-center justify-end gap-2 w-full py-2">
+                    {/* Status Edit - Available for active bookings */}
+                    {['pending', 'accepted', 'arrived', 'in_progress'].includes(row.status) && (
+                        <button
+                            onClick={() => {
+                                setActiveBookingForEdit(row);
+                                setStatusToUpdate(row.status);
+                            }}
+                            className="p-2 bg-gray-100 text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
+                            title="Edit Status"
+                        >
+                            <Edit2 className="w-4 h-4" />
+                        </button>
+                    )}
+
                     {['accepted', 'arrived', 'in_progress'].includes(row.status) && (
                         <button
                             onClick={() => {
@@ -168,22 +201,24 @@ const ProviderDashboard = () => {
                                     serviceCharge: providerDetails?.consultFee || ''
                                 });
                             }}
-                            className="bg-black text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-800 transition-colors shadow-sm"
+                            className="p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors shadow-sm"
+                            title="Complete Job & Invoice"
                         >
-                            Complete Job
+                            <CheckCircle className="w-4 h-4" />
                         </button>
                     )}
                     {row.status === 'work_completed' && (
-                        <span className="text-xs text-amber-600 font-medium block">Waiting Payment</span>
+                        <span className="text-xs text-amber-600 font-medium block" title="Waiting for user confirmation">Waiting</span>
                     )}
                     {(row.status === 'completed' || row.status === 'cancelled') && row.invoice && (
-                        <div className="flex flex-col items-end gap-1">
-                            <p className="text-sm font-bold text-soft-black">₹{row.invoice.totalAmount}</p>
+                        <div className="flex items-center gap-2">
+                            <p className="text-xs font-bold text-soft-black">₹{row.invoice.totalAmount}</p>
                             <button
                                 onClick={() => setActiveBookingForCompletion(row)}
-                                className="text-xs text-blue-600 font-bold hover:underline"
+                                className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
+                                title="View Invoice"
                             >
-                                View Invoice
+                                <FileText className="w-4 h-4" />
                             </button>
                         </div>
                     )}
@@ -1290,6 +1325,53 @@ const ProviderDashboard = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Status Edit Modal */}
+            {activeBookingForEdit && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="text-lg font-bold text-soft-black">Update Status</h3>
+                            <button onClick={() => setActiveBookingForEdit(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-600 mb-2">Current Status</label>
+                                <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusConfig[activeBookingForEdit.status]?.color || 'bg-gray-100 text-gray-700'}`}>
+                                    {statusConfig[activeBookingForEdit.status]?.label || activeBookingForEdit.status}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-600 mb-2">New Status</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {['pending', 'accepted', 'arrived', 'in_progress', 'work_completed', 'cancelled', 'rejected'].map(s => (
+                                        <button
+                                            key={s}
+                                            onClick={() => setStatusToUpdate(s)}
+                                            className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${statusToUpdate === s
+                                                ? 'bg-black text-white border-black shadow-md scale-105'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                }`}
+                                        >
+                                            {statusConfig[s]?.label || s.replace(/_/g, ' ')}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={handleUpdateStatus}
+                                className="w-full bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"
+                            >
+                                Update Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* INVOICE MODAL (Create or View) */}
             {
