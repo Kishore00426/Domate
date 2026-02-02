@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, MapPin, Home, Menu, X, Search, LogOut, LayoutGrid, Bell } from 'lucide-react';
+import { User, MapPin, Home, Menu, X, Search, LogOut, LayoutGrid, Bell, ChevronDown, Check, Globe } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { openSearchModal, closeSearchModal } from '../store/uiSlice';
 import SearchModal from './SearchModal';
+import LanguageDropdown from './LanguageDropdown';
 
 const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -14,10 +15,6 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const dispatch = useDispatch();
     const { t, i18n } = useTranslation();
     const isDashboard = variant === 'dashboard';
-
-    const changeLanguage = (lng) => {
-        i18n.changeLanguage(lng);
-    };
 
     const handleLogout = () => {
         localStorage.clear(); // Remove all cache data
@@ -40,6 +37,9 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
             if (searchRef.current && !searchRef.current.contains(event.target) && isSearchOpen) {
                 dispatch(closeSearchModal());
             }
+            if (searchRef.current && !searchRef.current.contains(event.target) && isSearchOpen) {
+                dispatch(closeSearchModal());
+            }
         };
 
         document.addEventListener('mousedown', handleClickOutside);
@@ -47,6 +47,19 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isSearchOpen, dispatch]);
+
+    const languages = [
+        { code: 'en', label: 'English' },
+        { code: 'ta', label: 'தமிழ் (Tamil)' },
+        { code: 'hi', label: 'हिन्दी (Hindi)' }
+    ];
+
+    const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
+
+    const changeLanguage = (lng) => {
+        i18n.changeLanguage(lng);
+    };
+
 
     return (
         <nav className="fixed top-0 left-0 w-full z-50">
@@ -123,12 +136,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 </div>
                             )}
 
-                            <button
-                                onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en')}
-                                className="text-sm font-bold text-gray-600 hover:text-soft-black transition-colors uppercase px-2"
-                            >
-                                {i18n.language === 'en' ? 'TA' : 'EN'}
-                            </button>
+                            <LanguageDropdown />
 
                             {!isServiceProvider && (
                                 <>
@@ -211,12 +219,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                     ) : (
                         /* Landing Right Section */
                         <div className="hidden md:flex items-center gap-4">
-                            <button
-                                onClick={() => changeLanguage(i18n.language === 'en' ? 'ta' : 'en')}
-                                className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors uppercase"
-                            >
-                                {i18n.language === 'en' ? 'TA' : 'EN'}
-                            </button>
+                            <LanguageDropdown />
                             <Link to="/login" className="bg-soft-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-black transition-transform active:scale-95 duration-200 cursor-pointer block">
                                 {t('navbar.getStarted')}
                             </Link>
@@ -252,21 +255,28 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 <Bell className="w-5 h-5" /> Notifications
                             </Link>
 
-                            <button
-                                onClick={() => {
-                                    changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
-                                    setIsOpen(false);
-                                }}
-                                className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl text-black font-medium w-full text-left"
-                            >
-                                <span className="w-5 text-center font-bold text-sm bg-gray-200 rounded">{i18n.language === 'en' ? 'TA' : 'EN'}</span>
-                                {i18n.language === 'en' ? 'Switch to Tamil' : 'ஆங்கிலத்திற்கு மாறவும்'}
-                            </button>
+                            <div className="p-3 bg-gray-50 rounded-xl">
+                                <p className="text-xs font-bold text-gray-400 uppercase mb-2">Language</p>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {languages.map(lang => (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => {
+                                                changeLanguage(lang.code);
+                                                setIsOpen(false);
+                                            }}
+                                            className={`py-2 px-1 rounded-lg text-sm font-medium transition-colors ${i18n.language === lang.code ? 'bg-black text-white shadow-md' : 'bg-white text-gray-600 border border-gray-100'}`}
+                                        >
+                                            {lang.code.toUpperCase()}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
 
                             <div className="p-2">
                                 <input type="text" placeholder="Search..." className="w-full px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 shadow-md text-black placeholder:text-gray-500" />
                             </div>
-                            <div className="border-t pt-2 mt-2">
+                            <div className="border-t pt-1 mt-1">
                                 {!isGuest ? (
                                     <Link
                                         to={isServiceProvider ? "/provider/dashboard" : "/account"}
@@ -308,18 +318,28 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 {t('navbar.services')}
                             </button>
                             <Link to="/register?role=service_provider" className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg">{t('navbar.becomeProfessional')}</Link>
+
+                            <div className="p-3 bg-gray-50 rounded-xl">
+                                <p className="text-xs font-bold text-gray-400 uppercase mb-2">Language</p>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {languages.map(lang => (
+                                        <button
+                                            key={lang.code}
+                                            onClick={() => {
+                                                changeLanguage(lang.code);
+                                                setIsOpen(false);
+                                            }}
+                                            className={`py-2 px-1 rounded-lg text-sm font-medium transition-colors ${i18n.language === lang.code ? 'bg-black text-white shadow-md' : 'bg-white text-gray-600 border border-gray-100'}`}
+                                        >
+                                            {lang.code.toUpperCase()}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             <Link to="/login" className="bg-soft-black text-white px-5 py-3 rounded-xl text-sm font-medium w-full block text-center">
                                 {t('navbar.getStarted')}
                             </Link>
-                            <button
-                                onClick={() => {
-                                    changeLanguage(i18n.language === 'en' ? 'ta' : 'en');
-                                    setIsOpen(false);
-                                }}
-                                className="text-gray-600 font-medium p-2 hover:bg-gray-50 rounded-lg w-full text-left uppercase"
-                            >
-                                {i18n.language === 'en' ? 'Switch to Tamil' : 'ஆங்கிலத்திற்கு மாறவும்'}
-                            </button>
                         </>
                     )}
                 </div>
