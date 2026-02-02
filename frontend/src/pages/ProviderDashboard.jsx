@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import HomeLayout from '../layouts/HomeLayout';
 import { useNavigate } from 'react-router-dom';
-import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote } from 'lucide-react';
+import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote, FileText } from 'lucide-react';
 import { getMyProviderProfile, updateProviderBio, updateProviderServices, deleteProviderDocument } from '../api/providers';
 import { getMe, updateProfile } from '../api/auth';
 import { getProviderBookings, updateBookingStatus, completeBooking, updateBookingDetailsProvider } from '../api/bookings';
@@ -519,7 +519,7 @@ const ProviderDashboard = () => {
                 <div className="max-w-7xl mx-auto">
 
                     {/* Header */}
-                    <div className="bg-white rounded-3xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 md:mt-18">
+                    <div className="bg-white rounded-3xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 mt-24 md:mt-18">
                         <div className="flex items-center gap-6">
                             <div className="w-20 h-20 bg-soft-black rounded-full flex items-center justify-center text-white text-3xl font-bold">
                                 {user?.username?.charAt(0).toUpperCase()}

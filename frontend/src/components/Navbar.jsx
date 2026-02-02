@@ -49,8 +49,8 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     }, [isSearchOpen, dispatch]);
 
     return (
-        <nav className="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-6xl z-50">
-            <div className="bg-white/90 backdrop-blur-md rounded-full shadow-sm border border-white/20 px-6 py-3 flex items-center justify-between transition-all duration-300 hover:shadow-md">
+        <nav className="fixed top-0 left-0 w-full z-50">
+            <div className="bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-b-3xl">
 
                 <div className="flex items-center gap-8">
 
@@ -268,7 +268,11 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                             </div>
                             <div className="border-t pt-2 mt-2">
                                 {!isGuest ? (
-                                    <div className="flex items-center gap-3 p-2">
+                                    <Link
+                                        to={isServiceProvider ? "/provider/dashboard" : "/account"}
+                                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors"
+                                        onClick={() => setIsOpen(false)}
+                                    >
                                         <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center font-semibold text-white">
                                             {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
                                         </div>
@@ -276,7 +280,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                             <div className="font-medium text-black">{user?.name}</div>
                                             <div className="text-xs text-black font-medium">{user?.location}</div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 ) : (
                                     <Link to="/login" className="flex items-center justify-center p-3 bg-black text-white rounded-xl font-medium w-full">
                                         Login
