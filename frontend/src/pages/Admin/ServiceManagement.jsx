@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, Filter, MoreVertical, FileText, X, Upload, Save, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Filter, MoreVertical, FileText, X, Upload, Save, AlertCircle, Check } from 'lucide-react';
 import { getServices, createService, updateService, deleteService, getCategories, getSubcategories } from '../../api/admin';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -11,6 +11,10 @@ const ServiceManagement = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+
+    // Inline Edit State
+    const [inlineEdit, setInlineEdit] = useState({ id: null, field: null, value: '' });
+    const [inlineLoading, setInlineLoading] = useState(false);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -164,6 +168,69 @@ const ServiceManagement = () => {
         }
     };
 
+    // Inline Edit Functions
+    const startInlineEdit = (item, field) => {
+        setInlineEdit({
+            id: item._id,
+            field: field,
+            value: item[field]
+        });
+    };
+
+    const cancelInlineEdit = () => {
+        setInlineEdit({ id: null, field: null, value: '' });
+    };
+
+    const saveInlineEdit = async () => {
+        if (!inlineEdit.id) return;
+        setInlineLoading(true);
+
+        try {
+            const service = services.find(s => s._id === inlineEdit.id);
+            if (!service) return;
+
+            const data = new FormData();
+            // Append all existing fields to ensure consistency
+            data.append('title', service.title);
+            data.append('category', typeof service.category === 'object' ? service.category._id : service.category);
+            if (service.subcategory) data.append('subcategory', typeof service.subcategory === 'object' ? service.subcategory._id : service.subcategory);
+
+            // Update the specific field
+            if (inlineEdit.field === 'price') {
+                data.append('price', inlineEdit.value);
+            } else {
+                data.append('price', service.price); // Keep original if not editing price
+            }
+
+            data.append('detailedDescription', service.detailedDescription);
+            data.append('whatIsCovered', service.whatIsCovered ? service.whatIsCovered.join(', ') : '');
+            data.append('whatIsNotCovered', service.whatIsNotCovered ? service.whatIsNotCovered.join(', ') : '');
+            data.append('requiredEquipment', service.requiredEquipment ? service.requiredEquipment.join(', ') : '');
+            data.append('serviceProcess', service.serviceProcess ? service.serviceProcess.join(', ') : '');
+            data.append('warranty', service.warranty || '');
+
+            // We don't send image unless changed, so we can skip it or send null. 
+            // The backend updateService typically handles "if file provided, update it". 
+            // So we just don't append 'image'.
+
+            const response = await updateService(inlineEdit.id, data);
+
+            if (response.success) {
+                setServices(prev => prev.map(s => s._id === inlineEdit.id ? { ...s, [inlineEdit.field]: inlineEdit.value } : s));
+                setInlineEdit({ id: null, field: null, value: '' });
+                // Optional: fetchData() if you want a full refresh, but optimistic UI is faster
+            } else {
+                alert(response.error || 'Failed to update');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Update failed');
+        } finally {
+            setInlineLoading(false);
+        }
+    };
+
+
     const getCategoryName = (catId) => {
         if (!catId) return 'N/A';
         // catId can be populated object or string id
@@ -248,7 +315,7 @@ const ServiceManagement = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredServices.map((service) => (
-                                    <tr key={service._id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={service._id} className="hover:bg-gray-50 transition-colors group">
                                         <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
                                             {service.imageUrl ? (
                                                 <img src={getImageUrl(service.imageUrl)} alt={service.title} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
@@ -260,7 +327,34 @@ const ServiceManagement = () => {
                                             {service.title}
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">{getCategoryName(service.category)}</td>
-                                        <td className="px-6 py-4 font-semibold text-soft-black">₹{service.price}</td>
+                                        <td className="px-6 py-4 font-semibold text-soft-black">
+                                            {inlineEdit.id === service._id && inlineEdit.field === 'price' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        className="w-24 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    onClick={() => startInlineEdit(service, 'price')}
+                                                    className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1 -ml-1 rounded px-2 w-fit transition-colors"
+                                                    title="Click to edit price"
+                                                >
+                                                    ₹{service.price}
+                                                    <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button onClick={() => handleOpenModal(service)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
