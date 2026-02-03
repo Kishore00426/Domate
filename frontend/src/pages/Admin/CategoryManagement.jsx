@@ -341,7 +341,6 @@ const CategoryManagement = () => {
                                                             title="Click to edit name"
                                                         >
                                                             {item.name}
-                                                            <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                         </div>
                                                     )}
                                                 </td>
@@ -391,7 +390,6 @@ const CategoryManagement = () => {
                                                             title="Click to edit name"
                                                         >
                                                             {item.name}
-                                                            <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                         </div>
                                                     )}
                                                 </td>

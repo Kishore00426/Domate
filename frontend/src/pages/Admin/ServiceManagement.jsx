@@ -351,7 +351,6 @@ const ServiceManagement = () => {
                                                     title="Click to edit price"
                                                 >
                                                     ₹{service.price}
-                                                    <Edit2 className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
                                             )}
                                         </td>
