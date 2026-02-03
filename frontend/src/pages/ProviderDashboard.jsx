@@ -3,7 +3,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import HomeLayout from '../layouts/HomeLayout';
 import { useNavigate } from 'react-router-dom';
-import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote } from 'lucide-react';
+import { User, AlertCircle, CheckCircle, Upload, Briefcase, MapPin, Trash2, X, Pencil, Edit2, Banknote, FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getMyProviderProfile, updateProviderBio, updateProviderServices, deleteProviderDocument } from '../api/providers';
 import { getMe, updateProfile } from '../api/auth';
 import { getProviderBookings, updateBookingStatus, completeBooking, updateBookingDetailsProvider } from '../api/bookings';
@@ -16,6 +17,7 @@ import { ProviderDateCell, ProviderStatusCell } from '../components/ProviderBook
 // (ProviderBookingRow can be removed or kept if I completely replaced its usage inside columns cell renderers - I am keeping it for now as a reference or if some cells still use it, but my previous step replaced the table that used it. I will define inline cells for the columns to be self-contained in the new implementation)
 
 const ProviderDashboard = () => {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [providerDetails, setProviderDetails] = useState(null);
@@ -55,7 +57,7 @@ const ProviderDashboard = () => {
             }
         } catch (err) {
             console.error(err);
-            alert("Failed to update status");
+            alert(t('dashboard.failedToUpdateStatus'));
         }
     };
     const [isEditing, setIsEditing] = useState(false);
@@ -111,26 +113,26 @@ const ProviderDashboard = () => {
     }, []);
 
     const statusConfig = useMemo(() => ({
-        accepted: { color: 'bg-green-100 text-green-700', label: 'Accepted' },
-        arrived: { color: 'bg-blue-100 text-blue-700', label: 'Arrived' },
-        in_progress: { color: 'bg-orange-100 text-orange-700', label: 'In Progress' },
-        work_completed: { color: 'bg-purple-100 text-purple-700', label: 'Work Completed' },
-        completed: { color: 'bg-gray-100 text-gray-700', label: 'Completed' },
-        cancelled: { color: 'bg-red-100 text-red-700', label: 'Cancelled' },
-        rejected: { color: 'bg-red-50 text-red-500', label: 'Rejected' },
-        pending: { color: 'bg-yellow-100 text-yellow-700', label: 'Pending' }
-    }), []);
+        accepted: { color: 'bg-green-100 text-green-700', label: t('dashboard.statusLabel.accepted') },
+        arrived: { color: 'bg-blue-100 text-blue-700', label: t('dashboard.statusLabel.arrived') },
+        in_progress: { color: 'bg-orange-100 text-orange-700', label: t('dashboard.statusLabel.in_progress') },
+        work_completed: { color: 'bg-purple-100 text-purple-700', label: t('dashboard.statusLabel.work_completed') },
+        completed: { color: 'bg-gray-100 text-gray-700', label: t('dashboard.statusLabel.completed') },
+        cancelled: { color: 'bg-red-100 text-red-700', label: t('dashboard.statusLabel.cancelled') },
+        rejected: { color: 'bg-red-50 text-red-500', label: t('dashboard.statusLabel.rejected') },
+        pending: { color: 'bg-yellow-100 text-yellow-700', label: t('dashboard.statusLabel.pending') }
+    }), [t, i18n.language]);
 
 
     const columns = useMemo(() => [
         {
-            name: 'Service & Customer',
+            name: `${t('dashboard.service')} & ${t('dashboard.customer')}`,
             selector: row => row.service?.title,
             sortable: true,
             cell: row => (
                 <div className="py-2">
                     <h4 className="font-bold text-soft-black text-sm">{row.service?.title}</h4>
-                    <p className="text-xs text-gray-500 mt-1">Cust: <span className="font-medium text-gray-700">{row.user?.username}</span></p>
+                    <p className="text-xs text-gray-500 mt-1">{t('dashboard.cust')}: <span className="font-medium text-gray-700">{row.user?.username}</span></p>
                     {row.notes && (
                         <p className="text-xs text-amber-600 mt-2 bg-amber-50 p-2 rounded border border-amber-100 max-w-[200px] truncate" title={row.notes}>
                             "{row.notes}"
@@ -141,7 +143,7 @@ const ProviderDashboard = () => {
             width: '250px'
         },
         {
-            name: 'Scheduled Date',
+            name: t('dashboard.date'),
             id: 'date',
             selector: row => row.scheduledDate,
             sortable: true,
@@ -149,14 +151,14 @@ const ProviderDashboard = () => {
             width: '200px'
         },
         {
-            name: 'Status',
+            name: t('dashboard.status'),
             selector: row => row.status,
             sortable: true,
             cell: row => <ProviderStatusCell booking={row} onUpdate={updateBookingInList} statusConfig={statusConfig} />,
             width: '200px'
         },
         {
-            name: 'Contact',
+            name: t('dashboard.contactInfo'),
             cell: row => (
                 <div className="py-2">
                     {row.user?.phone ? (
@@ -164,7 +166,7 @@ const ProviderDashboard = () => {
                             <div className="bg-gray-100 p-1.5 rounded-full"><User className="w-3 h-3" /></div>
                             <span className="font-mono">{row.user.phone}</span>
                         </div>
-                    ) : <span className="text-gray-400 text-xs italic">No info</span>}
+                    ) : <span className="text-gray-400 text-xs italic">{t('dashboard.noInfo')}</span>}
                     {row.user?.address?.city && (
                         <div className="mt-1 text-xs text-gray-500 flex items-center gap-1">
                             <MapPin className="w-3 h-3" />
@@ -175,7 +177,7 @@ const ProviderDashboard = () => {
             )
         },
         {
-            name: 'Actions',
+            name: t('dashboard.actions'),
             cell: row => (
                 <div className="flex items-center justify-end gap-2 w-full py-2">
                     {/* Status Edit - Available for active bookings */}
@@ -226,7 +228,7 @@ const ProviderDashboard = () => {
             ),
             right: true
         }
-    ], [providerDetails, updateBookingInList, statusConfig]);
+    ], [providerDetails, updateBookingInList, statusConfig, t, i18n.language]);
 
     // Search and Export Logic
     const [filterText, setFilterText] = useState('');
@@ -257,12 +259,12 @@ const ProviderDashboard = () => {
     const handleDownloadExcel = async () => {
         const XLSX = await import("xlsx");
         const worksheet = XLSX.utils.json_to_sheet(filteredItems.map(b => ({
-            Service: b.service?.title,
-            Customer: b.user?.username,
-            Date: new Date(b.scheduledDate).toLocaleDateString(),
-            Status: b.status,
-            Phone: b.user?.phone || 'N/A',
-            Amount: b.invoice?.totalAmount || 'N/A'
+            [t('dashboard.service')]: b.service?.title,
+            [t('dashboard.customer')]: b.user?.username,
+            [t('dashboard.date')]: new Date(b.scheduledDate).toLocaleDateString(),
+            [t('dashboard.status')]: b.status,
+            [t('dashboard.phoneNumber')]: b.user?.phone || 'N/A',
+            [t('dashboard.amountINR')]: b.invoice?.totalAmount || 'N/A'
         })));
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
@@ -271,7 +273,7 @@ const ProviderDashboard = () => {
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF();
-        doc.text("Provider Bookings Report", 14, 22);
+        doc.text(t('dashboard.reportTitle'), 14, 22);
         const data = filteredItems.map(b => [
             b.service?.title,
             b.user?.username,
@@ -280,7 +282,7 @@ const ProviderDashboard = () => {
             b.invoice?.totalAmount ? `Rs. ${b.invoice.totalAmount}` : '-'
         ]);
         autoTable(doc, {
-            head: [['Service', 'Customer', 'Date', 'Status', 'Amount']],
+            head: [[t('dashboard.service'), t('dashboard.customer'), t('dashboard.date'), t('dashboard.status'), t('dashboard.amountINR')]],
             body: data,
             startY: 30,
         });
@@ -293,7 +295,7 @@ const ProviderDashboard = () => {
                 <div className="relative w-full md:w-64">
                     <input
                         type="text"
-                        placeholder="Search Customer, Title..."
+                        placeholder={t('dashboard.searchPlaceholder')}
                         className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
                         value={filterText}
                         onChange={e => setFilterText(e.target.value)}
@@ -302,15 +304,15 @@ const ProviderDashboard = () => {
                 </div>
                 <div className="flex gap-2">
                     <button onClick={handleDownloadExcel} className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors">
-                        Excel
+                        {t('dashboard.excel')}
                     </button>
                     <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">
-                        PDF
+                        {t('dashboard.pdf')}
                     </button>
                 </div>
             </div>
         );
-    }, [filterText, filteredItems]);
+    }, [filterText, filteredItems, t, i18n.language]);
 
 
 
@@ -321,30 +323,30 @@ const ProviderDashboard = () => {
         const doc = new jsPDF();
 
         doc.setFontSize(20);
-        doc.text("INVOICE", 105, 20, null, null, "center");
+        doc.text(t('dashboard.invoiceTitle'), 105, 20, null, null, "center");
 
         doc.setFontSize(10);
-        doc.text(`Invoice #: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
-        doc.text(`Date: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
+        doc.text(`${t('dashboard.invoiceNo')}: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
+        doc.text(`${t('dashboard.date')}: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
 
         doc.setFontSize(12);
-        doc.text("Billed To:", 14, 50);
+        doc.text(`${t('dashboard.billTo')}:`, 14, 50);
         doc.setFontSize(10);
-        doc.text(`Name: ${booking.user?.username || 'Customer'}`, 14, 56);
-        if (booking.user?.phone) doc.text(`Phone: ${booking.user.phone}`, 14, 61);
+        doc.text(`${t('dashboard.name')}: ${booking.user?.username || 'Customer'}`, 14, 56);
+        if (booking.user?.phone) doc.text(`${t('dashboard.contactPhone')}: ${booking.user.phone}`, 14, 61);
 
         doc.setFontSize(12);
-        doc.text("Service Details:", 14, 75);
+        doc.text(`${t('dashboard.serviceDetails')}:`, 14, 75);
         doc.setFontSize(10);
-        doc.text(`Service: ${booking.service?.title}`, 14, 81);
-        doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
+        doc.text(`${t('dashboard.service')}: ${booking.service?.title}`, 14, 81);
+        doc.text(`${t('dashboard.provider')}: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
 
-        const tableColumn = ["Description", "Amount (INR)"];
+        const tableColumn = [t('dashboard.description'), t('dashboard.amountINR')];
         const tableRows = [
-            ["Service Price", `Rs. ${booking.invoice?.servicePrice}`],
-            ["Visiting / Extra Charges", `Rs. ${booking.invoice?.serviceCharge}`],
-            ["GST (18%)", `Rs. ${booking.invoice?.gst}`],
-            ["Total Amount", `Rs. ${booking.invoice?.totalAmount}`]
+            [t('dashboard.baseServicePrice'), `Rs. ${booking.invoice?.servicePrice}`],
+            [t('dashboard.visitingFee') + " / " + t('dashboard.extraCharges'), `Rs. ${booking.invoice?.serviceCharge}`],
+            [t('dashboard.gst') + " (18%)", `Rs. ${booking.invoice?.gst}`],
+            [t('dashboard.totalAmount'), `Rs. ${booking.invoice?.totalAmount}`]
         ];
 
         doc.autoTable({
@@ -353,11 +355,11 @@ const ProviderDashboard = () => {
             body: tableRows,
             theme: 'grid',
             headStyles: { fillColor: [0, 0, 0] },
-            foot: [['Grand Total', `Rs. ${booking.invoice?.totalAmount}`]],
+            foot: [[t('dashboard.grandTotal'), `Rs. ${booking.invoice?.totalAmount}`]],
             footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
         });
 
-        doc.text("Thank you for choosing our service!", 105, doc.lastAutoTable.finalY + 20, null, null, "center");
+        doc.text(t('dashboard.thankYou'), 105, doc.lastAutoTable.finalY + 20, null, null, "center");
 
         doc.save(`Invoice_${booking._id.slice(-6)}.pdf`);
     };
@@ -397,17 +399,17 @@ const ProviderDashboard = () => {
                             <button
                                 type="button"
                                 onClick={async () => {
-                                    if (!window.confirm('Delete this document?')) return;
+                                    if (!window.confirm(t('dashboard.deleteDocConfirm'))) return;
                                     try {
                                         const data = await deleteProviderDocument({ type, filePath: file });
                                         if (data.success) {
                                             setProviderDetails(data.provider);
                                         } else {
-                                            alert(data.error || 'Failed to delete');
+                                            alert(data.error || t('dashboard.errorDeletingDoc'));
                                         }
                                     } catch (e) {
                                         console.error(e);
-                                        alert('Error deleting document');
+                                        alert(t('dashboard.errorDeletingDoc'));
                                     }
                                 }}
                                 className="ml-1 p-1 hover:bg-red-100 rounded-full text-gray-400 hover:text-red-500 transition-colors"
@@ -493,19 +495,19 @@ const ProviderDashboard = () => {
             case 'approved':
                 return (
                     <div className="bg-green-100 text-green-800 px-4 py-2 rounded-xl flex items-center gap-2 font-medium">
-                        <CheckCircle className="w-5 h-5" /> Verified Provider
+                        <CheckCircle className="w-5 h-5" /> {t('dashboard.verifiedProvider')}
                     </div>
                 );
             case 'rejected':
                 return (
                     <div className="bg-red-100 text-red-800 px-4 py-2 rounded-xl flex items-center gap-2 font-medium">
-                        <AlertCircle className="w-5 h-5" /> Application Rejected
+                        <AlertCircle className="w-5 h-5" /> {t('dashboard.applicationRejected')}
                     </div>
                 );
             default:
                 return (
                     <div className="bg-amber-100 text-amber-800 px-4 py-2 rounded-xl flex items-center gap-2 font-medium">
-                        <AlertCircle className="w-5 h-5" /> Verification Pending
+                        <AlertCircle className="w-5 h-5" /> {t('dashboard.verificationPending')}
                     </div>
                 );
         }
@@ -519,20 +521,20 @@ const ProviderDashboard = () => {
                 <div className="max-w-7xl mx-auto">
 
                     {/* Header */}
-                    <div className="bg-white rounded-3xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 md:mt-18">
+                    <div className="bg-white rounded-3xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 mt-24 md:mt-18">
                         <div className="flex items-center gap-6">
                             <div className="w-20 h-20 bg-soft-black rounded-full flex items-center justify-center text-white text-3xl font-bold">
                                 {user?.username?.charAt(0).toUpperCase()}
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold text-soft-black">Welcome, {user?.username}!</h1>
-                                <p className="text-gray-500">Service Provider Dashboard</p>
+                                <h1 className="text-3xl font-bold text-soft-black">{t('dashboard.welcome')}, {user?.username}!</h1>
+                                <p className="text-gray-500">{t('dashboard.providerDashboard')}</p>
                             </div>
                         </div>
                         <div className="flex gap-3">
                             {getStatusBadge()}
                             <button className="bg-soft-black text-white px-6 py-2.5 rounded-xl font-bold hover:bg-gray-800 transition-colors">
-                                View Public Profile
+                                {t('dashboard.viewPublicProfile')}
                             </button>
                         </div>
                     </div>
@@ -546,31 +548,31 @@ const ProviderDashboard = () => {
                                         onClick={() => setActiveTab('overview')}
                                         className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'overview' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
-                                        <User className="w-5 h-5" /> Overview
+                                        <User className="w-5 h-5" /> {t('dashboard.overview')}
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('profile')}
                                         className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'profile' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
-                                        <Briefcase className="w-5 h-5" /> Professional Details
+                                        <Briefcase className="w-5 h-5" /> {t('dashboard.professionalDetails')}
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('services')}
                                         className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'services' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
-                                        <Briefcase className="w-5 h-5" /> My Services
+                                        <Briefcase className="w-5 h-5" /> {t('dashboard.myServices')}
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('bookings')}
                                         className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'bookings' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
-                                        <Briefcase className="w-5 h-5" /> Bookings
+                                        <Briefcase className="w-5 h-5" /> {t('dashboard.bookings')}
                                     </button>
                                     <button
                                         onClick={() => setActiveTab('documents')}
                                         className={`px-6 py-4 text-left font-medium flex items-center gap-3 hover:bg-gray-50 hover:text-black transition-colors ${activeTab === 'documents' ? 'bg-black text-white hover:bg-black' : 'text-gray-600'}`}
                                     >
-                                        <Upload className="w-5 h-5" /> Documents & Verification
+                                        <Upload className="w-5 h-5" /> {t('dashboard.documentsVerification')}
                                     </button>
                                 </nav>
                             </div>
@@ -580,12 +582,12 @@ const ProviderDashboard = () => {
                         <div className="lg:col-span-3">
                             {activeTab === 'overview' && (
                                 <div className="bg-white p-8 rounded-3xl shadow-sm min-h-[300px]">
-                                    <h2 className="text-xl font-bold text-soft-black mb-6">Overview</h2>
+                                    <h2 className="text-xl font-bold text-soft-black mb-6">{t('dashboard.overview')}</h2>
 
                                     {/* Pending Requests Section */}
                                     <div className="mb-8">
                                         <h3 className="font-semibold text-lg mb-4 text-amber-600 flex items-center gap-2">
-                                            <AlertCircle className="w-5 h-5" /> Pending Requests
+                                            <AlertCircle className="w-5 h-5" /> {t('dashboard.pendingRequests')}
                                         </h3>
 
                                         {bookings.filter(b => b.status === 'pending').length > 0 ? (
@@ -595,9 +597,9 @@ const ProviderDashboard = () => {
                                                         <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
                                                             <div>
                                                                 <h4 className="font-bold text-soft-black mb-1">{booking.service?.title || 'Unknown Service'}</h4>
-                                                                <p className="text-sm text-gray-700 font-medium mb-1">Customer: {booking.user?.username || 'Guest'}</p>
+                                                                <p className="text-sm text-gray-700 font-medium mb-1">{t('dashboard.customer')}: {booking.user?.username || 'Guest'}</p>
                                                                 <p className="text-sm text-gray-600 mb-2">
-                                                                    Date: {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
+                                                                    {t('dashboard.date')}: {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
                                                                     {' '}
                                                                     {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                                                 </p>
@@ -618,7 +620,7 @@ const ProviderDashboard = () => {
                                                                     }}
                                                                     className="bg-green-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-green-700 shadow-md transition-colors"
                                                                 >
-                                                                    Accept
+                                                                    {t('dashboard.accept')}
                                                                 </button>
                                                                 <button
                                                                     onClick={async () => {
@@ -632,7 +634,7 @@ const ProviderDashboard = () => {
                                                                     }}
                                                                     className="bg-red-50 text-red-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-red-100 border border-red-100 transition-colors"
                                                                 >
-                                                                    Reject
+                                                                    {t('dashboard.reject')}
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -644,7 +646,7 @@ const ProviderDashboard = () => {
                                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
                                                     <AlertCircle className="w-8 h-8 text-gray-300" />
                                                 </div>
-                                                <p className="font-medium">No pending requests</p>
+                                                <p className="font-medium">{t('dashboard.noPendingRequests')}</p>
                                             </div>
                                         )}
                                     </div>
@@ -656,13 +658,13 @@ const ProviderDashboard = () => {
                                 activeTab === 'profile' && (
                                     <div className="bg-white p-8 rounded-3xl shadow-sm">
                                         <div className="flex justify-between items-center mb-6">
-                                            <h2 className="text-xl font-bold text-soft-black">Professional Details</h2>
+                                            <h2 className="text-xl font-bold text-soft-black">{t('dashboard.professionalDetails')}</h2>
                                             {!isEditingProfile && (
                                                 <button
                                                     onClick={() => setIsEditingProfile(true)}
                                                     className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-black bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
                                                 >
-                                                    <Pencil className="w-4 h-4" /> Edit Details
+                                                    <Pencil className="w-4 h-4" /> {t('dashboard.editDetails')}
                                                 </button>
                                             )}
                                         </div>
@@ -673,26 +675,26 @@ const ProviderDashboard = () => {
                                                     {/* Contact & Personal */}
                                                     <div className="space-y-6">
                                                         <div>
-                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Contact Information</h3>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{t('dashboard.contactInfo')}</h3>
                                                             <div className="space-y-4">
                                                                 <div className="flex items-start gap-3">
                                                                     <div className="p-2 bg-gray-50 rounded-lg"><User className="w-4 h-4 text-gray-600" /></div>
                                                                     <div>
-                                                                        <p className="text-xs text-gray-500 mb-0.5">Full Name</p>
+                                                                        <p className="text-xs text-gray-500 mb-0.5">{t('dashboard.fullName')}</p>
                                                                         <p className="font-semibold text-soft-black">{user?.username}</p>
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex items-start gap-3">
                                                                     <div className="p-2 bg-gray-50 rounded-lg"><CheckCircle className="w-4 h-4 text-gray-600" /></div>
                                                                     <div>
-                                                                        <p className="text-xs text-gray-500 mb-0.5">Phone Number</p>
+                                                                        <p className="text-xs text-gray-500 mb-0.5">{t('dashboard.phoneNumber')}</p>
                                                                         <p className="font-semibold text-soft-black">{user?.contactNumber || 'Not provided'}</p>
                                                                     </div>
                                                                 </div>
                                                                 <div className="flex items-start gap-3">
                                                                     <div className="p-2 bg-gray-50 rounded-lg"><MapPin className="w-4 h-4 text-gray-600" /></div>
                                                                     <div>
-                                                                        <p className="text-xs text-gray-500 mb-0.5">Address</p>
+                                                                        <p className="text-xs text-gray-500 mb-0.5">{t('dashboard.address')}</p>
                                                                         <p className="font-medium text-soft-black leading-relaxed">
                                                                             {user?.address ? (
                                                                                 <>
@@ -709,14 +711,14 @@ const ProviderDashboard = () => {
                                                         </div>
 
                                                         <div>
-                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Location Details</h3>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{t('dashboard.locationDetails')}</h3>
                                                             <div className="grid grid-cols-2 gap-4">
                                                                 <div>
-                                                                    <p className="text-xs text-gray-500 mb-1">Native Place</p>
+                                                                    <p className="text-xs text-gray-500 mb-1">{t('dashboard.nativePlace')}</p>
                                                                     <p className="font-semibold text-soft-black">{providerDetails?.nativePlace || '-'}</p>
                                                                 </div>
                                                                 <div>
-                                                                    <p className="text-xs text-gray-500 mb-1">Current City</p>
+                                                                    <p className="text-xs text-gray-500 mb-1">{t('dashboard.currentCity')}</p>
                                                                     <p className="font-semibold text-soft-black">{providerDetails?.currentPlace || '-'}</p>
                                                                 </div>
                                                             </div>
@@ -726,12 +728,12 @@ const ProviderDashboard = () => {
                                                     {/* Professional & Emergency */}
                                                     <div className="space-y-6">
                                                         <div>
-                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Work Profile</h3>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{t('dashboard.workProfile')}</h3>
                                                             <div className="space-y-4">
                                                                 <div className="flex items-start gap-3">
                                                                     <div className="p-2 bg-gray-50 rounded-lg"><Briefcase className="w-4 h-4 text-gray-600" /></div>
                                                                     <div>
-                                                                        <p className="text-xs text-gray-500 mb-0.5">Experience</p>
+                                                                        <p className="text-xs text-gray-500 mb-0.5">{t('dashboard.experience')}</p>
                                                                         <p className="font-semibold text-soft-black">{providerDetails?.experience ? `${providerDetails.experience} Years` : 'Not added'}</p>
                                                                     </div>
                                                                 </div>
@@ -739,7 +741,7 @@ const ProviderDashboard = () => {
                                                         </div>
 
                                                         <div>
-                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Emergency Contact</h3>
+                                                            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{t('dashboard.emergencyContact')}</h3>
                                                             {providerDetails?.emergencyContact?.name ? (
                                                                 <div className="bg-red-50 p-4 rounded-xl border border-red-100">
                                                                     <p className="font-bold text-soft-black mb-1">{providerDetails.emergencyContact.name}</p>
@@ -793,139 +795,139 @@ const ProviderDashboard = () => {
                                                     if (response.success) {
                                                         setProviderDetails(response.provider);
                                                         setIsEditingProfile(false);
-                                                        alert('Profile updated successfully!');
+                                                        alert(t('dashboard.profileUpdated'));
                                                     } else {
-                                                        alert('Failed to update profile details: ' + response.error);
+                                                        alert(t('dashboard.failedToUpdateProfile', { error: response.error }));
                                                     }
                                                 } catch (err) {
                                                     console.error("Error updating profile", err);
-                                                    alert('An error occurred while updating profile');
+                                                    alert(t('dashboard.errorUpdatingProfile'));
                                                 } finally {
                                                     setLoading(false);
                                                 }
                                             }}>
                                                 <div className="flex justify-between items-center mb-4">
-                                                    <p className="text-sm text-gray-500">Update your information below</p>
-                                                    <button type="button" onClick={() => setIsEditingProfile(false)} className="text-sm text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">Cancel</button>
+                                                    <p className="text-sm text-gray-500">{t('dashboard.updateInfoInstruction')}</p>
+                                                    <button type="button" onClick={() => setIsEditingProfile(false)} className="text-sm text-red-500 hover:bg-red-50 px-3 py-1.5 rounded-lg transition-colors">{t('dashboard.cancel')}</button>
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                     <div>
-                                                        <label className="block text-sm font-semibold text-soft-black mb-2">Phone Number</label>
+                                                        <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.phoneNumber')}</label>
                                                         <input
                                                             name="phone"
                                                             defaultValue={user?.contactNumber || ''}
                                                             type="tel"
                                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                            placeholder="Enter phone number"
+                                                            placeholder={t('dashboard.enterPhoneNumber')}
                                                             required
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-semibold text-soft-black mb-2">Experience (Years)</label>
+                                                        <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.experienceYears')}</label>
                                                         <input
                                                             name="experience"
                                                             defaultValue={providerDetails?.experience}
                                                             type="text"
                                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                            placeholder="e.g. 5"
+                                                            placeholder={t('dashboard.eg5')}
                                                         />
                                                     </div>
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                     <div>
-                                                        <label className="block text-sm font-semibold text-soft-black mb-2">Native Place</label>
+                                                        <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.nativePlace')}</label>
                                                         <input
                                                             name="nativePlace"
                                                             defaultValue={providerDetails?.nativePlace}
                                                             type="text"
                                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                            placeholder="City, State"
+                                                            placeholder={t('dashboard.cityState')}
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-semibold text-soft-black mb-2">Current Location</label>
+                                                        <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.currentLocation')}</label>
                                                         <input
                                                             name="currentPlace"
                                                             defaultValue={providerDetails?.currentPlace}
                                                             type="text"
                                                             className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                            placeholder="City, Area"
+                                                            placeholder={t('dashboard.cityArea')}
                                                         />
                                                     </div>
                                                 </div>
 
                                                 <div>
-                                                    <label className="block text-sm font-semibold text-soft-black mb-2">Street Address</label>
+                                                    <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.streetAddress')}</label>
                                                     <input
                                                         name="street"
                                                         defaultValue={user?.address?.street || providerDetails?.address}
                                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none mb-4"
-                                                        placeholder="House/Flat No, Street Name"
+                                                        placeholder={t('dashboard.houseFlatStreet')}
                                                     />
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                         <div>
-                                                            <label className="block text-sm font-semibold text-soft-black mb-2">City</label>
+                                                            <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.city')}</label>
                                                             <input
                                                                 name="city"
                                                                 defaultValue={user?.address?.city}
                                                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                                placeholder="City"
+                                                                placeholder={t('dashboard.city')}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-sm font-semibold text-soft-black mb-2">State</label>
+                                                            <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.state')}</label>
                                                             <input
                                                                 name="state"
                                                                 defaultValue={user?.address?.state}
                                                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                                placeholder="State"
+                                                                placeholder={t('dashboard.state')}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-sm font-semibold text-soft-black mb-2">Pincode</label>
+                                                            <label className="block text-sm font-semibold text-soft-black mb-2">{t('dashboard.pincode')}</label>
                                                             <input
                                                                 name="postalCode"
                                                                 defaultValue={user?.address?.postalCode}
                                                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                                placeholder="Postal Code"
+                                                                placeholder={t('dashboard.postalCodePlaceholder')}
                                                             />
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div className="border-t pt-6 mt-2">
-                                                    <h3 className="text-lg font-semibold text-soft-black mb-4">Emergency Contact</h3>
+                                                    <h3 className="text-lg font-semibold text-soft-black mb-4">{t('dashboard.emergencyContact')}</h3>
                                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                         <div>
-                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Name</label>
+                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">{t('dashboard.contactName')}</label>
                                                             <input
                                                                 name="ec_name"
                                                                 defaultValue={providerDetails?.emergencyContact?.name}
                                                                 type="text"
                                                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                                placeholder="Contact Name"
+                                                                placeholder={t('dashboard.contactName')}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Phone</label>
+                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">{t('dashboard.contactPhone')}</label>
                                                             <input
                                                                 name="ec_phone"
                                                                 defaultValue={providerDetails?.emergencyContact?.phone}
                                                                 type="tel"
                                                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                                placeholder="Contact Phone"
+                                                                placeholder={t('dashboard.contactPhone')}
                                                             />
                                                         </div>
                                                         <div>
-                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Relation</label>
+                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">{t('dashboard.relation')}</label>
                                                             <input
                                                                 name="ec_relation"
                                                                 defaultValue={providerDetails?.emergencyContact?.relation}
                                                                 type="text"
                                                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-black outline-none"
-                                                                placeholder="e.g. Spouse"
+                                                                placeholder={t('dashboard.egSpouse')}
                                                             />
                                                         </div>
                                                     </div>
@@ -933,10 +935,10 @@ const ProviderDashboard = () => {
 
                                                 <div className="flex justify-end pt-4 gap-3">
                                                     <button type="button" onClick={() => setIsEditingProfile(false)} className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">
-                                                        Cancel
+                                                        {t('dashboard.cancel')}
                                                     </button>
                                                     <button type="submit" className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg">
-                                                        Save Changes
+                                                        {t('dashboard.saveChanges')}
                                                     </button>
                                                 </div>
                                             </form>
@@ -949,13 +951,13 @@ const ProviderDashboard = () => {
                                 activeTab === 'services' && (
                                     <div className="bg-white p-8 rounded-3xl shadow-sm">
                                         <div className="flex justify-between items-center mb-6">
-                                            <h2 className="text-xl font-bold text-soft-black">My Services</h2>
+                                            <h2 className="text-xl font-bold text-soft-black">{t('dashboard.myServices')}</h2>
                                             {!isEditingServices && (
                                                 <button
                                                     onClick={() => setIsEditingServices(true)}
                                                     className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-black bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
                                                 >
-                                                    <Pencil className="w-4 h-4" /> Manage Services
+                                                    <Pencil className="w-4 h-4" /> {t('dashboard.manageServices')}
                                                 </button>
                                             )}
                                         </div>
@@ -965,7 +967,7 @@ const ProviderDashboard = () => {
                                                 {selectedServices.length === 0 ? (
                                                     <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
                                                         <Briefcase className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                                                        <p className="text-gray-500 font-medium">No services added yet.</p>
+                                                        <p className="text-gray-500 font-medium">{t('dashboard.noServicesAdded')}</p>
                                                     </div>
                                                 ) : (
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -987,7 +989,7 @@ const ProviderDashboard = () => {
                                             </div>
                                         ) : (
                                             <div className="space-y-6">
-                                                <p className="text-gray-500">Select the services you offer and provide details.</p>
+                                                <p className="text-gray-500">{t('dashboard.selectServicesInstruction')}</p>
 
                                                 <div className="space-y-8 animate-in fade-in">
                                                     {/* Group services by category */}
@@ -1025,7 +1027,7 @@ const ProviderDashboard = () => {
 
                                                                                     {isSelected && (
                                                                                         <div className="mt-3 animate-in fade-in slide-in-from-top-2">
-                                                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">Custom Description/Pricing Note</label>
+                                                                                            <label className="block text-xs font-semibold text-gray-500 mb-1">{t('dashboard.customDescription')}</label>
                                                                                             <textarea
                                                                                                 value={serviceDescriptions[service._id] || ''}
                                                                                                 onChange={(e) => setServiceDescriptions(prev => ({
@@ -1033,7 +1035,7 @@ const ProviderDashboard = () => {
                                                                                                     [service._id]: e.target.value
                                                                                                 }))}
                                                                                                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-black outline-none text-sm bg-white"
-                                                                                                placeholder={`Describe your specific offering for ${service.title}...`}
+                                                                                                placeholder={t('dashboard.describeOffering', { service: service.title })}
                                                                                                 rows="2"
                                                                                             ></textarea>
                                                                                         </div>
@@ -1053,7 +1055,7 @@ const ProviderDashboard = () => {
                                                         onClick={() => setIsEditingServices(false)}
                                                         className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors"
                                                     >
-                                                        Cancel
+                                                        {t('dashboard.cancel')}
                                                     </button>
                                                     <button
                                                         onClick={async () => {
@@ -1071,20 +1073,20 @@ const ProviderDashboard = () => {
                                                                 if (response.success) {
                                                                     setProviderDetails(response.provider);
                                                                     setIsEditingServices(false);
-                                                                    alert('Services updated successfully!');
+                                                                    alert(t('dashboard.servicesUpdated'));
                                                                 } else {
-                                                                    alert('Failed to update services: ' + response.error);
+                                                                    alert(t('dashboard.failedToUpdateServices', { error: response.error }));
                                                                 }
                                                             } catch (err) {
                                                                 console.error(err);
-                                                                alert('Error updating services');
+                                                                alert(t('dashboard.errorUpdatingServices'));
                                                             } finally {
                                                                 setLoading(false);
                                                             }
                                                         }}
                                                         className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg"
                                                     >
-                                                        Save Select Services
+                                                        {t('dashboard.saveServices')}
                                                     </button>
                                                 </div>
                                             </div>
@@ -1097,24 +1099,24 @@ const ProviderDashboard = () => {
                                 activeTab === 'documents' && (
                                     <div className="bg-white p-8 rounded-3xl shadow-sm">
                                         <div className="flex justify-between items-center mb-6">
-                                            <h2 className="text-xl font-bold text-soft-black">Verification Documents</h2>
+                                            <h2 className="text-xl font-bold text-soft-black">{t('dashboard.verificationDocuments')}</h2>
                                             {!isEditingDocuments && (
                                                 <button
                                                     onClick={() => setIsEditingDocuments(true)}
                                                     className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-black bg-gray-50 px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-100 transition-colors"
                                                 >
-                                                    <Pencil className="w-4 h-4" /> Manage Documents
+                                                    <Pencil className="w-4 h-4" /> {t('dashboard.manageDocuments')}
                                                 </button>
                                             )}
                                         </div>
-                                        <p className="text-gray-500 mb-6">Upload clear copies of your documents. You can upload multiple files for certificates if needed.</p>
+                                        <p className="text-gray-500 mb-6">{t('dashboard.uploadInstruction')}</p>
 
                                         {/* Document Display Helper */}
                                         {/* Document Display Helper - REFACTORED */}
                                         {!isEditingDocuments ? (
                                             <div className="space-y-6">
                                                 {['idProofs', 'addressProofs', 'certificates'].map(key => {
-                                                    const label = key === 'idProofs' ? 'ID Proof' : key === 'addressProofs' ? 'Address Proof' : 'Professional Certificates';
+                                                    const label = key === 'idProofs' ? t('dashboard.idProof') : key === 'addressProofs' ? t('dashboard.addressProof') : t('dashboard.certificates');
                                                     const docs = providerDetails?.[key];
 
                                                     return (
@@ -1123,7 +1125,7 @@ const ProviderDashboard = () => {
                                                             {docs && docs.length > 0 ? (
                                                                 renderDocs(docs, key, label)
                                                             ) : (
-                                                                <p className="text-gray-400 italic text-sm">No documents uploaded</p>
+                                                                <p className="text-gray-400 italic text-sm">{t('dashboard.noDocuments')}</p>
                                                             )}
                                                         </div>
                                                     );
@@ -1148,13 +1150,13 @@ const ProviderDashboard = () => {
                                                         setProviderDetails(response.provider);
                                                         setSelectedFiles({ idProof: [], addressProof: [], certificate: [] });
                                                         setIsEditingDocuments(false);
-                                                        alert('Documents uploaded successfully!');
+                                                        alert(t('dashboard.docsUploadedSuccess'));
                                                     } else {
-                                                        alert('Failed to upload documents: ' + response.error);
+                                                        alert(t('dashboard.failedToUploadDocs', { error: response.error }));
                                                     }
                                                 } catch (err) {
                                                     console.error("Error uploading documents", err);
-                                                    alert('Error uploading documents');
+                                                    alert(t('dashboard.errorUploadingDocs'));
                                                 } finally {
                                                     setLoading(false);
                                                 }
@@ -1171,14 +1173,14 @@ const ProviderDashboard = () => {
                                                     {/* ID Proof Input */}
                                                     <div className="border border-gray-200 rounded-2xl p-6">
                                                         <h3 className="font-semibold text-soft-black mb-2 flex items-center justify-between">
-                                                            ID Proof
-                                                            {renderDocs(providerDetails?.idProofs, 'idProofs', 'ID Proof')}
+                                                            {t('dashboard.idProof')}
+                                                            {renderDocs(providerDetails?.idProofs, 'idProofs', t('dashboard.idProof'))}
                                                         </h3>
-                                                        <p className="text-xs text-gray-500 mb-4">Aadhaar, PAN, or Driving License</p>
+                                                        <p className="text-xs text-gray-500 mb-4">{t('dashboard.idProofHint')}</p>
                                                         <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
                                                             <input type="file" name="idProof" multiple className="hidden" accept="image/*,.pdf" onChange={handleFileChange} />
                                                             <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                            <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
+                                                            <span className="text-sm font-medium text-gray-600 block">{t('dashboard.clickToUpload')}</span>
                                                         </label>
                                                         {selectedFiles.idProof.length > 0 && (
                                                             <div className="mt-3 flex flex-wrap gap-2">
@@ -1197,14 +1199,14 @@ const ProviderDashboard = () => {
                                                     {/* Address Proof Input */}
                                                     <div className="border border-gray-200 rounded-2xl p-6">
                                                         <h3 className="font-semibold text-soft-black mb-2 flex items-center justify-between">
-                                                            Address Proof
-                                                            {renderDocs(providerDetails?.addressProofs, 'addressProofs', 'Address Proof')}
+                                                            {t('dashboard.addressProof')}
+                                                            {renderDocs(providerDetails?.addressProofs, 'addressProofs', t('dashboard.addressProof'))}
                                                         </h3>
-                                                        <p className="text-xs text-gray-500 mb-4">Utility Bill, Rental Agreement</p>
+                                                        <p className="text-xs text-gray-500 mb-4">{t('dashboard.addressProofHint')}</p>
                                                         <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
                                                             <input type="file" name="addressProof" multiple className="hidden" accept="image/*,.pdf" onChange={handleFileChange} />
                                                             <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                            <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
+                                                            <span className="text-sm font-medium text-gray-600 block">{t('dashboard.clickToUpload')}</span>
                                                         </label>
                                                         {selectedFiles.addressProof.length > 0 && (
                                                             <div className="mt-3 flex flex-wrap gap-2">
@@ -1223,14 +1225,14 @@ const ProviderDashboard = () => {
                                                     {/* Certificates Input */}
                                                     <div className="border border-gray-200 rounded-2xl p-6">
                                                         <h3 className="font-semibold text-soft-black mb-2 flex items-center justify-between">
-                                                            Professional Certificates
-                                                            {renderDocs(providerDetails?.certificates, 'certificates', 'Certificate')}
+                                                            {t('dashboard.certificates')}
+                                                            {renderDocs(providerDetails?.certificates, 'certificates', t('dashboard.certificates'))}
                                                         </h3>
-                                                        <p className="text-xs text-gray-500 mb-4">Training certificates, awards, etc.</p>
+                                                        <p className="text-xs text-gray-500 mb-4">{t('dashboard.certificatesHint')}</p>
                                                         <label className="block border border-dashed border-gray-300 rounded-xl p-8 text-center bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
                                                             <input type="file" name="certificate" multiple className="hidden" accept="image/*,.pdf" onChange={handleFileChange} />
                                                             <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                                            <span className="text-sm font-medium text-gray-600 block">Click to upload files</span>
+                                                            <span className="text-sm font-medium text-gray-600 block">{t('dashboard.clickToUpload')}</span>
                                                         </label>
                                                         {selectedFiles.certificate.length > 0 && (
                                                             <div className="mt-3 flex flex-wrap gap-2">
@@ -1250,10 +1252,10 @@ const ProviderDashboard = () => {
 
                                                 <div className="flex justify-end pt-4 gap-3">
                                                     <button type="button" onClick={() => setIsEditingDocuments(false)} className="px-6 py-3 rounded-xl font-bold text-gray-600 hover:bg-gray-100 transition-colors">
-                                                        Cancel
+                                                        {t('dashboard.cancel')}
                                                     </button>
                                                     <button type="submit" className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg">
-                                                        Upload Documents & Submit
+                                                        {t('dashboard.uploadAndSubmit')}
                                                     </button>
                                                 </div>
                                             </form>
@@ -1267,26 +1269,26 @@ const ProviderDashboard = () => {
                                 activeTab === 'bookings' && (
                                     <div className="bg-white p-8 rounded-3xl shadow-sm">
                                         <div className="flex items-center justify-between mb-6">
-                                            <h2 className="text-xl font-bold text-soft-black">My Bookings</h2>
+                                            <h2 className="text-xl font-bold text-soft-black">{t('dashboard.myBookings')}</h2>
 
                                             <div className="flex bg-gray-100 p-1 rounded-xl">
                                                 <button
                                                     onClick={() => setBookingTab('pending')}
                                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'pending' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                                 >
-                                                    Pending
+                                                    {t('dashboard.tabPending')}
                                                 </button>
                                                 <button
                                                     onClick={() => setBookingTab('current')}
                                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'current' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                                 >
-                                                    Active
+                                                    {t('dashboard.tabActive')}
                                                 </button>
                                                 <button
                                                     onClick={() => setBookingTab('all')}
                                                     className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'all' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                                                 >
-                                                    All Bookings
+                                                    {t('dashboard.tabAll')}
                                                 </button>
                                             </div>
                                         </div>
@@ -1310,7 +1312,7 @@ const ProviderDashboard = () => {
                                                     <div className="p-12 text-center text-gray-400">
                                                         <div className="flex flex-col items-center justify-center">
                                                             <Briefcase className="w-12 h-12 mb-3 text-gray-300" />
-                                                            <p className="text-lg">No {bookingTab === 'current' ? 'active' : 'past'} bookings found {filterText && "matching your search"}.</p>
+                                                            <p className="text-lg">{t('dashboard.noBookingsFound', { type: bookingTab })}</p>
                                                         </div>
                                                     </div>
                                                 }
@@ -1331,21 +1333,21 @@ const ProviderDashboard = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
                     <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                            <h3 className="text-lg font-bold text-soft-black">Update Status</h3>
+                            <h3 className="text-lg font-bold text-soft-black">{t('dashboard.updateStatus')}</h3>
                             <button onClick={() => setActiveBookingForEdit(null)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-500" />
                             </button>
                         </div>
                         <div className="p-6 space-y-6">
                             <div>
-                                <label className="block text-sm font-bold text-gray-600 mb-2">Current Status</label>
+                                <label className="block text-sm font-bold text-gray-600 mb-2">{t('dashboard.currentStatus')}</label>
                                 <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusConfig[activeBookingForEdit.status]?.color || 'bg-gray-100 text-gray-700'}`}>
                                     {statusConfig[activeBookingForEdit.status]?.label || activeBookingForEdit.status}
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-gray-600 mb-2">New Status</label>
+                                <label className="block text-sm font-bold text-gray-600 mb-2">{t('dashboard.newStatus')}</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     {['pending', 'accepted', 'arrived', 'in_progress', 'work_completed', 'cancelled', 'rejected'].map(s => (
                                         <button
@@ -1366,7 +1368,7 @@ const ProviderDashboard = () => {
                                 onClick={handleUpdateStatus}
                                 className="w-full bg-black text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors"
                             >
-                                Update Status
+                                {t('dashboard.updateStatus')}
                             </button>
                         </div>
                     </div>
@@ -1380,7 +1382,7 @@ const ProviderDashboard = () => {
                         <div className="bg-white rounded-3xl w-full max-w-4xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                                 <h3 className="text-lg font-bold text-soft-black">
-                                    {activeBookingForCompletion.status === 'completed' ? 'Invoice Details' : 'Complete Job & Invoice'}
+                                    {activeBookingForCompletion.status === 'completed' ? t('dashboard.invoiceDetails') : t('dashboard.completeJobInvoice')}
                                 </h3>
                                 <button onClick={() => { setActiveBookingForCompletion(null); setInvoiceForm({ servicePrice: '', serviceCharge: '' }); }} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
                                     <X className="w-5 h-5 text-gray-500" />
@@ -1391,28 +1393,28 @@ const ProviderDashboard = () => {
                                 {/* Left Column: Context (2 cols) */}
                                 <div className="md:col-span-2 space-y-6">
                                     <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 h-full">
-                                        <h4 className="font-bold text-gray-400 text-sm uppercase tracking-wider mb-6">Booking Context</h4>
+                                        <h4 className="font-bold text-gray-400 text-sm uppercase tracking-wider mb-6">{t('dashboard.bookingContext')}</h4>
 
                                         <div className="space-y-6">
                                             <div>
-                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">Service Provided</p>
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">{t('dashboard.serviceProvided')}</p>
                                                 <p className="font-bold text-xl text-soft-black">{activeBookingForCompletion?.service?.title}</p>
                                             </div>
 
                                             <div>
-                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">Customer Details</p>
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">{t('dashboard.customerDetails')}</p>
                                                 <p className="font-medium text-lg text-gray-700">{activeBookingForCompletion?.user?.username}</p>
                                                 {activeBookingForCompletion?.user?.phone && <p className="text-sm text-gray-500">{activeBookingForCompletion.user.phone}</p>}
                                             </div>
 
                                             <div className="pt-6 border-t border-gray-200">
-                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">Invoice Number</p>
+                                                <p className="text-xs text-gray-500 uppercase font-bold mb-1">{t('dashboard.invoiceNumber')}</p>
                                                 <p className="font-mono text-lg text-gray-700 tracking-widest">INV-{activeBookingForCompletion?._id?.slice(-6).toUpperCase()}</p>
                                             </div>
 
                                             {activeBookingForCompletion.status === 'completed' && (
                                                 <div>
-                                                    <p className="text-xs text-gray-500 uppercase font-bold mb-1">Date Issued</p>
+                                                    <p className="text-xs text-gray-500 uppercase font-bold mb-1">{t('dashboard.dateIssued')}</p>
                                                     <p className="text-sm text-gray-700">{new Date(activeBookingForCompletion.updatedAt).toLocaleDateString()}</p>
                                                 </div>
                                             )}
@@ -1427,19 +1429,19 @@ const ProviderDashboard = () => {
                                         <div className="bg-white rounded-2xl h-full flex flex-col justify-center">
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                                                    <span className="text-gray-600 font-medium">Base Service Price</span>
+                                                    <span className="text-gray-600 font-medium">{t('dashboard.baseServicePrice')}</span>
                                                     <span className="font-bold text-lg">₹{activeBookingForCompletion.invoice?.servicePrice}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center py-3 border-b border-gray-100">
-                                                    <span className="text-gray-600 font-medium">Visiting / Extra Fee</span>
+                                                    <span className="text-gray-600 font-medium">{t('dashboard.visitingFee')}</span>
                                                     <span className="font-bold text-lg">₹{activeBookingForCompletion.invoice?.serviceCharge}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center py-3 border-b border-gray-100 text-gray-500">
-                                                    <span>GST (18%)</span>
+                                                    <span>{t('dashboard.gst')}</span>
                                                     <span>₹{activeBookingForCompletion.invoice?.gst}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center py-6 text-2xl font-bold bg-green-50 px-6 rounded-2xl mt-6 border border-green-100">
-                                                    <span className="text-green-800">Total Paid</span>
+                                                    <span className="text-green-800">{t('dashboard.totalPaid')}</span>
                                                     <span className="text-green-700">₹{activeBookingForCompletion.invoice?.totalAmount}</span>
                                                 </div>
 
@@ -1447,7 +1449,7 @@ const ProviderDashboard = () => {
                                                     onClick={() => downloadInvoice(activeBookingForCompletion)}
                                                     className="w-full bg-black text-white py-3 rounded-xl font-bold mt-4 hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
                                                 >
-                                                    <Upload className="w-4 h-4 rotate-180" /> Download PDF
+                                                    <Upload className="w-4 h-4 rotate-180" /> {t('dashboard.downloadPdf')}
                                                 </button>
                                             </div>
                                         </div>
@@ -1456,7 +1458,7 @@ const ProviderDashboard = () => {
                                         <div className="space-y-6">
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="col-span-2 md:col-span-1">
-                                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">Service Price (₹)</label>
+                                                    <label className="block text-xs font-bold uppercase text-gray-500 mb-2">{t('dashboard.baseServicePrice')} (₹)</label>
                                                     <input
                                                         type="number"
                                                         value={invoiceForm.servicePrice}
@@ -1470,8 +1472,8 @@ const ProviderDashboard = () => {
                                                     <label className="block text-xs font-bold uppercase text-gray-500 mb-2">
                                                         {
                                                             ['electrician', 'plumber', 'carpenter'].some(c => activeBookingForCompletion?.service?.category?.name?.toLowerCase().includes(c))
-                                                                ? "Visiting / Fee (₹)"
-                                                                : "Extra Charges (₹)"
+                                                                ? t('dashboard.visitingFee')
+                                                                : t('dashboard.extraCharges')
                                                         }
                                                     </label>
                                                     <input
@@ -1485,28 +1487,28 @@ const ProviderDashboard = () => {
                                             </div>
 
                                             <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                                                <h4 className="font-bold text-gray-400 text-xs uppercase tracking-wider mb-4">Payment Summary</h4>
+                                                <h4 className="font-bold text-gray-400 text-xs uppercase tracking-wider mb-4">{t('dashboard.paymentSummary')}</h4>
                                                 <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-                                                    <span>Subtotal</span>
+                                                    <span>{t('dashboard.subtotal')}</span>
                                                     <span>₹{Number(invoiceForm.servicePrice || 0).toFixed(2)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-                                                    <span>Extra Fees</span>
+                                                    <span>{t('dashboard.extraCharges')}</span>
                                                     <span>₹{Number(invoiceForm.serviceCharge || 0).toFixed(2)}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
-                                                    <span>GST (18%)</span>
+                                                    <span>{t('dashboard.gst')}</span>
                                                     <span>₹{((Number(invoiceForm.servicePrice || 0) + Number(invoiceForm.serviceCharge || 0)) * 0.18).toFixed(2)}</span>
                                                 </div>
                                                 <div className="border-t border-gray-200 pt-4 flex justify-between items-center font-bold text-2xl text-soft-black">
-                                                    <span>Total</span>
+                                                    <span>{t('dashboard.total')}</span>
                                                     <span>₹{((Number(invoiceForm.servicePrice || 0) + Number(invoiceForm.serviceCharge || 0)) * 1.18).toFixed(2)}</span>
                                                 </div>
                                             </div>
 
                                             <button
                                                 onClick={async () => {
-                                                    if (!invoiceForm.servicePrice) return alert("Please enter service price");
+                                                    if (!invoiceForm.servicePrice) return alert(t('dashboard.enterServicePrice'));
 
                                                     const res = await completeBooking(activeBookingForCompletion._id, {
                                                         servicePrice: invoiceForm.servicePrice,
@@ -1516,14 +1518,14 @@ const ProviderDashboard = () => {
                                                     if (res.success) {
                                                         setBookings(prev => prev.map(b => b._id === activeBookingForCompletion._id ? { ...res.booking, service: b.service, user: b.user } : b));
                                                         setActiveBookingForCompletion(null);
-                                                        alert("Job completed and invoice generated!");
+                                                        alert(t('dashboard.jobCompleted'));
                                                     } else {
                                                         alert(res.error);
                                                     }
                                                 }}
                                                 className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-gray-800 transition-colors shadow-lg flex items-center justify-center gap-2"
                                             >
-                                                <span>Generate Invoice & Complete</span>
+                                                <span>{t('dashboard.generateInvoice')}</span>
                                                 <CheckCircle className="w-5 h-5" />
                                             </button>
                                         </div>

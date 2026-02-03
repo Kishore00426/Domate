@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Menu, X, LayoutGrid, FileText, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import LanguageDropdown from '../components/LanguageDropdown';
 
 const AdminLayout = () => {
+    const { t } = useTranslation();
     const [isSidebarOpen, setSidebarOpen] = useState(true);
     const [adminName, setAdminName] = useState('Admin'); // Default
     const location = useLocation();
@@ -11,13 +14,13 @@ const AdminLayout = () => {
     const [isLoading, setIsLoading] = useState(true);
 
     const menuItems = [
-        { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/admin/verification', label: 'Provider Verification', icon: CheckSquare },
-        { path: '/admin/categories', label: 'Category', icon: LayoutGrid },
-        { path: '/admin/services', label: 'Service', icon: FileText },
-        { path: '/admin/users', label: 'Users', icon: Users },
-        { path: '/admin/privileges', label: 'Privileges', icon: Shield },
-        { path: '/admin/settings', label: 'Settings', icon: Settings },
+        { path: '/admin', label: t('admin.dashboardOverview'), icon: LayoutDashboard },
+        { path: '/admin/verification', label: t('admin.providerVerification'), icon: CheckSquare },
+        { path: '/admin/categories', label: t('admin.category'), icon: LayoutGrid },
+        { path: '/admin/services', label: t('admin.service'), icon: FileText },
+        { path: '/admin/users', label: t('admin.users'), icon: Users },
+        { path: '/admin/privileges', label: t('admin.privileges'), icon: Shield },
+        { path: '/admin/settings', label: t('admin.settings'), icon: Settings },
     ];
 
     React.useEffect(() => {
@@ -101,7 +104,7 @@ const AdminLayout = () => {
                     <div className="p-4 border-t border-gray-800">
                         <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-gray-400 hover:bg-red-900/20 hover:text-red-400 transition-colors">
                             <LogOut className="w-5 h-5" />
-                            <span>Logout</span>
+                            <span>{t('admin.logout')}</span>
                         </button>
                     </div>
                 </div>
@@ -114,9 +117,10 @@ const AdminLayout = () => {
                         <button className="md:hidden text-gray-600" onClick={() => setSidebarOpen(true)}>
                             <Menu className="w-6 h-6" />
                         </button>
-                        <h2 className="text-xl font-bold text-soft-black">Admin Panel</h2>
+                        <h2 className="text-xl font-bold text-soft-black">{t('admin.adminPanel')}</h2>
                     </div>
                     <div className="flex items-center gap-4 ml-auto">
+                        <LanguageDropdown />
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 rounded-full bg-beige flex items-center justify-center text-soft-black font-bold text-sm">
                                 {adminName.charAt(0).toUpperCase()}
