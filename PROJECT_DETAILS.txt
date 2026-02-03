@@ -1,0 +1,26 @@
+Project Title: Domate
+
+Abstract:
+Domate is a comprehensive service booking and management platform designed to connect users with service providers efficiently. The application facilitates a seamless ecosystem for three distinct roles: Users, Providers, and Administrators. Users can browse categories, book services, manage their bookings, and save addresses. Service Providers have a dedicated dashboard to manage their offerings. Administrators possess full control over the platform, with capabilities to manage users, verify providers, oversee service categories and services, and configure system privileges through a robust Role-Based Access Control (RBAC) system. The platform emphasizes security, internationalization, and a simplified user experience.
+
+Tech Stack:
+
+Frontend:
+- Framework: React (with Vite)
+- Language: JavaScript (ES Modules)
+- Styling: Tailwind CSS, Styled Components
+- State Management: Redux Toolkit, React Redux
+- Routing: React Router DOM
+- HTTP Client: Axios
+- Internationalization: i18next, react-i18next
+- Utilities: jsPDF, XLSX (for reporting), Lucide React (icons)
+
+Backend:
+- Runtime: Node.js
+- Framework: Express.js
+- Database: MongoDB
+- ODM: Mongoose
+- Authentication: JSON Web Token (JWT), Bcrypt.js
+- File Handling: Multer
+- Logging: Morgan
+- Security: CORS
