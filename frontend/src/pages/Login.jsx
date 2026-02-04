@@ -40,7 +40,6 @@ const Login = () => {
         if (validate()) {
             try {
                 const data = await login({ email: formData.email, password: formData.password });
-                console.log('Logged in successfully', data);
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
 
