@@ -61,7 +61,8 @@ const modalConfig = {
 };
 
 const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isCompactLang = ['ta', 'hi'].includes(i18n.language);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Master list of all categories from DB (for Group strategy)
@@ -198,7 +199,7 @@ const ServiceCategories = ({ selectedCategory, onCategorySelect }) => {
                                     className="w-full h-full object-contain drop-shadow-sm transition-transform duration-300 group-hover:scale-110"
                                 />
                             </div>
-                            <h3 className="text-xs md:text-base font-bold text-soft-black leading-tight group-hover:text-black">
+                            <h3 className={`${isCompactLang ? 'text-[9px] md:text-xs' : 'text-xs md:text-base'} font-bold text-soft-black leading-tight group-hover:text-black`}>
                                 {t(`home.categories.items.${category.translationKey}`)}
                             </h3>
                         </div>

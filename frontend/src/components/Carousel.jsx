@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const Carousel = () => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
+    const isCompactLang = ['ta', 'hi'].includes(i18n.language);
     const [current, setCurrent] = useState(0);
 
     const slides = [
@@ -56,10 +57,10 @@ const Carousel = () => {
 
                     {/* Content */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
-                        <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tight drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <h1 className={`${isCompactLang ? 'text-3xl md:text-5xl' : 'text-5xl md:text-7xl'} font-bold mb-4 tracking-tight drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700`}>
                             {slide.title}
                         </h1>
-                        <p className="text-xl md:text-2xl font-light mb-8 max-w-2xl drop-shadow-md animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+                        <p className={`${isCompactLang ? 'text-lg md:text-xl' : 'text-xl md:text-2xl'} font-light mb-8 max-w-2xl drop-shadow-md animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100`}>
                             {slide.subtitle}
                         </p>
 
