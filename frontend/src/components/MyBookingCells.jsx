@@ -27,8 +27,8 @@ export const NotesCell = ({ booking, onUpdate }) => {
     return (
         <div className="flex items-center gap-2 group">
             <p className="text-gray-600 text-sm italic truncate max-w-[120px]" title={booking.notes}>{booking.notes || '-'}</p>
-            {booking.status === 'pending' && (
-                <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-black">
+            {['pending', 'accepted'].includes(booking.status) && (
+                <button onClick={() => setIsEditing(true)} className="text-gray-400 hover:text-black">
                     <Edit2 className="w-3 h-3" />
                 </button>
             )}
@@ -71,8 +71,8 @@ export const DateCell = ({ booking, onUpdate }) => {
                     <span>{booking.scheduledTime}</span>
                 </div>
             </div>
-            {booking.status === 'pending' && (
-                <button onClick={() => setIsEditing(true)} className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-blue-600">
+            {['pending', 'accepted'].includes(booking.status) && (
+                <button onClick={() => setIsEditing(true)} className="text-gray-400 hover:text-blue-600">
                     <Edit2 className="w-3 h-3" />
                 </button>
             )}

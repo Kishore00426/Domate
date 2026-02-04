@@ -72,15 +72,16 @@ const ProviderDashboard = () => {
         headRow: {
             style: {
                 backgroundColor: '#f9fafb', // gray-50
-                borderBottomColor: '#f3f4f6', // gray-100
+                borderBottomColor: '#e5e7eb', // gray-200
                 borderBottomWidth: '1px',
+                borderBottomStyle: 'solid',
             },
         },
         headCells: {
             style: {
-                color: '#6b7280', // gray-500
-                fontSize: '0.75rem', // xs
-                fontWeight: '700',
+                color: '#111827', // gray-900 (darker for better contrast)
+                fontSize: '0.95rem', // increased size
+                fontWeight: '800', // extra bold
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 paddingLeft: '16px',
@@ -93,6 +94,9 @@ const ProviderDashboard = () => {
                 color: '#374151', // gray-700
                 paddingTop: '12px',
                 paddingBottom: '12px',
+                borderBottomStyle: 'solid',
+                borderBottomWidth: '1px',
+                borderBottomColor: '#e5e7eb', // gray-200
                 '&:hover': {
                     backgroundColor: '#f9fafb',
                     transition: 'all 0.2s',
@@ -1294,7 +1298,7 @@ const ProviderDashboard = () => {
                                         </div>
 
                                         {/* Active Bookings Section */}
-                                        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-2">
+                                        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-x-auto p-2">
                                             <DataTable
                                                 columns={columns}
                                                 data={filteredItems}

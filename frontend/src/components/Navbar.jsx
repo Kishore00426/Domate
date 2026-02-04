@@ -278,19 +278,30 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                             </div>
                             <div className="border-t pt-1 mt-1">
                                 {!isGuest ? (
-                                    <Link
-                                        to={isServiceProvider ? "/provider/dashboard" : "/account"}
-                                        className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors"
-                                        onClick={() => setIsOpen(false)}
-                                    >
-                                        <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center font-semibold text-white">
-                                            {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
-                                        </div>
-                                        <div>
-                                            <div className="font-medium text-black">{user?.name}</div>
-                                            <div className="text-xs text-black font-medium">{user?.location}</div>
-                                        </div>
-                                    </Link>
+                                    <>
+                                        <Link
+                                            to={isServiceProvider ? "/provider/dashboard" : "/account"}
+                                            className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-xl transition-colors"
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center font-semibold text-white">
+                                                {user?.name ? user.name.charAt(0).toUpperCase() : <User className="w-4 h-4" />}
+                                            </div>
+                                            <div>
+                                                <div className="font-medium text-black">{user?.name}</div>
+                                                <div className="text-xs text-black font-medium">{user?.location}</div>
+                                            </div>
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                handleLogout();
+                                                setIsOpen(false);
+                                            }}
+                                            className="w-full flex items-center justify-center gap-2 p-3 mt-2 bg-red-50 text-red-600 rounded-xl font-medium hover:bg-red-100 transition-colors"
+                                        >
+                                            <LogOut className="w-4 h-4" /> Logout
+                                        </button>
+                                    </>
                                 ) : (
                                     <Link to="/login" className="flex items-center justify-center p-3 bg-black text-white rounded-xl font-medium w-full">
                                         Login
