@@ -4,7 +4,7 @@ import autoTable from 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
 import HomeLayout from '../layouts/HomeLayout';
 import { getUserBookings, deleteBooking, rateBooking, confirmBooking, updateBookingDetails } from '../api/bookings';
-import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star, CheckCircle, Edit2, Save, Eye, FileText, Trash2, Search } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star, CheckCircle, Edit2, Save, Eye, FileText, Trash2, Search, ChevronDown } from 'lucide-react';
 
 
 
@@ -31,8 +31,9 @@ const MyBookings = () => {
 
     // Search and Export Logic
     const [filterText, setFilterText] = useState('');
-    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
 
+    const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
+    const [isTabDropdownOpen, setIsTabDropdownOpen] = useState(false);
     const customStyles = {
         headRow: {
             style: {
@@ -44,8 +45,8 @@ const MyBookings = () => {
         headCells: {
             style: {
                 color: '#111827', // gray-900
-                fontSize: '0.95rem', // increased size
-                fontWeight: '800', // extra bold
+                fontSize: '0.98rem', // increased size
+                fontWeight: '700', // bold (reduced from 800)
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 paddingLeft: '24px',
@@ -148,7 +149,7 @@ const MyBookings = () => {
             sortable: true,
             cell: row => (
                 <div className="flex items-center gap-3 py-2">
-                    <img src={row.service?.image || 'https://via.placeholder.com/40'} alt={row.service?.title} className="w-10 h-10 rounded-lg object-cover" />
+                    {/* <img src={row.service?.image || 'https://via.placeholder.com/40'} alt={row.service?.title} className="w-10 h-10 rounded-lg object-cover" /> */}
                     <div>
                         <p className="font-semibold text-soft-black">{row.service?.title}</p>
                         <p className="text-sm text-gray-500">{row.service?.category?.name}</p>
@@ -362,18 +363,26 @@ const MyBookings = () => {
                     <input
                         type="text"
                         placeholder="Search Service, Provider..."
-                        className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                        className="w-full pl-10 pr-10 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
                         value={filterText}
                         onChange={e => setFilterText(e.target.value)}
                     />
-                    <svg className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    {filterText && (
+                        <button
+                            onClick={() => setFilterText('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                        >
+                            <X className="w-4 h-4" />
+                        </button>
+                    )}
                 </div>
                 <div className="flex gap-2">
                     <button onClick={handleDownloadExcel} className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors">
                         Excel
                     </button>
-                    <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 rounded-xl text-sm font-bold hover:bg-red-100 transition-colors">
-                        PDF
+                    <button onClick={handleDownloadPDF} className="flex items-center gap-2 px-4 py-2 bg-orange-100 text-orange-400 rounded-xl text-sm font-bold hover:bg-orange-200 transition-colors">
+                        Pdf
                     </button>
                 </div>
             </div>
@@ -384,23 +393,24 @@ const MyBookings = () => {
         <HomeLayout>
             <div className="min-h-screen bg-gray-50/30 pt-28 md:pt-32 px-4 pb-20">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center justify-between mb-8 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex-wrap gap-4">
-                        <div className="flex items-center gap-4">
+                    <div className="flex flex-row items-center justify-between mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-sm gap-2 md:gap-4">
+                        <div className="flex items-center gap-2 md:gap-4">
                             <button
                                 onClick={() => navigate('/account')}
-                                className="p-3 -ml-2 hover:bg-gray-100 p-4 bg-blue-50 text-blue-600 rounded-2xl rounded-full transition-colors text-gray-600"
+                                className="p-2 md:p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors flex-shrink-0"
                                 title="Back to Dashboard"
                             >
-                                <ArrowLeft className="w-6 h-6" />
+                                <ArrowLeft className="w-4 h-4 md:w-6 md:h-6" />
                             </button>
 
                             <div>
-                                <h1 className="text-2xl font-bold text-soft-black">My Bookings</h1>
-                                <p className="text-gray-500">View and track your service appointments</p>
+                                <h1 className="text-xl md:text-2xl font-bold text-soft-black">My Bookings</h1>
+                                <p className="text-[10px] md:text-base text-gray-500 hidden md:block">View and track your appointments</p>
                             </div>
                         </div>
 
-                        <div className="flex bg-gray-100 p-1 rounded-xl">
+                        {/* Desktop Tabs */}
+                        <div className="hidden md:flex bg-gray-100 p-1 rounded-xl">
                             <button
                                 onClick={() => setBookingTab('pending')}
                                 className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${bookingTab === 'pending' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -419,6 +429,45 @@ const MyBookings = () => {
                             >
                                 All Bookings
                             </button>
+                        </div>
+
+                        {/* Mobile Filter Dropdown */}
+                        <div className="relative flex-shrink-0 md:hidden">
+                            <button
+                                onClick={() => setIsTabDropdownOpen(!isTabDropdownOpen)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-100 transition-colors"
+                            >
+                                <span>
+                                    {bookingTab === 'pending' ? 'Pending' : (bookingTab === 'current' ? 'Active' : 'All Bookings')}
+                                </span>
+                                <ChevronDown className={`w-3 h-3 transition-transform ${isTabDropdownOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {isTabDropdownOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-10" onClick={() => setIsTabDropdownOpen(false)}></div>
+                                    <div className="absolute right-0 top-full mt-2 w-full md:w-48 bg-white rounded-xl shadow-xl border border-gray-100 p-1 z-20 animate-in fade-in slide-in-from-top-2">
+                                        <button
+                                            onClick={() => { setBookingTab('pending'); setIsTabDropdownOpen(false); }}
+                                            className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${bookingTab === 'pending' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            Pending
+                                        </button>
+                                        <button
+                                            onClick={() => { setBookingTab('current'); setIsTabDropdownOpen(false); }}
+                                            className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${bookingTab === 'current' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            Active
+                                        </button>
+                                        <button
+                                            onClick={() => { setBookingTab('all'); setIsTabDropdownOpen(false); }}
+                                            className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${bookingTab === 'all' ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            All Bookings
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
 
@@ -461,18 +510,26 @@ const MyBookings = () => {
                                 <input
                                     type="text"
                                     placeholder="Search..."
-                                    className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                    className="w-full pl-10 pr-10 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
                                     value={filterText}
                                     onChange={e => setFilterText(e.target.value)}
                                 />
                                 <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                {filterText && (
+                                    <button
+                                        onClick={() => setFilterText('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={handleDownloadExcel} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-xl text-xs font-bold hover:bg-green-100">
                                     Excel
                                 </button>
-                                <button onClick={handleDownloadPDF} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-red-50 text-red-700 rounded-xl text-xs font-bold hover:bg-red-100">
-                                    PDF
+                                <button onClick={handleDownloadPDF} className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-orange-100 text-orange-400 rounded-xl text-xs font-bold hover:bg-orange-200">
+                                    Pdf
                                 </button>
                             </div>
                         </div>

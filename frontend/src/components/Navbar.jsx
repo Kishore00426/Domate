@@ -10,6 +10,7 @@ import LanguageDropdown from './LanguageDropdown';
 const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -17,8 +18,8 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const isDashboard = variant === 'dashboard';
 
     const handleLogout = () => {
-        localStorage.clear(); // Remove all cache data
-        navigate('/home');
+        sessionStorage.clear(); // Remove all cache data
+        window.location.href = '/home'; // Force reload to clear application state
     };
     const isHomeActive = location.pathname === '/home';
     const isServicesActive = location.pathname.startsWith('/services');
@@ -63,7 +64,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
 
     return (
         <nav className="fixed top-0 left-0 w-full z-50">
-            <div className="bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100 px-6 py-4 flex items-center justify-between rounded-b-3xl">
+            <div className="bg-white/90 backdrop-blur-md shadow-sm border-b border-gray-100 px-6 py-4 flex items-center justify-between ">
 
                 <div className="flex items-center gap-8">
 
@@ -226,19 +227,58 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                         </div>
                     )}
 
-                    {/* Mobile Menu Button */}
-                    <button
-                        className="md:hidden text-soft-black p-2"
-                        onClick={() => setIsOpen(!isOpen)}
-                    >
-                        {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </button>
+                    {/* Mobile Actions: Search & Menu */}
+                    <div className="md:hidden flex items-center gap-2">
+                        {mobileSearchOpen ? (
+                            <div className="absolute inset-0 bg-white z-50 px-4 flex items-center gap-2 animate-in fade-in slide-in-from-top-2 shadow-sm rounded-b-3xl">
+                                <Search className="w-5 h-5 text-gray-500" />
+                                <input
+                                    type="text"
+                                    placeholder="Search services..."
+                                    className="flex-1 bg-transparent border-none outline-none text-base text-soft-black placeholder:text-gray-400 h-full py-4"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        dispatch(openSearchModal());
+                                    }}
+                                    autoFocus
+                                />
+                                <button onClick={() => {
+                                    setMobileSearchOpen(false);
+                                    dispatch(closeSearchModal());
+                                }} className="p-5 text-gray-600 hover:text-black">
+                                    <X className="w-5 h-8" />
+                                </button>
+
+                                {/* Mobile Search Results Modal */}
+                                {(searchTerm && isSearchOpen) && (
+                                    <div className="absolute top-full left-0 w-full px-2">
+                                        <SearchModal searchTerm={searchTerm} />
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <button
+                                className="p-2 text-soft-black"
+                                onClick={() => setMobileSearchOpen(true)}
+                            >
+                                <Search className="w-6 h-6" />
+                            </button>
+                        )}
+
+                        <button
+                            className="text-soft-black p-2"
+                            onClick={() => setIsOpen(!isOpen)}
+                        >
+                            {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Mobile Menu Dropdown */}
             {isOpen && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl p-4 flex flex-col gap-4 md:hidden animate-in fade-in slide-in-from-top-2">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-3xl shadow-xl p-4 flex flex-col gap-1 md:hidden animate-in fade-in slide-in-from-top-2">
                     {isDashboard ? (
                         <>
                             {!isServiceProvider && (
@@ -255,7 +295,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 <Bell className="w-5 h-5" /> Notifications
                             </Link>
 
-                            <div className="p-3 bg-gray-50 rounded-xl">
+                            <div className="p-2 bg-gray-50 rounded-xl">
                                 <p className="text-xs font-bold text-gray-400 uppercase mb-2">Language</p>
                                 <div className="grid grid-cols-3 gap-2">
                                     {languages.map(lang => (
@@ -273,9 +313,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 </div>
                             </div>
 
-                            <div className="p-2">
-                                <input type="text" placeholder="Search..." className="w-full px-4 py-2 bg-gray-50 rounded-lg border border-gray-200 shadow-md text-black placeholder:text-gray-500" />
-                            </div>
+
                             <div className="border-t pt-1 mt-1">
                                 {!isGuest ? (
                                     <>

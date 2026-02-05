@@ -10,14 +10,14 @@ const HomeLayout = ({ children }) => {
     const dispatch = useDispatch();
 
     const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem('user');
+        const savedUser = sessionStorage.getItem('user');
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
 
     const [loading, setLoading] = useState(() => {
-        const token = localStorage.getItem('token');
-        const savedUser = localStorage.getItem('user');
+        const token = sessionStorage.getItem('token');
+        const savedUser = sessionStorage.getItem('user');
         return !!token && !savedUser;
     });
 
@@ -28,7 +28,7 @@ const HomeLayout = ({ children }) => {
         const fetchUser = async () => {
             try {
 
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
                 if (!token) {
                     setLoading(false);
                     return;
@@ -45,18 +45,18 @@ const HomeLayout = ({ children }) => {
 
                 setUser(mappedUser);
 
-                localStorage.setItem('user', JSON.stringify(mappedUser));
+                sessionStorage.setItem('user', JSON.stringify(mappedUser));
 
             } catch (err) {
                 console.error("Failed to fetch user for layout", err);
                 // If fetch fails (likely 401 or network), clear invalid session
-                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
                 // Don't clear user entirely if you want to fall back to guest, 
                 // but usually for auth failure we want to start fresh or keep guest if that was the intent.
                 // However, if we had a token, we were trying to be key "User".
-                if (localStorage.getItem('token')) {
+                if (sessionStorage.getItem('token')) {
                     // Only clear if we actually had a token that failed
-                    localStorage.removeItem('user');
+                    sessionStorage.removeItem('user');
                     setUser(null);
                 }
             } finally {

@@ -10,7 +10,7 @@ const api = axios.create({
 // Add a request interceptor to attach the token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -27,8 +27,8 @@ api.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             // Token is invalid or expired
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('user');
             // Redirect to login (optional, but good UX)
             // Note: We can't use useNavigate here as this is not a 
             // React component

@@ -68,7 +68,7 @@ const SearchModal = ({ searchTerm = '' }) => {
           {searchTerm ? 'Search Results' : 'Popular Services'}
         </h3>
 
-        <div className="flex flex-col max-h-[300px] overflow-y-auto">
+        <div className="flex flex-col max-h-[200px] md:max-h-[300px] overflow-y-auto">
           {hasResults ? (
             <>
               {/* Subcategories Section */}

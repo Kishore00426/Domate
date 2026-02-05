@@ -26,8 +26,8 @@ const AdminLayout = () => {
     React.useEffect(() => {
         const checkAuth = () => {
             // Updated to use Unified Session Keys
-            const token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
+            const token = sessionStorage.getItem('token');
+            const user = sessionStorage.getItem('user');
 
             if (!token || !user) {
                 navigate('/admin/login');
@@ -60,8 +60,8 @@ const AdminLayout = () => {
     }, [navigate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         navigate('/admin/login');
     };
 
