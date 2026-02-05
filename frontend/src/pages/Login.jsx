@@ -40,8 +40,8 @@ const Login = () => {
         if (validate()) {
             try {
                 const data = await login({ email: formData.email, password: formData.password });
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                sessionStorage.setItem('token', data.token);
+                sessionStorage.setItem('user', JSON.stringify(data.user));
 
                 if (data.user.role === 'admin') {
                     navigate('/admin');

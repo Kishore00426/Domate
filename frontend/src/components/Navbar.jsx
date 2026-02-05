@@ -19,7 +19,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
 
     const handleLogout = () => {
         sessionStorage.clear(); // Remove all cache data
-        window.location.href = '/home'; // Force reload to clear application state
+        navigate('/home');
     };
     const isHomeActive = location.pathname === '/home';
     const isServicesActive = location.pathname.startsWith('/services');
