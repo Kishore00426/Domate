@@ -25,7 +25,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const isServicesActive = location.pathname.startsWith('/services');
     const isNotificationsActive = location.pathname === '/notifications';
 
-    const isAccountPage = location.pathname === '/account' || location.pathname === '/provider/dashboard';
+    const isAccountPage = location.pathname === '/account' || location.pathname.startsWith('/user/') || location.pathname.startsWith('/provider/dashboard');
 
     const searchRef = useRef(null);
     const isSearchOpen = useSelector((state) => state.ui.isSearchModalOpen);
