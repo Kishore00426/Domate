@@ -28,7 +28,7 @@ const ProviderLayout = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
                 if (!token) {
                     navigate('/login');
                     return;
@@ -50,7 +50,7 @@ const ProviderLayout = () => {
 
             } catch (err) {
                 console.error("Failed to fetch provider data", err);
-                localStorage.removeItem('token');
+                sessionStorage.removeItem('token');
                 navigate('/login');
             } finally {
                 setLoading(false);
@@ -61,8 +61,8 @@ const ProviderLayout = () => {
     }, [navigate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         navigate('/login');
     };
 
