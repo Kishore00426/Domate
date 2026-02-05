@@ -136,7 +136,7 @@ const UserLayout = () => {
                         {/* Removed 'Back to Home' since Navbar handles navigation */}
                         <button
                             onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium bg-black text-white hover:bg-gray-800 rounded-xl transition-colors shadow-lg shadow-black/10"
                         >
                             <LogOut className="w-5 h-5" />
                             Log Out
