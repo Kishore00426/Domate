@@ -23,6 +23,7 @@ import Settings from './pages/Settings';
 import SavedAddresses from './pages/SavedAddresses';
 import MyPlans from './pages/MyPlans';
 import Notifications from './pages/Notifications';
+import UserLayout from './layouts/UserLayout';
 
 
 function App() {
@@ -36,14 +37,17 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/services" element={<Services />} />
-          <Route path="/account" element={<Account />} />
           <Route path="/services/:id" element={<ServiceDetail />} />
 
-          {/* User Routes */}
-          <Route path="/user/bookings" element={<MyBookings />} />
-          <Route path="/user/addresses" element={<SavedAddresses />} />
-          <Route path="/user/plans" element={<MyPlans />} />
-          <Route path="/user/settings" element={<Settings />} />
+          {/* User Dashboard Routes - Wrapped in UserLayout */}
+          <Route element={<UserLayout />}>
+            <Route path="/account" element={<Account />} />
+            <Route path="/user/bookings" element={<MyBookings />} />
+            <Route path="/user/addresses" element={<SavedAddresses />} />
+            <Route path="/user/plans" element={<MyPlans />} />
+            <Route path="/user/settings" element={<Settings />} />
+          </Route>
+
           <Route path="/notifications" element={<Notifications />} />
 
           {/* Provider Dashboard */}

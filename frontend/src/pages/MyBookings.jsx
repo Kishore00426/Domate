@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
-import HomeLayout from '../layouts/HomeLayout';
+
 import { getUserBookings, deleteBooking, rateBooking, confirmBooking, updateBookingDetails } from '../api/bookings';
 import { Calendar, User, ArrowLeft, Clock, Mail, Phone, X, Star, CheckCircle, Edit2, Save, Eye, FileText, Trash2, Search, ChevronDown } from 'lucide-react';
 
@@ -390,8 +390,8 @@ const MyBookings = () => {
     }, [filterText, filteredItems]);
 
     return (
-        <HomeLayout>
-            <div className="min-h-screen bg-gray-50/30 pt-28 md:pt-32 px-4 pb-20">
+        <div className="min-h-full pb-20">
+            <div className="max-w-7xl mx-auto space-y-6">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-row items-center justify-between mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-sm gap-2 md:gap-4">
                         <div className="flex items-center gap-2 md:gap-4">
@@ -893,7 +893,7 @@ const MyBookings = () => {
                 </div>
             )}
 
-        </HomeLayout >
+        </div>
     );
 };
 
