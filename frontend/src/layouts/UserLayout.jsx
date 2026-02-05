@@ -25,7 +25,7 @@ const UserLayout = () => {
 
     // Auth & Data States
     const [user, setUser] = useState(() => {
-        const savedUser = localStorage.getItem('user');
+        const savedUser = sessionStorage.getItem('user');
         return savedUser ? JSON.parse(savedUser) : null;
     });
 
@@ -34,7 +34,7 @@ const UserLayout = () => {
 
         const fetchUser = async () => {
             try {
-                const token = localStorage.getItem('token');
+                const token = sessionStorage.getItem('token');
                 if (!token) {
                     navigate('/login');
                     return;
@@ -48,11 +48,11 @@ const UserLayout = () => {
                 };
 
                 setUser(mappedUser);
-                localStorage.setItem('user', JSON.stringify(mappedUser));
+                sessionStorage.setItem('user', JSON.stringify(mappedUser));
             } catch (err) {
                 console.error("Failed to fetch user", err);
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
+                sessionStorage.removeItem('token');
+                sessionStorage.removeItem('user');
                 navigate('/login');
             }
         };
@@ -61,8 +61,8 @@ const UserLayout = () => {
     }, [dispatch, navigate]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         navigate('/login');
     };
 
