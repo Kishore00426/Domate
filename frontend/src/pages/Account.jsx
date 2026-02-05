@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import HomeLayout from '../layouts/HomeLayout';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { getMe, updateProfile } from '../api/auth';
 import { getUserBookings } from '../api/bookings';
 import UserDashboard from '../components/dashboard/UserDashboard';
@@ -8,14 +7,16 @@ import ProviderDashboard from './ProviderDashboard';
 
 const Account = () => {
     const navigate = useNavigate();
+    const { user: contextUser } = useOutletContext() || {}; // Context from UserLayout
+
     // User state
     const [user, setUser] = useState({
-        name: "", // Will be populated from DB
+        name: "",
         email: "",
-        phone: "+91 98765 43210", // Placeholder (not in DB)
-        location: "New York, USA", // Placeholder (not in DB)
-        addressTag: "Home", // Placeholder
-        memberSince: "December 2024", // Placeholder
+        phone: "+91 98765 43210",
+        location: "New York, USA",
+        addressTag: "Home",
+        memberSince: "December 2024",
         role: ""
     });
 
@@ -25,7 +26,8 @@ const Account = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch User
+                // Fetch Data independent of layout context if needed, or sync with it.
+                // We fetch fresh to be sure.
                 const userData = await getMe();
                 setUser(prev => ({
                     ...prev,
@@ -33,11 +35,10 @@ const Account = () => {
                     email: userData.user.email,
                     location: userData.user.address?.city || "Unknown Location",
                     phone: userData.user.contactNumber || "",
-                    addressTag: "Home", // Default as not in DB yet
-                    role: userData.user.role // Very important for conditional rendering
+                    addressTag: "Home",
+                    role: userData.user.role
                 }));
 
-                // Fetch Bookings if user is not a provider (or even if they serve as both)
                 if (userData.user.role !== 'service_provider') {
                     const bookingsData = await getUserBookings();
                     if (bookingsData.success) {
@@ -54,12 +55,11 @@ const Account = () => {
         fetchData();
     }, []);
 
-    // Edit mode states (Shared logic - mostly for UserDashboard currently)
+    // Edit mode states
     const [isEditing, setIsEditing] = useState(false);
     const [tempData, setTempData] = useState(user);
     const addressTags = ["Home", "Work", "Other"];
 
-    // Update tempData when user loads
     useEffect(() => {
         setTempData(user);
     }, [user]);
@@ -103,33 +103,28 @@ const Account = () => {
 
     if (loading) {
         return (
-            <HomeLayout>
-                <div className="flex items-center justify-center min-h-[60vh]">
-                    <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
-                </div>
-            </HomeLayout>
+            <div className="flex items-center justify-center h-full min-h-[50vh]">
+                <div className="w-8 h-8 border-4 border-gray-200 border-t-black rounded-full animate-spin"></div>
+            </div>
         );
     }
 
-    return (
-        <HomeLayout>
-            {user.role === 'service_provider' ? (
-                <ProviderDashboard user={user} />
-            ) : (
-                <UserDashboard
-                    user={user}
-                    bookings={bookings}
-                    isEditing={isEditing}
-                    tempData={tempData}
-                    handleEdit={handleEdit}
-                    handleCancel={handleCancel}
-                    handleSave={handleSave}
-                    handleChange={handleChange}
-                    addressTags={addressTags}
-                />
-            )}
+    if (user.role === 'service_provider') {
+        return <ProviderDashboard user={user} />;
+    }
 
-        </HomeLayout>
+    return (
+        <UserDashboard
+            user={user}
+            bookings={bookings}
+            isEditing={isEditing}
+            tempData={tempData}
+            handleEdit={handleEdit}
+            handleCancel={handleCancel}
+            handleSave={handleSave}
+            handleChange={handleChange}
+            addressTags={addressTags}
+        />
     );
 };
 
