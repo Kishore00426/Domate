@@ -128,35 +128,45 @@ const Account = () => {
 
     return (
         <div>
-            {/* Mobile Navigation Grid */}
-            <div className="md:hidden grid grid-cols-2 gap-4 mb-8 p-4 pt-0">
-                <div className="col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 mb-2">
-                    <h1 className="text-2xl font-bold text-soft-black">Hi, {user.name}!</h1>
-                    <p className="text-gray-500 text-sm">Welcome back to your dashboard.</p>
+            {/* Introduction / Welcome Card - Mobile & Desktop aligned */}
+            <div className="md:hidden bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col relative transition-all mb-8">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h1 className="text-xl font-bold text-soft-black mb-2">Hi, {user.name}!</h1>
+                        <p className="text-gray-500 text-sm">Welcome back to your dashboard.</p>
+                    </div>
+                    {/* Mobile Logout Button */}
+                    <button
+                        onClick={() => {
+                            sessionStorage.removeItem('token');
+                            sessionStorage.removeItem('user');
+                            navigate('/login');
+                        }}
+                        className="p-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
+                        title="Log Out"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
+                    </button>
                 </div>
+            </div>
 
+            {/* Mobile Navigation Grid */}
+            <div className="md:hidden grid grid-cols-2 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4">
                 {[
                     { path: '/user/bookings', label: 'My Bookings', icon: '📅' },
                     { path: '/user/addresses', label: 'Addresses', icon: '📍' },
                     { path: '/user/plans', label: 'My Plans', icon: '📄' },
                     { path: '/user/settings', label: 'Settings', icon: '⚙️' },
-                ].map(item => (
-                    <a href={item.path} key={item.path} className="flex flex-col items-center justify-center p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95">
+                ].map((item) => (
+                    <button
+                        key={item.path}
+                        onClick={() => navigate(item.path)}
+                        className="flex flex-col items-center justify-center p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95"
+                    >
                         <span className="text-2xl mb-2">{item.icon}</span>
                         <span className="font-bold text-soft-black text-sm">{item.label}</span>
-                    </a>
+                    </button>
                 ))}
-                <button
-                    onClick={() => {
-                        sessionStorage.removeItem('token');
-                        sessionStorage.removeItem('user');
-                        navigate('/login');
-                    }}
-                    className="flex flex-col items-center justify-center p-6 bg-red-50 border border-red-100 rounded-2xl shadow-sm hover:bg-red-100 transition-all active:scale-95 col-span-2"
-                >
-                    <span className="text-xl mb-1">🚪</span>
-                    <span className="font-bold text-red-600 text-sm">Log Out</span>
-                </button>
             </div>
 
             {/* Desktop / Tablet View (or Mobile Content below menu if desired) */}
