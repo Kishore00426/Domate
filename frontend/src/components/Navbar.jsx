@@ -177,15 +177,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                     </div>
                                 </div>
                             ) : isAccountPage ? (
-                                !isGuest ? (
-                                    <button
-                                        onClick={handleLogout}
-                                        className="flex items-center gap-2 py-2 px-4 ml-2 bg-black text-white hover:bg-black/80 rounded-full transition-colors font-medium text-sm"
-                                    >
-                                        <LogOut className="w-4 h-4" />
-                                        <span>Logout</span>
-                                    </button>
-                                ) : (
+                                !isGuest ? null : (
                                     <Link
                                         to="/login"
                                         className="flex items-center gap-2 py-2 px-4 ml-2 bg-soft-black text-white hover:bg-black rounded-full transition-colors font-medium text-sm"
