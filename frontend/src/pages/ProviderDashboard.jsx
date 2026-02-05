@@ -38,16 +38,39 @@ const ProviderDashboard = () => {
     const approvalStatus = providerDetails?.approvalStatus || 'pending';
     const pendingBookings = bookings.filter(b => b.status === 'pending');
 
+    // Mobile Navigation Items
+    const mobileNavItems = [
+        { path: '/provider/profile', label: 'Profile', icon: '👤' }, // Using emoji or we can import icons
+        { path: '/provider/services', label: 'My Services', icon: '💼' },
+        { path: '/provider/bookings', label: 'Bookings', icon: '📅' },
+        { path: '/provider/documents', label: 'Documents', icon: '📄' },
+    ];
+
     return (
         <div className="space-y-8">
-            {/* Introduction / Welcome Card (Optional, or rely on Header) 
+            {/* Introduction / Welcome Card (Moved to top as requested) 
                 UserLayout has a Navbar. 
                 ProviderLayout has a specific user snippet in sidebar.
-                Let's emulate the simple cleaner look of the user dashboard or just specific widgets.
             */}
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-                <h1 className="text-3xl font-bold text-soft-black mb-2">{t('dashboard.welcome')}, {user.username}!</h1>
-                <p className="text-gray-500">Here is what's happening with your bookings today.</p>
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:block relative">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <h1 className="text-xl md:text-3xl font-bold text-soft-black mb-2">{t('dashboard.welcome')}, {user.username}!</h1>
+                        <p className="text-gray-500">Here is what's happening with your bookings today.</p>
+                    </div>
+                    {/* Mobile Logout Button (Visible only on mobile) */}
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem('token');
+                            localStorage.removeItem('user');
+                            window.location.href = '/login';
+                        }}
+                        className="md:hidden p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                        title="Log Out"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
+                    </button>
+                </div>
             </div>
 
             {/* Application Status Banner if not approved */}
@@ -62,8 +85,18 @@ const ProviderDashboard = () => {
                 </div>
             )}
 
-            {/* Pending Requests Section */}
-            <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[400px]">
+            {/* Mobile Navigation Menu - Visible only on mobile */}
+            <div className="md:hidden grid grid-cols-2 gap-4 mb-8">
+                {mobileNavItems.map(item => (
+                    <a href={item.path} key={item.path} className="flex flex-col items-center justify-center p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95">
+                        <span className="text-2xl mb-2">{item.icon}</span>
+                        <span className="font-bold text-soft-black text-sm">{item.label}</span>
+                    </a>
+                ))}
+            </div>
+
+            {/* Pending Requests Section - HIDDEN ON MOBILE (md:block) */}
+            <div className="hidden md:block bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[400px]">
                 <h3 className="font-semibold text-lg mb-6 text-amber-600 flex items-center gap-2">
                     <AlertCircle className="w-5 h-5" /> {t('dashboard.pendingRequests')}
                 </h3>

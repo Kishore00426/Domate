@@ -82,19 +82,10 @@ const UserLayout = () => {
             {/* Main Layout Container - Pushed down by Navbar height (approx 68px) */}
             <div className="flex flex-1 pt-[68px]">
 
-                {/* Mobile Overlay */}
-                {isSidebarOpen && (
-                    <div
-                        className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
-                        onClick={() => setIsSidebarOpen(false)}
-                    />
-                )}
-
-                {/* Sidebar */}
+                {/* Sidebar - Hidden on Mobile */}
                 <aside
                     className={`
-                        fixed md:sticky top-[68px] left-0 z-40 h-[calc(100vh-68px)] w-72 bg-white border-r border-gray-100 flex flex-col transition-transform duration-300 ease-in-out
-                        ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+                        hidden md:flex md:sticky top-[68px] left-0 z-40 h-[calc(100vh-68px)] w-72 bg-white border-r border-gray-100 flex-col
                     `}
                 >
                     {/* User Snippet */}
@@ -116,7 +107,6 @@ const UserLayout = () => {
                             <NavLink
                                 key={item.path}
                                 to={item.path}
-                                onClick={() => setIsSidebarOpen(false)}
                                 end={item.path === '/account'}
                                 className={({ isActive }) => `
                                     flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 font-medium
@@ -144,17 +134,18 @@ const UserLayout = () => {
                     </div>
                 </aside>
 
-                {/* Main Content */}
                 <main className="flex-1 flex flex-col min-h-0 min-w-0">
-                    {/* Mobile Header Trigger (Only visible on mobile when sidebar is closed) */}
+                    {/* Mobile Back Button - Visible only on mobile when not on account root */}
                     <div className="md:hidden p-4 pb-0">
-                        <button
-                            onClick={() => setIsSidebarOpen(true)}
-                            className="flex items-center gap-2 text-soft-black font-bold p-2 bg-white rounded-xl shadow-sm border border-gray-100 w-fit"
-                        >
-                            <Menu className="w-5 h-5" />
-                            <span>Menu</span>
-                        </button>
+                        {location.pathname !== '/account' && (
+                            <button
+                                onClick={() => navigate('/account')}
+                                className="flex items-center gap-2 text-gray-600 hover:text-soft-black font-medium p-2 -ml-2 rounded-lg active:bg-gray-50 bg-white"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left w-5 h-5"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+                                <span>Back</span>
+                            </button>
+                        )}
                     </div>
 
                     {/* Page Content */}

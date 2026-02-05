@@ -38,12 +38,6 @@ const ProviderDocuments = () => {
         setLoading(true);
         try {
             const formData = new FormData();
-
-            // Append files to formData
-            // The backend likely expects specific field names like 'idProof', 'addressProof' etc. 
-            // Based on ProviderDashboard content (which I saw earlier but might have missed deep details), 
-            // usually it just took the form event. Here we manually construct it from state.
-
             selectedFiles.idProof.forEach(file => formData.append('idProof', file));
             selectedFiles.addressProof.forEach(file => formData.append('addressProof', file));
             selectedFiles.certificate.forEach(file => formData.append('certificate', file));
@@ -142,17 +136,7 @@ const ProviderDocuments = () => {
                         )}
                         {/* Existing Files */}
                         {renderExistingdocs(providerDetails?.documents?.filter(d => d.includes('idProof')), 'idProof')}
-                        {/* Note: Logic to filter doc type from path is flaky if backend doesn't separate them. 
-                            If providerDetails.documents is just an array of strings, we need to know which is which. 
-                            ProviderDashboard.jsx line 36 implies `selectedFiles` state there used `idProof` key. 
-                            But `providerDetails.documents` might be a mixed list or object. 
-                            Let's assume it's an object or we might need to adjust based on API response structure.
-                            Looking at provider schema, it usually has `idProof`, `addressProof` as fields or a `documents` array.
-                            If it's an array of strings, we can't easily know the type unless path contains it.
-                            Let's treat `providerDetails` as having potentially specific fields if the API returns them, 
-                            OR if `documents` is an array, we just list them all under a generic 'Documents' section if specific mapping fails.
-                            For now, I'll trust standard implementation or just list all if unsure.
-                        */}
+
                     </div>
 
                     {/* Address Proof */}
