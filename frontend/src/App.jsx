@@ -24,6 +24,11 @@ import SavedAddresses from './pages/SavedAddresses';
 import MyPlans from './pages/MyPlans';
 import Notifications from './pages/Notifications';
 import UserLayout from './layouts/UserLayout';
+import ProviderLayout from './layouts/ProviderLayout';
+import ProviderProfile from './pages/Provider/ProviderProfile';
+import ProviderServices from './pages/Provider/ProviderServices';
+import ProviderBookings from './pages/Provider/ProviderBookings';
+import ProviderDocuments from './pages/Provider/ProviderDocuments';
 
 
 function App() {
@@ -51,7 +56,13 @@ function App() {
           <Route path="/notifications" element={<Notifications />} />
 
           {/* Provider Dashboard */}
-          <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+          <Route element={<ProviderLayout />}>
+            <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+            <Route path="/provider/profile" element={<ProviderProfile />} />
+            <Route path="/provider/services" element={<ProviderServices />} />
+            <Route path="/provider/bookings" element={<ProviderBookings />} />
+            <Route path="/provider/documents" element={<ProviderDocuments />} />
+          </Route>
 
 
           {/* Admin Auth Routes */}
