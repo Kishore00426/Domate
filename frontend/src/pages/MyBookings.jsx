@@ -46,7 +46,7 @@ const MyBookings = () => {
             style: {
                 color: '#111827', // gray-900
                 fontSize: '0.98rem', // increased size
-                fontWeight: '700', // bold (reduced from 800)
+                fontWeight: '600', // semi bold
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 paddingLeft: '24px',
@@ -390,10 +390,10 @@ const MyBookings = () => {
     }, [filterText, filteredItems]);
 
     return (
-        <div className="min-h-full pb-20">
-            <div className="max-w-7xl mx-auto space-y-6">
+        <div className="min-h-full pb-20 -mt-2 md:-mt-8">
+            <div className="max-w-7xl mx-auto space-y-6 ">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-row items-center justify-between mb-6 md:mb-8 bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-sm gap-2 md:gap-4">
+                    <div className="flex flex-row items-center justify-between mb-6 md:mb-4 bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-sm gap-2 md:gap-4">
                         <div className="flex items-center gap-2 md:gap-4">
                             <button
                                 onClick={() => navigate('/account')}

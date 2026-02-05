@@ -81,7 +81,7 @@ const ProviderDashboard = () => {
             style: {
                 color: '#111827', // gray-900 (darker for better contrast)
                 fontSize: '0.95rem', // increased size
-                fontWeight: '800', // extra bold
+                fontWeight: '600', // semi bold
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
                 paddingLeft: '16px',
@@ -144,7 +144,8 @@ const ProviderDashboard = () => {
                     )}
                 </div>
             ),
-            width: '250px'
+            minWidth: '300px',
+            grow: 2
         },
         {
             name: t('dashboard.date'),
@@ -152,14 +153,14 @@ const ProviderDashboard = () => {
             selector: row => row.scheduledDate,
             sortable: true,
             cell: row => <ProviderDateCell booking={row} onUpdate={updateBookingInList} />,
-            width: '200px'
+            width: '160px'
         },
         {
             name: t('dashboard.status'),
             selector: row => row.status,
             sortable: true,
             cell: row => <ProviderStatusCell booking={row} onUpdate={updateBookingInList} statusConfig={statusConfig} />,
-            width: '200px'
+            width: '160px'
         },
         {
             name: t('dashboard.contactInfo'),
@@ -178,7 +179,9 @@ const ProviderDashboard = () => {
                         </div>
                     )}
                 </div>
-            )
+            ),
+            minWidth: '250px',
+            grow: 1
         },
         {
             name: t('dashboard.actions'),
@@ -218,7 +221,7 @@ const ProviderDashboard = () => {
                     )}
                     {(row.status === 'completed' || row.status === 'cancelled') && row.invoice && (
                         <div className="flex items-center gap-2">
-                            <p className="text-xs font-bold text-soft-black">₹{row.invoice.totalAmount}</p>
+
                             <button
                                 onClick={() => setActiveBookingForCompletion(row)}
                                 className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
@@ -522,7 +525,7 @@ const ProviderDashboard = () => {
     return (
         <HomeLayout>
             <div className="bg-grey-50 min-h-screen py-10 px-4">
-                <div className="max-w-7xl mx-auto">
+                <div className="max-w-[95%] mx-auto">
 
                     {/* Header */}
                     <div className="bg-white rounded-3xl shadow-sm p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 mt-24 md:mt-18">
@@ -1272,7 +1275,7 @@ const ProviderDashboard = () => {
                             {
                                 activeTab === 'bookings' && (
                                     <div className="bg-white p-8 rounded-3xl shadow-sm">
-                                        <div className="flex items-center justify-between mb-6">
+                                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
                                             <h2 className="text-xl font-bold text-soft-black">{t('dashboard.myBookings')}</h2>
 
                                             <div className="flex bg-gray-100 p-1 rounded-xl">
