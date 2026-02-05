@@ -67,7 +67,7 @@ const UserLayout = () => {
     };
 
     const navItems = [
-        { path: '/account', label: 'Overview', icon: LayoutDashboard },
+
         { path: '/user/bookings', label: 'My Bookings', icon: Calendar },
         { path: '/user/addresses', label: 'Addresses', icon: MapPin },
         { path: '/user/plans', label: 'My Plans', icon: FileText },
