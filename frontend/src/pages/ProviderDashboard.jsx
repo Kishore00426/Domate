@@ -26,6 +26,37 @@ const ProviderDashboard = () => {
 
     const [bookings, setBookings] = useState([]);
 
+    // Rejection Modal State
+    const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState("");
+    const [bookingToReject, setBookingToReject] = useState(null);
+
+    const handleRejectClick = (booking) => {
+        setBookingToReject(booking);
+        setRejectionReason("");
+        setRejectionModalOpen(true);
+    };
+
+    const submitRejection = async () => {
+        if (!bookingToReject) return;
+        if (!rejectionReason.trim()) return alert(t('dashboard.provideReason') || "Please provide a reason");
+
+        try {
+            const res = await updateBookingStatus(bookingToReject._id, 'rejected', rejectionReason);
+            if (res.success) {
+                updateBookingInList(bookingToReject._id, { status: 'rejected', message: rejectionReason });
+                setRejectionModalOpen(false);
+                setBookingToReject(null);
+                setRejectionReason("");
+            } else {
+                alert(res.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert(t('dashboard.failedToUpdateStatus'));
+        }
+    };
+
     // Services State
     const [allServices, setAllServices] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
@@ -597,15 +628,7 @@ const ProviderDashboard = () => {
                                                 {t('dashboard.accept')}
                                             </button>
                                             <button
-                                                onClick={async () => {
-                                                    if (!window.confirm('Reject this booking?')) return;
-                                                    const res = await updateBookingStatus(booking._id, 'rejected');
-                                                    if (res.success) {
-                                                        setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, status: 'rejected' } : b));
-                                                    } else {
-                                                        alert(res.error);
-                                                    }
-                                                }}
+                                                onClick={() => handleRejectClick(booking)}
                                                 className="bg-red-50 text-red-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-red-100 border border-red-100 transition-colors"
                                             >
                                                 {t('dashboard.reject')}
@@ -1324,7 +1347,15 @@ const ProviderDashboard = () => {
                                         {['pending', 'accepted', 'arrived', 'in_progress', 'work_completed', 'cancelled', 'rejected'].map(s => (
                                             <button
                                                 key={s}
-                                                onClick={() => setStatusToUpdate(s)}
+                                                onClick={() => {
+                                                    if (s === 'rejected') {
+                                                        // Close this modal and open rejection modal
+                                                        setActiveBookingForEdit(null);
+                                                        handleRejectClick(activeBookingForEdit);
+                                                    } else {
+                                                        setStatusToUpdate(s);
+                                                    }
+                                                }}
                                                 className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border ${statusToUpdate === s
                                                     ? 'bg-black text-white border-black shadow-md scale-105'
                                                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -1347,6 +1378,48 @@ const ProviderDashboard = () => {
                     </div>
                 )
             }
+
+            {/* Rejection Modal */}
+            {rejectionModalOpen && bookingToReject && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 className="text-lg font-bold text-red-600">{t('dashboard.rejectBooking') || 'Reject Booking'}</h3>
+                            <button onClick={() => setRejectionModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            <p className="text-gray-600 text-sm">
+                                {t('dashboard.rejectConfirm') || 'Are you sure you want to reject this booking? This action cannot be undone.'}
+                            </p>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">{t('dashboard.reasonForRejection') || 'Reason for Rejection'} <span className="text-red-500">*</span></label>
+                                <textarea
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none h-32 resize-none text-sm"
+                                    placeholder={t('dashboard.reasonPlaceholder') || "Please provide a reason for rejecting..."}
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                ></textarea>
+                            </div>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setRejectionModalOpen(false)}
+                                    className="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                                >
+                                    {t('dashboard.cancel')}
+                                </button>
+                                <button
+                                    onClick={submitRejection}
+                                    className="flex-1 bg-red-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                                >
+                                    {t('dashboard.confirmRejection') || 'Reject Booking'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* INVOICE MODAL (Create or View) */}
             {

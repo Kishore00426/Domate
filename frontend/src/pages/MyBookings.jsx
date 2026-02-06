@@ -681,6 +681,13 @@ const MyBookings = () => {
                                     </div>
                                 </div>
 
+                                {activeBookingForView.message && (
+                                    <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-4">
+                                        <p className="text-xs font-bold text-red-600 uppercase mb-1">Provider Message / Rejection Reason</p>
+                                        <p className="text-sm text-gray-700 italic">"{activeBookingForView.message}"</p>
+                                    </div>
+                                )}
+
                                 {activeBookingForView.notes && (
                                     <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
                                         <p className="text-xs font-bold text-amber-600 uppercase mb-1">Your Notes</p>

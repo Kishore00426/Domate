@@ -12,6 +12,7 @@ const bookingSchema = new mongoose.Schema(
     },
     scheduledDate: { type: Date },
     notes: { type: String },
+    message: { type: String }, // Reason for rejection or cancellation
 
     // Invoice Details (Provider fills this)
     invoice: {

@@ -174,11 +174,14 @@ export const deleteBooking = async (req, res) => {
 // ---------------- PROVIDER UPDATES BOOKING STATUS ----------------
 export const updateBookingStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, message } = req.body;
 
-    // Allow more statuses: 'accepted', 'rejected', 'in_progress', 'arrived'
     if (!["accepted", "rejected", "in_progress", "arrived"].includes(status)) {
       return res.status(400).json({ success: false, error: "Invalid status" });
+    }
+
+    if (status === "rejected" && !message) {
+      return res.status(400).json({ success: false, error: "Reason is required for rejection" });
     }
 
     const booking = await Booking.findById(req.params.id);
@@ -188,6 +191,7 @@ export const updateBookingStatus = async (req, res) => {
     }
 
     booking.status = status;
+    if (message) booking.message = message;
     await booking.save();
 
     // Populate for frontend update
