@@ -139,17 +139,7 @@ const ProviderLayout = () => {
 
                 <main className="flex-1 flex flex-col min-h-0 min-w-0">
                     {/* Mobile Back Button - Visible only on mobile when not on dashboard root */}
-                    <div className="md:hidden p-4 pb-0">
-                        {location.pathname !== '/provider/dashboard' && (
-                            <button
-                                onClick={() => navigate('/provider/dashboard')}
-                                className="flex items-center gap-2 text-gray-600 hover:text-soft-black font-medium p-2 -ml-2 rounded-lg active:bg-gray-50 bg-white"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left w-5 h-5"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
-                                <span>Back</span>
-                            </button>
-                        )}
-                    </div>
+
 
                     {/* Page Content */}
                     <div className="flex-1 p-4 md:p-8 lg:p-12 overflow-x-hidden">
