@@ -102,8 +102,8 @@ const ProviderDashboard = () => {
     const customStyles = {
         headRow: {
             style: {
-                backgroundColor: '#f9fafb', // gray-50
-                borderBottomColor: '#e5e7eb', // gray-200
+                backgroundColor: '#f9fafb',
+                borderBottomColor: '#e5e7eb',
                 borderBottomWidth: '1px',
                 borderBottomStyle: 'solid',
             },
@@ -628,15 +628,7 @@ const ProviderDashboard = () => {
                                             {t('dashboard.accept')}
                                         </button>
                                         <button
-                                            onClick={async () => {
-                                                if (!window.confirm('Reject this booking?')) return;
-                                                const res = await updateBookingStatus(booking._id, 'rejected');
-                                                if (res.success) {
-                                                    setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, status: 'rejected' } : b));
-                                                } else {
-                                                    alert(res.error);
-                                                }
-                                            }}
+                                            onClick={() => handleRejectClick(booking)}
                                             className="bg-red-50 text-red-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-red-100 border border-red-100 transition-colors"
                                         >
                                             {t('dashboard.reject')}
@@ -1590,6 +1582,48 @@ const ProviderDashboard = () => {
                 </div>
             )
         }
+
+        {/* Rejection Modal */}
+        {rejectionModalOpen && bookingToReject && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in-95">
+                    <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 className="text-lg font-bold text-red-600">{t('dashboard.rejectBooking') || 'Reject Booking'}</h3>
+                        <button onClick={() => setRejectionModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                            <X className="w-5 h-5 text-gray-500" />
+                        </button>
+                    </div>
+                    <div className="p-6 space-y-6">
+                        <p className="text-gray-600 text-sm">
+                            {t('dashboard.rejectConfirm') || 'Are you sure you want to reject this booking? This action cannot be undone.'}
+                        </p>
+                        <div>
+                            <label className="block text-sm font-bold text-gray-700 mb-2">{t('dashboard.reasonForRejection') || 'Reason for Rejection'} <span className="text-red-500">*</span></label>
+                            <textarea
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none h-32 resize-none text-sm"
+                                placeholder={t('dashboard.reasonPlaceholder') || "Please provide a reason for rejecting..."}
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                            ></textarea>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setRejectionModalOpen(false)}
+                                className="flex-1 px-4 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                            >
+                                {t('dashboard.cancel')}
+                            </button>
+                            <button
+                                onClick={submitRejection}
+                                className="flex-1 bg-red-600 text-white px-4 py-3 rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                            >
+                                {t('dashboard.confirmRejection') || 'Reject Booking'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
 
     </>);
 };
