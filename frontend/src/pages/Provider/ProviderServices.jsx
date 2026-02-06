@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Briefcase, AlertCircle, Save } from 'lucide-react';
+import { Briefcase, AlertCircle, Save, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getAllServices } from '../../api/services';
 import { updateProviderServices } from '../../api/providers';
@@ -85,9 +85,17 @@ const ProviderServices = () => {
     return (
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
-                <div>
-                    <h2 className="text-xl font-bold text-soft-black">{t('dashboard.myServices')}</h2>
-                    <p className="text-sm text-gray-500">Manage the services you offer to customers</p>
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <button
+                            onClick={() => window.history.back()}
+                            className="p-2 md:p-0 bg-gray-100 md:bg-transparent rounded-full md:rounded-none hover:bg-gray-200 transition-colors md:hidden"
+                        >
+                            <ArrowLeft className="w-5 h-5 text-gray-600" />
+                        </button>
+                        <h2 className="text-xl font-bold text-soft-black">{t('dashboard.myServices')}</h2>
+                    </div>
+                    <p className="text-sm text-gray-500 pl-0 md:pl-0">Manage the services you offer to customers</p>
                 </div>
                 {!isEditingServices ? (
                     <button

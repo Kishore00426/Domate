@@ -266,19 +266,21 @@ const ProviderBookings = () => {
                 />
             </div>
 
-            <DataTable
-                columns={columns}
-                data={filteredItems}
-                pagination
-                customStyles={customStyles}
-                persistTableHead
-                noDataComponent={
-                    <div className="p-12 text-center text-gray-400">
-                        <Calendar className="w-12 h-12 mb-3 text-gray-300 mx-auto" />
-                        <p>No bookings found.</p>
-                    </div>
-                }
-            />
+            <div className="overflow-x-auto">
+                <DataTable
+                    columns={columns}
+                    data={filteredItems}
+                    pagination
+                    customStyles={customStyles}
+                    persistTableHead
+                    noDataComponent={
+                        <div className="p-12 text-center text-gray-400">
+                            <Calendar className="w-12 h-12 mb-3 text-gray-300 mx-auto" />
+                            <p>No bookings found.</p>
+                        </div>
+                    }
+                />
+            </div>
 
             {/* Edit Status Modal */}
             {activeBookingForEdit && (

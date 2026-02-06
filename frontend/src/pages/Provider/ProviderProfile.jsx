@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { User, CheckCircle, MapPin, Briefcase, Pencil, AlertCircle } from 'lucide-react';
+import { User, CheckCircle, MapPin, Briefcase, Pencil, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { updateProfile } from '../../api/auth';
 import { updateProviderBio } from '../../api/providers';
@@ -17,7 +17,15 @@ const ProviderProfile = () => {
     return (
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-soft-black">{t('dashboard.professionalDetails')}</h2>
+                <div className="flex items-center gap-2 md:gap-4">
+                    <button
+                        onClick={() => navigate('/provider/dashboard')}
+                        className="p-2 md:p-0 bg-gray-100 md:bg-transparent rounded-full md:rounded-none hover:bg-gray-200 transition-colors md:hidden"
+                    >
+                        <ArrowLeft className="w-5 h-5 text-gray-600" />
+                    </button>
+                    <h2 className="text-xl font-bold text-soft-black">{t('dashboard.professionalDetails')}</h2>
+                </div>
                 {!isEditingProfile && (
                     <button
                         onClick={() => setIsEditingProfile(true)}
