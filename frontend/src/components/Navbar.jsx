@@ -19,7 +19,8 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
 
     const handleLogout = () => {
         sessionStorage.clear(); // Remove all cache data
-        navigate('/home');
+        localStorage.removeItem('user'); // Ensure local storage is also cleared
+        navigate('/');
     };
     const isHomeActive = location.pathname === '/home';
     const isServicesActive = location.pathname.startsWith('/services');

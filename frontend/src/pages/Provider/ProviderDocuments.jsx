@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Upload, CheckCircle, Trash2, FileText, AlertCircle, User, MapPin } from 'lucide-react';
+import { Upload, CheckCircle, Trash2, FileText, AlertCircle, User, MapPin, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { deleteProviderDocument, updateProviderBio } from '../../api/providers';
 
@@ -98,7 +98,15 @@ const ProviderDocuments = () => {
 
     return (
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold text-soft-black mb-6">{t('dashboard.documentsVerification')}</h2>
+            <div className="flex items-center gap-2 md:gap-4 mb-6">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="p-2 md:p-0 bg-gray-100 md:bg-transparent rounded-full md:rounded-none hover:bg-gray-200 transition-colors md:hidden"
+                >
+                    <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <h2 className="text-xl font-bold text-soft-black">{t('dashboard.documentsVerification')}</h2>
+            </div>
 
             <form onSubmit={handleUpload} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

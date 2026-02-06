@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { Calendar, AlertCircle, Edit2, CheckCircle, FileText, User, MapPin } from 'lucide-react';
+import { Calendar, AlertCircle, Edit2, CheckCircle, FileText, User, MapPin, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getProviderBookings, updateBookingStatus } from '../../api/bookings';
 import { ProviderDateCell, ProviderStatusCell } from '../../components/ProviderBookingCells';
@@ -10,6 +10,7 @@ import autoTable from 'jspdf-autotable';
 
 const ProviderBookings = () => {
     const { t, i18n } = useTranslation();
+    const navigate = useNavigate();
     const { providerDetails } = useOutletContext();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -229,15 +230,24 @@ const ProviderBookings = () => {
     };
 
     return (
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[500px]">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-                <h2 className="text-xl font-bold text-soft-black">{t('dashboard.bookings')}</h2>
-                <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
+        <div className="bg-white p-4 md:p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[500px]">
+            <div className="flex flex-row justify-between items-center mb-6 gap-2 md:gap-4">
+                <div className="flex items-center gap-2 md:gap-4 shrink-0">
+                    <button
+                        onClick={() => navigate('/provider/dashboard')}
+                        className="p-2 md:p-3 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+                        title="Back to Dashboard"
+                    >
+                        <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
+                    </button>
+                    <h2 className="text-lg md:text-xl font-bold text-soft-black truncate">{t('dashboard.bookings')}</h2>
+                </div>
+                <div className="flex gap-2 bg-gray-100 p-1 rounded-xl overflow-x-auto shrink-0 max-w-[75%] md:max-w-none scrollbar-hide">
                     {['current', 'pending', 'all'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setBookingTab(tab)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all ${bookingTab === tab ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                            className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold capitalize whitespace-nowrap transition-all ${bookingTab === tab ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             {tab}
@@ -256,19 +266,21 @@ const ProviderBookings = () => {
                 />
             </div>
 
-            <DataTable
-                columns={columns}
-                data={filteredItems}
-                pagination
-                customStyles={customStyles}
-                persistTableHead
-                noDataComponent={
-                    <div className="p-12 text-center text-gray-400">
-                        <Calendar className="w-12 h-12 mb-3 text-gray-300 mx-auto" />
-                        <p>No bookings found.</p>
-                    </div>
-                }
-            />
+            <div className="overflow-x-auto">
+                <DataTable
+                    columns={columns}
+                    data={filteredItems}
+                    pagination
+                    customStyles={customStyles}
+                    persistTableHead
+                    noDataComponent={
+                        <div className="p-12 text-center text-gray-400">
+                            <Calendar className="w-12 h-12 mb-3 text-gray-300 mx-auto" />
+                            <p>No bookings found.</p>
+                        </div>
+                    }
+                />
+            </div>
 
             {/* Edit Status Modal */}
             {activeBookingForEdit && (
