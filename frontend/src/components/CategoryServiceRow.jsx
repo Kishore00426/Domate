@@ -93,7 +93,7 @@ const CategoryServiceRow = ({ category }) => {
 
                             {/* Content */}
                             <div className="pt-4 px-2 pb-4">
-                                <h3 className="font-bold text-soft-black mb-1 text-lg truncate" title={service.title}>
+                                <h3 className="font-bold text-soft-black mb-1 text-lg line-clamp-2 min-h-14" title={service.title}>
                                     {service.title}
                                 </h3>
                                 <p className="text-sm text-gray-500 mb-3 line-clamp-2 h-10">

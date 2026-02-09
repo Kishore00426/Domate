@@ -387,7 +387,7 @@ const ServiceDetail = () => {
                                     </div>
                                 )}
 
-                                <div className="flex gap-3 mt-4">
+                                <div className="flex flex-col sm:flex-row gap-3 mt-4">
                                     <button
                                         onClick={handleCloseBooking}
                                         className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"

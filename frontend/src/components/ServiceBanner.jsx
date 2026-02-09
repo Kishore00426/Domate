@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 const ServiceBanner = ({ name, description, imageUrl }) => {
     const { t } = useTranslation();
     return (
-        <div className="bg-soft-black rounded-3xl overflow-hidden shadow-lg p-8 md:p-12 mb-10 flex flex-col md:flex-row items-center gap-8 relative max-w-6xl mx-auto md:mt-12">
+        <div className="bg-soft-black rounded-3xl overflow-hidden shadow-lg p-8 md:p-12 mb-10 flex flex-col md:flex-row items-center gap-8 relative max-w-6xl mx-auto md:mt-12 min-h-[300px] md:min-h-[350px]">
             {/* Background Pattern/Overlay */}
             <div className="absolute inset-0 bg-linear-to-r from-soft-black via-soft-black/90 to-transparent z-10"></div>
 

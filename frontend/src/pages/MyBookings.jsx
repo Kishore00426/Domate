@@ -50,8 +50,9 @@ const MyBookings = () => {
                 fontWeight: '600', // semi bold
                 textTransform: 'uppercase',
                 letterSpacing: '0.05em',
-                paddingLeft: '24px',
-                paddingRight: '24px',
+                paddingLeft: '12px',
+                paddingRight: '12px',
+                whiteSpace: 'normal', // Allow wrapping
             },
         },
         rows: {
@@ -68,8 +69,8 @@ const MyBookings = () => {
         },
         cells: {
             style: {
-                paddingLeft: '24px',
-                paddingRight: '24px',
+                paddingLeft: '12px',
+                paddingRight: '12px',
             },
         },
     };
@@ -176,7 +177,9 @@ const MyBookings = () => {
                         {t('userBookings.actions.contact')}
                     </button>
                 </div>
-            )
+            ),
+            wrap: true,
+            minWidth: '200px'
         },
         {
             name: t('userBookings.columns.scheduledDate'),
@@ -373,13 +376,13 @@ const MyBookings = () => {
                             </button>
 
                             <div>
-                                <h1 className="text-lg md:text-2xl font-bold text-soft-black whitespace-nowrap">{t('userBookings.title')}</h1>
+                                <h1 className="text-lg md:text-2xl font-bold text-soft-black leading-tight">{t('userBookings.title')}</h1>
                                 <p className="text-[10px] md:text-base text-gray-500 hidden md:block">{t('userBookings.subtitle')}</p>
                             </div>
                         </div>
 
                         {/* Responsive Tabs - Scrollable on mobile */}
-                        <div className="flex gap-2 bg-gray-100 p-1 rounded-xl overflow-x-auto shrink-0 max-w-[60%] md:max-w-none scrollbar-hide">
+                        <div className="flex gap-2 bg-gray-100 p-1 rounded-xl overflow-x-auto shrink max-w-full md:max-w-none scrollbar-hide min-w-0">
                             <button
                                 onClick={() => setBookingTab('pending')}
                                 className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${bookingTab === 'pending' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
@@ -403,19 +406,24 @@ const MyBookings = () => {
 
                     {/* Search & Export - Matching Provider Layout */}
                     <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                        <input
-                            type="text"
-                            placeholder={t('userBookings.searchPlaceholder')}
-                            className="w-full md:w-64 pl-4 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                            value={filterText}
-                            onChange={e => setFilterText(e.target.value)}
-                        />
+                        <div className="relative w-full md:w-auto md:flex-1 md:max-w-xs">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder={t('userBookings.searchPlaceholder')}
+                                className="w-full pl-10 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                                value={filterText}
+                                onChange={e => setFilterText(e.target.value)}
+                            />
+                        </div>
 
-                        <div className="flex gap-2 w-full md:w-auto">
-                            <button onClick={handleDownloadExcel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors">
+                        <div className="flex gap-2 w-full md:w-auto shrink-0">
+                            <button onClick={handleDownloadExcel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors whitespace-nowrap">
+                                <FileText className="w-4 h-4" />
                                 {t('userBookings.excel')}
                             </button>
-                            <button onClick={handleDownloadPDF} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-orange-100 text-orange-400 rounded-xl text-sm font-bold hover:bg-orange-200 transition-colors">
+                            <button onClick={handleDownloadPDF} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-orange-100 text-orange-400 rounded-xl text-sm font-bold hover:bg-orange-200 transition-colors whitespace-nowrap">
+                                <FileText className="w-4 h-4" />
                                 {t('userBookings.pdf')}
                             </button>
                         </div>
