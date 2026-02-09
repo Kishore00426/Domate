@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import DataTable from 'react-data-table-component';
-import { Calendar, AlertCircle, Edit2, CheckCircle, FileText, User, MapPin, ArrowLeft } from 'lucide-react';
+import { Calendar, AlertCircle, Edit2, CheckCircle, FileText, User, MapPin, ArrowLeft, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getProviderBookings, updateBookingStatus } from '../../api/bookings';
 import { ProviderDateCell, ProviderStatusCell } from '../../components/ProviderBookingCells';
@@ -21,6 +21,7 @@ const ProviderBookings = () => {
     const [activeBookingForEdit, setActiveBookingForEdit] = useState(null);
     const [statusToUpdate, setStatusToUpdate] = useState('');
     const [activeBookingForCompletion, setActiveBookingForCompletion] = useState(null);
+    const [activeBookingForInvoice, setActiveBookingForInvoice] = useState(null);
     const [invoiceForm, setInvoiceForm] = useState({ servicePrice: '', serviceCharge: '' });
 
     useEffect(() => {
@@ -68,6 +69,55 @@ const ProviderBookings = () => {
         } catch (err) {
             console.error(err);
             alert(t('dashboard.failedToUpdateStatus'));
+        }
+    };
+
+    const downloadInvoice = (booking, action = 'download') => {
+        const doc = new jsPDF();
+
+        doc.setFontSize(20);
+        doc.text("INVOICE", 105, 20, null, null, "center");
+
+        doc.setFontSize(10);
+        doc.text(`Invoice #: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
+        doc.text(`Date: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
+
+        doc.setFontSize(12);
+        doc.text(t('dashboard.invoice.billedTo') || "Billed To:", 14, 50);
+        doc.setFontSize(10);
+        doc.text(`Name: ${booking.user?.username || 'Customer'}`, 14, 56);
+        if (booking.user?.phone) doc.text(`Phone: ${booking.user.phone}`, 14, 61);
+
+        doc.setFontSize(12);
+        doc.text(t('dashboard.invoice.serviceDetails') || "Service Details:", 14, 75);
+        doc.setFontSize(10);
+        doc.text(`Service: ${booking.service?.title}`, 14, 81);
+        doc.text(`Provider: ${providerDetails?.user?.username || 'Provider'}`, 14, 86);
+
+        const tableColumn = ["Description", "Amount (INR)"];
+        const tableRows = [
+            ["Service Price", `Rs. ${booking.invoice?.servicePrice}`],
+            ["Visiting / Extra Charges", `Rs. ${booking.invoice?.serviceCharge}`],
+            ["GST (18%)", `Rs. ${booking.invoice?.gst}`],
+            ["Total Amount", `Rs. ${booking.invoice?.totalAmount}`]
+        ];
+
+        autoTable(doc, {
+            startY: 95,
+            head: [tableColumn],
+            body: tableRows,
+            theme: 'grid',
+            headStyles: { fillColor: [0, 0, 0] },
+            foot: [[t('userBookings.invoice.totalAmount') || "Total Amount", `Rs. ${booking.invoice?.totalAmount}`]],
+            footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+        });
+
+        doc.text("Thank you for choosing our service!", 105, doc.lastAutoTable.finalY + 20, null, null, "center");
+
+        if (action === 'preview') {
+            window.open(doc.output('bloburl'), '_blank');
+        } else {
+            doc.save(`Invoice_${booking._id.slice(-6)}.pdf`);
         }
     };
 
@@ -163,9 +213,9 @@ const ProviderBookings = () => {
                         <div className="flex items-center gap-2">
                             <p className="text-xs font-bold text-soft-black">₹{row.invoice.totalAmount}</p>
                             <button
-                                // onClick={() => setActiveBookingForCompletion(row)}
+                                onClick={() => downloadInvoice(row)}
                                 className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
-                                title="View Invoice"
+                                title="Download Invoice"
                             >
                                 <FileText className="w-4 h-4" />
                             </button>
@@ -235,7 +285,7 @@ const ProviderBookings = () => {
                 <div className="flex items-center gap-2 md:gap-4 shrink-0">
                     <button
                         onClick={() => navigate('/provider/dashboard')}
-                        className="p-2 md:p-3 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
+                        className="p-2 md:p-3 hover:bg-gray-100 rounded-full transition-colors shrink-0"
                         title="Back to Dashboard"
                     >
                         <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
@@ -288,7 +338,7 @@ const ProviderBookings = () => {
                     <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl animate-in zoom-in-95">
                         <h3 className="text-lg font-bold mb-4">Update Status</h3>
                         <div className="space-y-2 mb-6">
-                            {['accepted', 'arrived', 'in_progress', 'work_completed', 'cancelled'].map(status => (
+                            {['accepted', 'arrived', 'in_progress', 'cancelled'].map(status => (
                                 <button
                                     key={status}
                                     onClick={() => setStatusToUpdate(status)}
@@ -313,6 +363,97 @@ const ProviderBookings = () => {
                                 className="px-6 py-2 bg-black text-white rounded-lg font-bold hover:bg-gray-800"
                             >
                                 Update
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Complete Job & Invoice Modal */}
+            {activeBookingForCompletion && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl animate-in zoom-in-95">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-soft-black">Complete Job & Invoice</h3>
+                            <button onClick={() => setActiveBookingForCompletion(null)} className="p-2 hover:bg-gray-100 rounded-full">
+                                <X className="w-6 h-6 text-gray-400" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="bg-gray-50 p-4 rounded-xl">
+                                <p className="text-sm text-gray-500 mb-1">Service</p>
+                                <p className="font-bold text-soft-black">{activeBookingForCompletion.service?.title}</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Service Price</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">₹</span>
+                                        <input
+                                            type="number"
+                                            value={invoiceForm.servicePrice}
+                                            onChange={e => setInvoiceForm({ ...invoiceForm, servicePrice: e.target.value })}
+                                            className="w-full pl-8 pr-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Visiting Charge</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">₹</span>
+                                        <input
+                                            type="number"
+                                            value={invoiceForm.serviceCharge}
+                                            onChange={e => setInvoiceForm({ ...invoiceForm, serviceCharge: e.target.value })}
+                                            className="w-full pl-8 pr-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-blue-50 p-4 rounded-xl flex justify-between items-center">
+                                <span className="text-blue-800 font-medium">Total Amount (inc. 18% GST)</span>
+                                <span className="text-xl font-bold text-blue-900">
+                                    ₹{((parseFloat(invoiceForm.servicePrice || 0) + parseFloat(invoiceForm.serviceCharge || 0)) * 1.18).toFixed(2)}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={async () => {
+                                    if (!invoiceForm.servicePrice || !invoiceForm.serviceCharge) {
+                                        alert("Please fill in all pricing fields");
+                                        return;
+                                    }
+                                    try {
+                                        // Import API call locally or use from props/import
+                                        const { completeBooking } = await import('../../api/bookings');
+                                        const res = await completeBooking(activeBookingForCompletion._id, {
+                                            servicePrice: parseFloat(invoiceForm.servicePrice),
+                                            serviceCharge: parseFloat(invoiceForm.serviceCharge)
+                                        });
+
+                                        if (res.success) {
+                                            updateBookingInList(activeBookingForCompletion._id, {
+                                                status: 'work_completed',
+                                                invoice: res.invoice
+                                            });
+                                            setActiveBookingForCompletion(null);
+                                        } else {
+                                            alert(res.error);
+                                        }
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert("Failed to create invoice");
+                                    }
+                                }}
+                                className="w-full py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 mt-4"
+                            >
+                                <CheckCircle className="w-5 h-5" />
+                                Send Invoice & Mark Completed
                             </button>
                         </div>
                     </div>

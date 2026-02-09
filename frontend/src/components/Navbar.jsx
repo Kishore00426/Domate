@@ -82,7 +82,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
 
 
                 {!isDashboard && (
-                    <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8">
+                    <div className="hidden md:flex items-center gap-6 lg:gap-8 bg-gray-50/50 px-6 py-2 rounded-full border border-gray-100/50">
                         <button
                             onClick={() => {
                                 // Set guest user in localStorage
@@ -94,11 +94,11 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                 // Navigate to home page
                                 navigate('/home');
                             }}
-                            className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors cursor-pointer"
+                            className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors cursor-pointer whitespace-nowrap"
                         >
                             {t('navbar.services')}
                         </button>
-                        <Link to="/register?role=service_provider" className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors">{t('navbar.becomeProfessional')}</Link>
+                        <Link to="/register?role=service_provider" className="text-sm font-medium text-gray-600 hover:text-soft-black transition-colors whitespace-nowrap">{t('navbar.becomeProfessional')}</Link>
                     </div>
                 )}
 
