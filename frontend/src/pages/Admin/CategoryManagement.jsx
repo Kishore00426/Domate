@@ -152,10 +152,14 @@ const CategoryManagement = () => {
 
     // Inline Edit Functions
     const startInlineEdit = (item, field) => {
+        let value = item[field];
+        if (field === 'category') {
+            value = item.category || item.parentCategory;
+        }
         setInlineEdit({
             id: item._id,
             field: field,
-            value: item[field]
+            value: value
         });
     };
 
@@ -190,7 +194,9 @@ const CategoryManagement = () => {
                 else data.append('name', subcategory.name);
 
                 data.append('description', subcategory.description || '');
-                data.append('category', subcategory.category || subcategory.parentCategory);
+
+                if (inlineEdit.field === 'category') data.append('category', inlineEdit.value);
+                else data.append('category', subcategory.category || subcategory.parentCategory);
 
                 response = await updateSubcategory(inlineEdit.id, data);
             }
@@ -394,7 +400,34 @@ const CategoryManagement = () => {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 text-gray-600">
-                                                    <span className="bg-gray-100 px-2 py-1 rounded text-xs">{getCategoryName(item.category || item.parentCategory)}</span>
+                                                    {inlineEdit.id === item._id && inlineEdit.field === 'category' ? (
+                                                        <div className="flex items-center gap-1">
+                                                            <select
+                                                                value={inlineEdit.value}
+                                                                onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                                className="w-32 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none bg-white"
+                                                                autoFocus
+                                                            >
+                                                                {categories.map(cat => (
+                                                                    <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                                                ))}
+                                                            </select>
+                                                            <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                                <Check className="w-4 h-4" />
+                                                            </button>
+                                                            <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span
+                                                            onClick={() => startInlineEdit(item, 'category')}
+                                                            className="bg-gray-100 px-2 py-1 rounded text-xs cursor-pointer hover:bg-gray-200 transition-colors"
+                                                            title="Click to edit parent category"
+                                                        >
+                                                            {getCategoryName(item.category || item.parentCategory)}
+                                                        </span>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <div className="flex items-center justify-end gap-2">
