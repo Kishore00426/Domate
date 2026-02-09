@@ -61,9 +61,9 @@ const UserLayout = () => {
     }, [dispatch, navigate]);
 
     const handleLogout = () => {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        navigate('/login');
+        sessionStorage.clear();
+        localStorage.removeItem('user');
+        window.location.href = '/';
     };
 
     const navItems = [

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +16,7 @@ import { NotesCell, DateCell } from '../components/MyBookingCells';
 
 const MyBookings = () => {
     // ... existing state ...
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -99,7 +101,7 @@ const MyBookings = () => {
     };
 
     const handleDelete = async (bookingId) => {
-        if (!window.confirm("Are you sure you want to delete this booking?")) return;
+        if (!window.confirm(t('userBookings.alerts.deleteConfirm'))) return;
         try {
             const res = await deleteBooking(bookingId);
             if (res.success) {
@@ -109,12 +111,12 @@ const MyBookings = () => {
             }
         } catch (err) {
             console.error(err);
-            alert("Failed to delete booking");
+            alert(t('userBookings.alerts.deleteFailed'));
         }
     };
 
     const handleConfirmBooking = async (bookingId) => {
-        if (!window.confirm("Confirm that the provider has completed the work?")) return;
+        if (!window.confirm(t('userBookings.alerts.completeConfirm'))) return;
         try {
             const res = await confirmBooking(bookingId);
             if (res.success) {
@@ -126,7 +128,7 @@ const MyBookings = () => {
             }
         } catch (err) {
             console.error("Confirmation failed", err);
-            alert("Failed to confirm booking");
+            alert(t('userBookings.alerts.completeFailed'));
         }
     };
 
@@ -143,7 +145,7 @@ const MyBookings = () => {
 
     const columns = React.useMemo(() => [
         {
-            name: 'Service',
+            name: t('userBookings.columns.service'),
             selector: row => row.service?.title,
             sortable: true,
             cell: row => (
@@ -158,7 +160,7 @@ const MyBookings = () => {
             width: '250px'
         },
         {
-            name: 'Provider',
+            name: t('userBookings.columns.provider'),
             selector: row => row.serviceProvider?.username,
             sortable: true,
             cell: row => (
@@ -171,13 +173,13 @@ const MyBookings = () => {
                         onClick={() => handleContactClick(row.serviceProvider)}
                         className="text-blue-600 text-xs hover:underline mt-1 ml-6"
                     >
-                        Contact
+                        {t('userBookings.actions.contact')}
                     </button>
                 </div>
             )
         },
         {
-            name: 'Scheduled Date',
+            name: t('userBookings.columns.scheduledDate'),
             id: 'date',
             selector: row => row.scheduledDate,
             sortable: true,
@@ -185,12 +187,12 @@ const MyBookings = () => {
             width: '220px'
         },
         {
-            name: 'Notes',
+            name: t('userBookings.columns.notes'),
             cell: row => <NotesCell booking={row} onUpdate={updateBookingInList} />,
             width: '200px'
         },
         {
-            name: 'Status',
+            name: t('userBookings.columns.status'),
             selector: row => row.status,
             sortable: true,
             cell: row => (
@@ -200,14 +202,14 @@ const MyBookings = () => {
             )
         },
         {
-            name: 'Actions',
+            name: t('userBookings.columns.actions'),
             cell: row => (
                 <div className="flex items-center justify-end gap-2 w-full">
                     {row.status === 'work_completed' && (
                         <button
                             onClick={() => handleConfirmBooking(row._id)}
                             className="p-2 bg-green-50 text-green-600 rounded-full hover:bg-green-100 transition-colors"
-                            title="Confirm Completion"
+                            title={t('userBookings.actions.confirmCompletion')}
                         >
                             <CheckCircle className="w-4 h-4" />
                         </button>
@@ -216,7 +218,7 @@ const MyBookings = () => {
                         <button
                             onClick={() => setActiveBookingForReview(row)}
                             className="p-2 bg-yellow-50 text-yellow-600 rounded-full hover:bg-yellow-100 transition-colors"
-                            title="Rate Service"
+                            title={t('userBookings.actions.rate')}
                         >
                             <Star className="w-4 h-4" />
                         </button>
@@ -225,7 +227,7 @@ const MyBookings = () => {
                         <button
                             onClick={() => setActiveBookingForInvoice(row)}
                             className="p-2 bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors"
-                            title="View Invoice"
+                            title={t('userBookings.actions.invoice')}
                         >
                             <FileText className="w-4 h-4" />
                         </button>
@@ -234,7 +236,7 @@ const MyBookings = () => {
                     <button
                         onClick={() => setActiveBookingForView(row)}
                         className="p-2 bg-gray-50 text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
-                        title="View Details"
+                        title={t('userBookings.actions.view')}
                     >
                         <Eye className="w-4 h-4" />
                     </button>
@@ -243,7 +245,7 @@ const MyBookings = () => {
                         <button
                             onClick={() => handleDelete(row._id)}
                             className="p-2 bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors"
-                            title="Cancel Booking"
+                            title={t('userBookings.actions.cancel')}
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -252,7 +254,7 @@ const MyBookings = () => {
             ),
             right: true
         }
-    ], [bookings]); // Re-create if bookings change (to keep handlers fresh, though ideally handlers should be stable or generic)
+    ], [bookings, t]); // Re-create if bookings or translation change
 
     const filteredItems = bookings.filter(item => {
         // Tab Filter
@@ -293,7 +295,7 @@ const MyBookings = () => {
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF();
-        doc.text("My Bookings Report", 14, 22);
+        doc.text(t('userBookings.title'), 14, 22);
         const data = filteredItems.map(b => [
             b.service?.title,
             b.serviceProvider?.username,
@@ -302,7 +304,7 @@ const MyBookings = () => {
             b.invoice?.totalAmount ? `Rs. ${b.invoice.totalAmount}` : '-'
         ]);
         autoTable(doc, {
-            head: [['Service', 'Provider', 'Date', 'Status', 'Amount']],
+            head: [[t('userBookings.columns.service'), t('userBookings.columns.provider'), t('userBookings.columns.scheduledDate'), t('userBookings.columns.status'), t('userBookings.invoice.totalAmount')]],
             body: data,
             startY: 30,
         });
@@ -313,20 +315,20 @@ const MyBookings = () => {
         const doc = new jsPDF();
 
         doc.setFontSize(20);
-        doc.text("INVOICE", 105, 20, null, null, "center");
+        doc.text("INVOICE", 105, 20, null, null, "center"); // 'INVOICE' might need translation or be standard
 
         doc.setFontSize(10);
         doc.text(`Invoice #: INV-${booking._id.slice(-6).toUpperCase()}`, 14, 30);
         doc.text(`Date: ${new Date(booking.updatedAt).toLocaleDateString()}`, 14, 35);
 
         doc.setFontSize(12);
-        doc.text("Billed To:", 14, 50);
+        doc.text(t('userBookings.invoice.billedTo'), 14, 50);
         doc.setFontSize(10);
         doc.text(`Name: ${booking.user?.username || 'Customer'}`, 14, 56);
         if (booking.user?.phone) doc.text(`Phone: ${booking.user.phone}`, 14, 61);
 
         doc.setFontSize(12);
-        doc.text("Service Details:", 14, 75);
+        doc.text(t('userBookings.invoice.serviceDetails'), 14, 75);
         doc.setFontSize(10);
         doc.text(`Service: ${booking.service?.title}`, 14, 81);
         doc.text(`Provider: ${booking.serviceProvider?.username || 'Provider'}`, 14, 86);
@@ -345,7 +347,7 @@ const MyBookings = () => {
             body: tableRows,
             theme: 'grid',
             headStyles: { fillColor: [0, 0, 0] },
-            foot: [['Grand Total', `Rs. ${booking.invoice?.totalAmount}`]],
+            foot: [[t('userBookings.invoice.totalAmount'), `Rs. ${booking.invoice?.totalAmount}`]],
             footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
         });
 
@@ -364,15 +366,15 @@ const MyBookings = () => {
                         <div className="flex items-center gap-2 md:gap-4 shrink-0">
                             <button
                                 onClick={() => navigate('/account')}
-                                className="p-2 md:p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors flex-shrink-0"
-                                title="Back to Dashboard"
+                                className="p-2 md:p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors shrink-0"
+                                title={t('userBookings.backToDashboard')}
                             >
                                 <ArrowLeft className="w-4 h-4 md:w-6 md:h-6" />
                             </button>
 
                             <div>
-                                <h1 className="text-lg md:text-2xl font-bold text-soft-black whitespace-nowrap">My Bookings</h1>
-                                <p className="text-[10px] md:text-base text-gray-500 hidden md:block">View and track your appointments</p>
+                                <h1 className="text-lg md:text-2xl font-bold text-soft-black whitespace-nowrap">{t('userBookings.title')}</h1>
+                                <p className="text-[10px] md:text-base text-gray-500 hidden md:block">{t('userBookings.subtitle')}</p>
                             </div>
                         </div>
 
@@ -382,19 +384,19 @@ const MyBookings = () => {
                                 onClick={() => setBookingTab('pending')}
                                 className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${bookingTab === 'pending' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                             >
-                                Pending
+                                {t('userBookings.tabs.pending')}
                             </button>
                             <button
                                 onClick={() => setBookingTab('current')}
                                 className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${bookingTab === 'current' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                             >
-                                Active
+                                {t('userBookings.tabs.active')}
                             </button>
                             <button
                                 onClick={() => setBookingTab('all')}
                                 className={`px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold transition-all whitespace-nowrap ${bookingTab === 'all' ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                             >
-                                All Bookings
+                                {t('userBookings.tabs.all')}
                             </button>
                         </div>
                     </div>
@@ -403,7 +405,7 @@ const MyBookings = () => {
                     <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                         <input
                             type="text"
-                            placeholder="Search Service, Provider..."
+                            placeholder={t('userBookings.searchPlaceholder')}
                             className="w-full md:w-64 pl-4 pr-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black"
                             value={filterText}
                             onChange={e => setFilterText(e.target.value)}
@@ -411,10 +413,10 @@ const MyBookings = () => {
 
                         <div className="flex gap-2 w-full md:w-auto">
                             <button onClick={handleDownloadExcel} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-sm font-bold hover:bg-green-100 transition-colors">
-                                Excel
+                                {t('userBookings.excel')}
                             </button>
                             <button onClick={handleDownloadPDF} className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-orange-100 text-orange-400 rounded-xl text-sm font-bold hover:bg-orange-200 transition-colors">
-                                Pdf
+                                {t('userBookings.pdf')}
                             </button>
                         </div>
                     </div>
@@ -436,10 +438,10 @@ const MyBookings = () => {
                                 <div className="p-12 text-center text-gray-400">
                                     <div className="flex flex-col items-center justify-center">
                                         <Calendar className="w-12 h-12 mb-3 text-gray-300" />
-                                        <p className="text-lg">No {bookingTab === 'pending' ? 'pending' : (bookingTab === 'current' ? 'active' : 'historical')} bookings found {filterText && "matching your search"}.</p>
+                                        <p className="text-lg">{t('userBookings.noBookings', { status: t(`userBookings.tabs.${bookingTab}`), matching: filterText ? `(${filterText})` : '' })}</p>
                                         {!filterText && (
                                             <button onClick={() => navigate('/services')} className="mt-2 text-blue-600 font-medium hover:underline">
-                                                Browse Services
+                                                {t('userBookings.browseServices')}
                                             </button>
                                         )}
                                     </div>
@@ -478,14 +480,14 @@ const MyBookings = () => {
                             <div className="space-y-4 pt-4 border-t border-gray-100">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase mb-1">Provider</p>
+                                        <p className="text-xs font-bold text-gray-400 uppercase mb-1">{t('userBookings.columns.provider')}</p>
                                         <div className="flex items-center gap-2">
                                             <User className="w-4 h-4 text-gray-400" />
                                             <span className="font-medium text-soft-black">{activeBookingForView.serviceProvider?.username}</span>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase mb-1">Schedule</p>
+                                        <p className="text-xs font-bold text-gray-400 uppercase mb-1">{t('serviceDetail.time')}</p> {/* Re-using serviceDetail.time for 'Schedule' concept or add generic 'Schedule' */}
                                         <div className="flex items-center gap-2">
                                             <Calendar className="w-4 h-4 text-gray-400" />
                                             <span className="font-medium text-soft-black">
@@ -497,14 +499,14 @@ const MyBookings = () => {
 
                                 {activeBookingForView.message && (
                                     <div className="bg-red-50 p-4 rounded-xl border border-red-100 mb-4">
-                                        <p className="text-xs font-bold text-red-600 uppercase mb-1">Provider Message / Rejection Reason</p>
+                                        <p className="text-xs font-bold text-red-600 uppercase mb-1">{t('userBookings.providerMessage')}</p>
                                         <p className="text-sm text-gray-700 italic">"{activeBookingForView.message}"</p>
                                     </div>
                                 )}
 
                                 {activeBookingForView.notes && (
                                     <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
-                                        <p className="text-xs font-bold text-amber-600 uppercase mb-1">Your Notes</p>
+                                        <p className="text-xs font-bold text-amber-600 uppercase mb-1">{t('userBookings.columns.notes')}</p>
                                         <p className="text-sm text-gray-700 italic">"{activeBookingForView.notes}"</p>
                                     </div>
                                 )}
@@ -515,7 +517,7 @@ const MyBookings = () => {
                                     onClick={() => setActiveBookingForView(null)}
                                     className="px-6 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
                                 >
-                                    Close
+                                    {t('common.close')}
                                 </button>
                             </div>
                         </div>

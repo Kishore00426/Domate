@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, MapPin, Home, Menu, X, Search, LogOut, LayoutGrid, Bell, ChevronDown, Check, Globe } from 'lucide-react';
+import { User, MapPin, Home, Menu, X, Search, LogOut, LayoutGrid, Bell, ChevronDown, Check, Globe, Briefcase, Calendar, Upload, LayoutDashboard } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { openSearchModal, closeSearchModal } from '../store/uiSlice';
 import SearchModal from './SearchModal';
@@ -20,7 +20,7 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
     const handleLogout = () => {
         sessionStorage.clear(); // Remove all cache data
         localStorage.removeItem('user'); // Ensure local storage is also cleared
-        navigate('/');
+        window.location.href = '/';
     };
     const isHomeActive = location.pathname === '/home';
     const isServicesActive = location.pathname.startsWith('/services');
@@ -323,6 +323,28 @@ const Navbar = ({ variant = 'landing', user, loading = false }) => {
                                                 <div className="text-xs text-black font-medium">{user?.location}</div>
                                             </div>
                                         </Link>
+
+                                        {/* Provider Navigation Items in Mobile Menu */}
+                                        {isServiceProvider && (
+                                            <div className="space-y-1 mt-2 mb-2 pl-2 border-l-2 border-gray-100 ml-4">
+                                                <Link to="/provider/dashboard" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-2 text-gray-600 hover:text-black text-sm font-medium">
+                                                    <LayoutDashboard className="w-4 h-4" /> Overview
+                                                </Link>
+                                                <Link to="/provider/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-2 text-gray-600 hover:text-black text-sm font-medium">
+                                                    <User className="w-4 h-4" /> Profile
+                                                </Link>
+                                                <Link to="/provider/services" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-2 text-gray-600 hover:text-black text-sm font-medium">
+                                                    <Briefcase className="w-4 h-4" /> My Services
+                                                </Link>
+                                                <Link to="/provider/bookings" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-2 text-gray-600 hover:text-black text-sm font-medium">
+                                                    <Calendar className="w-4 h-4" /> Bookings
+                                                </Link>
+                                                <Link to="/provider/documents" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-2 text-gray-600 hover:text-black text-sm font-medium">
+                                                    <Upload className="w-4 h-4" /> Documents
+                                                </Link>
+                                            </div>
+                                        )}
+
                                         <button
                                             onClick={() => {
                                                 handleLogout();

@@ -4,6 +4,9 @@ const api = axios.create({
     baseURL: `${import.meta.env.VITE_API_TARGET}/api`,
     headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Expires': '0',
     },
 });
 
@@ -27,12 +30,11 @@ api.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             // Token is invalid or expired
-            sessionStorage.removeItem('token');
-            sessionStorage.removeItem('user');
-            // Redirect to login (optional, but good UX)
-            // Note: We can't use useNavigate here as this is not a 
-            // React component
-            // window.location.href = '/login'; 
+            sessionStorage.clear();
+            localStorage.removeItem('user');
+            // Reload the page to trigger the auth checks in the Layout components
+            // This will redirect the user to the appropriate login page
+            window.location.reload();
         }
         return Promise.reject(error);
     }

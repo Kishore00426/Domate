@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useOutletContext } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getMe, updateProfile } from '../api/auth';
 import { getUserBookings } from '../api/bookings';
 import UserDashboard from '../components/dashboard/UserDashboard';
 import ProviderDashboard from './ProviderDashboard';
 
 const Account = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const { user: contextUser } = useOutletContext() || {}; // Context from UserLayout
 
@@ -132,18 +134,18 @@ const Account = () => {
             <div className="md:hidden bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col relative transition-all mb-8">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h1 className="text-xl font-bold text-soft-black mb-2">Hi, {user.name}!</h1>
-                        <p className="text-gray-500 text-sm">Welcome back to your dashboard.</p>
+                        <h1 className="text-xl font-bold text-soft-black mb-2">{t('account.hi')} {user.name}!</h1>
+                        <p className="text-gray-500 text-sm">{t('account.welcomeBack')}</p>
                     </div>
                     {/* Mobile Logout Button */}
                     <button
                         onClick={() => {
-                            sessionStorage.removeItem('token');
-                            sessionStorage.removeItem('user');
-                            navigate('/login');
+                            sessionStorage.clear();
+                            localStorage.removeItem('user');
+                            window.location.href = '/';
                         }}
                         className="p-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
-                        title="Log Out"
+                        title={t('account.logout')}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
                     </button>
@@ -153,10 +155,10 @@ const Account = () => {
             {/* Mobile Navigation Grid */}
             <div className="md:hidden grid grid-cols-2 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4">
                 {[
-                    { path: '/user/bookings', label: 'My Bookings', icon: '📅' },
-                    { path: '/user/addresses', label: 'Addresses', icon: '📍' },
-                    { path: '/user/plans', label: 'My Plans', icon: '📄' },
-                    { path: '/user/settings', label: 'Settings', icon: '⚙️' },
+                    { path: '/user/bookings', label: t('account.myBookings'), icon: '📅' },
+                    { path: '/user/addresses', label: t('account.addresses'), icon: '📍' },
+                    { path: '/user/plans', label: t('account.myPlans'), icon: '📄' },
+                    { path: '/user/settings', label: t('account.settings'), icon: '⚙️' },
                 ].map((item) => (
                     <button
                         key={item.path}

@@ -1,7 +1,9 @@
 import React from 'react';
 import { User } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const UserDashboard = ({ user }) => {
+    const { t } = useTranslation();
     return (
         <div className="min-h-full flex flex-col items-center justify-center pt-20 px-4">
             <div className="text-center space-y-6 animate-fade-in-up max-w-2xl mx-auto">
@@ -16,10 +18,10 @@ const UserDashboard = ({ user }) => {
 
                 <div className="space-y-2">
                     <h1 className="text-4xl md:text-5xl font-bold text-soft-black tracking-tight">
-                        Hello, {user.name?.split(' ')[0]}
+                        {t('account.hi')}, {user.name?.split(' ')[0]}
                     </h1>
                     <p className="text-gray-500 text-lg md:text-xl font-medium">
-                        Welcome to your dashboard.
+                        {t('account.welcomeBack')}
                     </p>
                 </div>
             </div>

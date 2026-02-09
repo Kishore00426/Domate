@@ -56,41 +56,13 @@ const ProviderDashboard = () => {
     return (
         <div className="space-y-8 pb-20 md:pb-0">
             {/* Introduction / Welcome Card */}
-            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col md:block relative transition-all">
+            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100 relative transition-all">
                 <div className="flex justify-between items-start">
                     <div>
                         <h1 className="text-xl md:text-3xl font-bold text-soft-black mb-2">{t('dashboard.welcome')}, {user?.username || 'Provider'}!</h1>
                         <p className="text-gray-500 text-sm md:text-base">Here is what's happening with your bookings today.</p>
                     </div>
-                    {/* Mobile Actions: Logout */}
-                    <div className="md:hidden flex gap-2">
-                        <button
-                            onClick={() => {
-                                sessionStorage.removeItem('token');
-                                sessionStorage.removeItem('user');
-                                window.location.href = '/login';
-                            }}
-                            className="p-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors shadow-sm"
-                            title="Log Out"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out w-5 h-5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" x2="9" y1="12" y2="12" /></svg>
-                        </button>
-                    </div>
                 </div>
-            </div>
-
-            {/* Mobile Navigation Menu - Visible only on mobile */}
-            <div className="md:hidden grid grid-cols-2 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4">
-                {mobileNavItems.map(item => (
-                    <button
-                        key={item.path}
-                        onClick={() => navigate(item.path)}
-                        className="flex flex-col items-center justify-center p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95"
-                    >
-                        <item.icon className={`w-8 h-8 mb-3 ${item.color}`} />
-                        <span className="font-bold text-soft-black text-sm">{item.label}</span>
-                    </button>
-                ))}
             </div>
 
             {/* Pending Requests Section - Hidden on Mobile to mimic UserDashboard flow */}

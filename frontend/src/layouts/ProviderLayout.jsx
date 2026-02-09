@@ -61,9 +61,11 @@ const ProviderLayout = () => {
     }, [navigate]);
 
     const handleLogout = () => {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        navigate('/login');
+        setUser(null);
+        setProviderDetails(null);
+        sessionStorage.clear();
+        localStorage.removeItem('user');
+        window.location.href = '/';
     };
 
     const navItems = [

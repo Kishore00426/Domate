@@ -1,8 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getImageUrl } from '../utils/imageUrl';
+import { useTranslation } from 'react-i18next';
 
 const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySelect, categoryName }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     const handleSelect = (sub) => {
@@ -15,7 +17,7 @@ const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySele
 
     return (
         <div className="max-w-6xl mx-auto mb-12">
-            <h3 className="text-xl font-bold text-soft-black mb-6">What {categoryName || 'service'} do you need?</h3>
+            <h3 className="text-xl font-bold text-soft-black mb-6">{t('services.whatDoYouNeed', { category: categoryName || t('dashboard.service') })}</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {subcategories.map((sub) => (
                     <div
@@ -32,7 +34,7 @@ const SubcategoryGrid = ({ subcategories, selectedSubcategory, onSubcategorySele
                             {sub.imageUrl ? (
                                 <img src={getImageUrl(sub.imageUrl)} alt={sub.name} className="w-full h-full object-cover" />
                             ) : (
-                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Image</div>
+                                <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">{t('services.noImage')}</div>
                             )}
                         </div>
                         <span className={`text-sm font-semibold text-center leading-tight ${selectedSubcategory === sub.name ? 'text-white' : 'text-gray-700 group-hover:text-black'}`}>

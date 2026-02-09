@@ -60,9 +60,9 @@ const AdminLayout = () => {
     }, [navigate]);
 
     const handleLogout = () => {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('user');
-        navigate('/admin/login');
+        sessionStorage.clear();
+        localStorage.removeItem('user');
+        window.location.href = '/';
     };
 
     if (isLoading) {
