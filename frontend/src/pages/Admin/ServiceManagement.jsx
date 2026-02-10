@@ -198,84 +198,82 @@ const ServiceManagement = () => {
             if (!service) return;
 
             const data = new FormData();
-            // Append all existing fields to ensure consistency
-            data.append('title', service.title);
-            data.append('category', typeof service.category === 'object' ? service.category._id : service.category);
-            if (service.subcategory) data.append('subcategory', typeof service.subcategory === 'object' ? service.subcategory._id : service.subcategory);
 
-            // Update the specific field
-            if (inlineEdit.field === 'price') data.append('price', inlineEdit.value);
-            else data.append('price', service.price);
+            // Determine the new values
+            let newTitle = service.title;
+            let newPrice = service.price;
+            let newCategory = typeof service.category === 'object' ? service.category?._id : service.category;
+            let newSubcategory = typeof service.subcategory === 'object' ? service.subcategory?._id : service.subcategory;
 
-            if (inlineEdit.field === 'title') data.append('title', inlineEdit.value);
-            else data.append('title', service.title);
-
-            // Handle Category change
+            // Update with inline edit value
+            if (inlineEdit.field === 'title') newTitle = inlineEdit.value;
+            if (inlineEdit.field === 'price') newPrice = inlineEdit.value;
             if (inlineEdit.field === 'category') {
-                data.append('category', inlineEdit.value);
-                // If category changes, we should probably clear subcategory or check if existing subcategory belongs to new category.
-                // For simplicity/safety, let's keep existing subcategory ONLY if it's valid for new category, else clear it.
-                // But simplified approach: just keep as is, or let user change subcategory separately.
-                // However, usually changing category invalidates subcategory.
-                // Let's send empty subcategory if we change category to force user to re-select, or just keep it and let backend handle validation.
-                // Better UX: If category changes, current subcategory ID is likely invalid for that category.
-                // For now, let's just append the new category. The subcategory might become invalid.
-                // Ideally we would want to set subcategory to null, but backend expects ID.
-                // Let's assume user will also update subcategory if needed.
-                // Or better: clear subcategory if category changes.
-                // data.append('subcategory', ''); // This might error if backend expects valid ID.
-            } else {
-                data.append('category', typeof service.category === 'object' ? service.category._id : service.category);
+                newCategory = inlineEdit.value;
+                // If category changes, we should ideally clear subcategory or let backend handle it.
+                // For now, we'll keep the existing subcategory logic but strictly it might not belong to the new category.
+                // A safer approach for inline edit of category is to reset subcategory if it doesn't match, 
+                // but checking that here is complex. We will send it as is.
             }
+            if (inlineEdit.field === 'subcategory') newSubcategory = inlineEdit.value;
 
-            // Handle Subcategory change
-            if (inlineEdit.field === 'subcategory') {
-                if (inlineEdit.value) data.append('subcategory', inlineEdit.value);
-                // If empty string (selecting 'Select Subcategory'), we might want to unset it.
-                // Backend might need specific handling to unset subcategory.
-                // Assuming backend handles it or we just send what we have.
-            } else {
-                // If we are changing category, should we keep old subcategory? 
-                // If `field` was `category`, we fall into this `else`.
-                // If we changed category, the old subcategory is likely invalid.
-                // But `saveInlineEdit` is one field at a time.
-                // If I change category, `inlineEdit.field` is 'category'.
-                // So here `inlineEdit.field` != 'subcategory'.
-                // We append existing subcategory.
-                // This might result in inconsistent state (Category A, Subcategory of B).
+            // Append fields (Single Source of Truth)
+            data.append('title', newTitle);
+            data.append('price', newPrice);
+            if (newCategory) data.append('category', newCategory);
+            // Only append subcategory if it has a value
+            if (newSubcategory) data.append('subcategory', newSubcategory);
 
-                // FIX: If we are updating Category, we should probably NOT send Subcategory, or send empty if allowed.
-                if (inlineEdit.field === 'category') {
-                    // Don't append subcategory, effectively attempting to clear it or keep it as is?
-                    // Depends on backend `updateService` implementation. 
-                    // Usually Mongoose updates only fields provided.
-                    // If we want to clear it, we'd need to send null/empty.
-                    // Let's just send the existing one for now to avoid complexity, assuming user will fix subcategory next.
-                    // OR check if subcategory belongs to new category? Too complex for frontend here.
-                    // Safe approach: Append existing.
-                    if (service.subcategory) data.append('subcategory', typeof service.subcategory === 'object' ? service.subcategory._id : service.subcategory);
-                } else {
-                    if (service.subcategory) data.append('subcategory', typeof service.subcategory === 'object' ? service.subcategory._id : service.subcategory);
-                }
-            }
+            // Append other required fields that might be cleared if missing (though updateService usually does partial updates, 
+            // the backend code looks like it spreads req.body, so we should be safe to only send what changed ideally, 
+            // BUT the backend also seems to re-parse array fields if provided.
+            // To be safe and avoid side effects of "missing" fields in a PUT request (depending on backend implementation),
+            // let's send the preserved values for the other complex fields.
 
-            data.append('detailedDescription', service.detailedDescription);
+            data.append('detailedDescription', service.detailedDescription || '');
             data.append('whatIsCovered', service.whatIsCovered ? service.whatIsCovered.join(', ') : '');
             data.append('whatIsNotCovered', service.whatIsNotCovered ? service.whatIsNotCovered.join(', ') : '');
             data.append('requiredEquipment', service.requiredEquipment ? service.requiredEquipment.join(', ') : '');
             data.append('serviceProcess', service.serviceProcess ? service.serviceProcess.join(', ') : '');
             data.append('warranty', service.warranty || '');
 
-            // We don't send image unless changed, so we can skip it or send null. 
-            // The backend updateService typically handles "if file provided, update it". 
-            // So we just don't append 'image'.
-
             const response = await updateService(inlineEdit.id, data);
 
             if (response.success) {
-                setServices(prev => prev.map(s => s._id === inlineEdit.id ? { ...s, [inlineEdit.field]: inlineEdit.value } : s));
+                // Update local state optimistically
+                setServices(prev => prev.map(s => {
+                    if (s._id === inlineEdit.id) {
+                        // We need to be careful with Category/Subcategory objects vs IDs in local state
+                        // If we changed category, we might want to refetch or manually construct the object if possible.
+                        // For string fields (title, price), it's easy.
+                        // For Category, we have the ID, we can try to find the object from 'categories' state.
+
+                        let updatedS = { ...s };
+                        if (inlineEdit.field === 'title') updatedS.title = inlineEdit.value;
+                        if (inlineEdit.field === 'price') updatedS.price = inlineEdit.value;
+
+                        if (inlineEdit.field === 'category') {
+                            const newCatObj = categories.find(c => c._id === inlineEdit.value);
+                            updatedS.category = newCatObj || inlineEdit.value;
+                        }
+                        if (inlineEdit.field === 'subcategory') {
+                            // Find subcategory object from all categories? 
+                            // We have 'categories' which contains 'subcategories' array.
+                            let newSubObj = null;
+                            categories.forEach(c => {
+                                if (c.subcategories) {
+                                    const found = c.subcategories.find(sub => sub._id === inlineEdit.value);
+                                    if (found) newSubObj = found;
+                                }
+                            });
+                            updatedS.subcategory = newSubObj || inlineEdit.value;
+                        }
+                        return updatedS;
+                    }
+                    return s;
+                }));
                 setInlineEdit({ id: null, field: null, value: '' });
-                // Optional: fetchData() if you want a full refresh, but optimistic UI is faster
+                // Optional: fetchData(); // Uncomment if optimistic updates verify to be problematic
             } else {
                 alert(response.error || 'Failed to update');
             }

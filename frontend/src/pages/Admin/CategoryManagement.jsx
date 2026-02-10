@@ -154,12 +154,14 @@ const CategoryManagement = () => {
     const startInlineEdit = (item, field) => {
         let value = item[field];
         if (field === 'category') {
-            value = item.category || item.parentCategory;
+            // Handle potentially populated category/parentCategory
+            const cat = item.category || item.parentCategory;
+            value = typeof cat === 'object' && cat !== null ? cat._id : cat;
         }
         setInlineEdit({
             id: item._id,
             field: field,
-            value: value
+            value: value || '' // Ensure not undefined
         });
     };
 
@@ -195,8 +197,13 @@ const CategoryManagement = () => {
 
                 data.append('description', subcategory.description || '');
 
-                if (inlineEdit.field === 'category') data.append('category', inlineEdit.value);
-                else data.append('category', subcategory.category || subcategory.parentCategory);
+                if (inlineEdit.field === 'category') {
+                    data.append('category', inlineEdit.value);
+                } else {
+                    const cat = subcategory.category || subcategory.parentCategory;
+                    const catId = typeof cat === 'object' && cat !== null ? cat._id : cat;
+                    if (catId) data.append('category', catId);
+                }
 
                 response = await updateSubcategory(inlineEdit.id, data);
             }
