@@ -444,6 +444,25 @@ export const deleteService = async (req, res) => {
   }
 };
 
+// ---------------- BOOKING MANAGEMENT ----------------
+export const getAllBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate("user", "username email contactNumber")
+      .populate("serviceProvider", "username email contactNumber")
+      .populate({
+        path: "service",
+        select: "title price category",
+        populate: { path: "category", select: "name" }
+      })
+      .sort({ createdAt: -1 }); // Newest first
+
+    res.json({ success: true, bookings });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
 // ---------------- DASHBOARD STATS ----------------
 export const getDashboardStats = async (req, res) => {
   try {

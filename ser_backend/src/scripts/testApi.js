@@ -25,20 +25,20 @@ const BASE_URL = "http://localhost:4000/api";
         const token = loginData.token;
         console.log("Got token:", token ? "Yes" : "No");
 
-        // 2. Call Stats
-        console.log("Fetching stats...");
-        const statsRes = await fetch(`${BASE_URL}/admin/stats`, {
+        // 2. Call Bookings
+        console.log("Fetching bookings...");
+        const bookingsRes = await fetch(`${BASE_URL}/admin/bookings`, {
             headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (!statsRes.ok) {
-            const err = await statsRes.text();
-            console.error("Stats failed:", err);
+        if (!bookingsRes.ok) {
+            const err = await bookingsRes.text();
+            console.error("Bookings failed:", err);
             process.exit(1);
         }
 
-        const statsData = await statsRes.json();
-        console.log("Stats Response Data:", JSON.stringify(statsData, null, 2));
+        const bookingsData = await bookingsRes.json();
+        console.log("Bookings Response Data:", JSON.stringify(bookingsData, null, 2));
 
     } catch (err) {
         console.error("Error:", err.message);

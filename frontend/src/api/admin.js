@@ -57,6 +57,12 @@ export const linkSubcategory = async (categoryId, subcategoryId) => {
     return response.data;
 };
 
+// --- Bookings ---
+export const getAllBookings = async () => {
+    const response = await adminApi.get('/admin/bookings');
+    return response.data;
+};
+
 // --- Dashboard ---
 export const getDashboardStats = async () => {
     const response = await adminApi.get('/admin/stats');

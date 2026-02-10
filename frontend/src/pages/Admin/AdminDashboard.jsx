@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Users, CheckCircle, Clock, TrendingUp, Activity, Plus } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Users, CheckCircle, CheckSquare, Clock, TrendingUp, Activity, Plus } from 'lucide-react';
 import { getDashboardStats } from '../../api/admin';
 import { useTranslation } from 'react-i18next';
 
@@ -41,11 +41,11 @@ const AdminDashboard = () => {
     }, []);
 
     const stats = [
-        { label: t('admin.totalUsers'), value: dashboardData.totalUsers, icon: Users, color: 'bg-blue-100 text-blue-600' },
-        { label: t('admin.activeProviders'), value: dashboardData.activeProviders, icon: CheckCircle, color: 'bg-green-100 text-green-600' },
-        { label: t('admin.pendingVerifications'), value: dashboardData.pendingVerifications, icon: Clock, color: 'bg-yellow-100 text-yellow-600' },
-        { label: t('admin.service'), value: dashboardData.totalServices, icon: Activity, color: 'bg-indigo-100 text-indigo-600' },
-        { label: t('admin.totalBookings'), value: dashboardData.totalBookings, icon: Plus, color: 'bg-purple-100 text-purple-600' },
+        { label: t('admin.users'), value: dashboardData.totalUsers, icon: Users, color: 'bg-blue-100 text-blue-600', link: '/admin/users' },
+        { label: t('admin.activeProviders'), value: dashboardData.activeProviders, icon: CheckSquare, color: 'bg-green-100 text-green-600', link: '/admin/users' },
+        { label: t('admin.pendingVerifications'), value: dashboardData.pendingVerifications, icon: Clock, color: 'bg-yellow-100 text-yellow-600', link: '/admin/verification' },
+        { label: t('admin.service'), value: dashboardData.totalServices, icon: Activity, color: 'bg-indigo-100 text-indigo-600', link: '/admin/services' },
+        { label: t('admin.bookings'), value: dashboardData.totalBookings, icon: Plus, color: 'bg-purple-100 text-purple-600', link: '/admin/bookings' },
     ];
 
     return (
@@ -58,20 +58,32 @@ const AdminDashboard = () => {
 
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {stats.map((stat, index) => (
-                    <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-                        <div className={`p-4 rounded-xl ${stat.color}`}>
-                            <stat.icon className="w-6 h-6" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {stats.map((stat, index) => {
+                    const CardContent = (
+                        <div className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 transition-transform hover:scale-105 h-full ${stat.link ? 'cursor-pointer' : ''}`}>
+                            <div className={`p-4 rounded-xl ${stat.color}`}>
+                                <stat.icon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
+                                <h3 className="text-2xl font-bold text-soft-black mt-1">
+                                    {loading ? <span className="animate-pulse bg-gray-200 h-8 w-16 block rounded"></span> : stat.value}
+                                </h3>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
-                            <h3 className="text-2xl font-bold text-soft-black mt-1">
-                                {loading ? <span className="animate-pulse bg-gray-200 h-8 w-16 block rounded"></span> : stat.value}
-                            </h3>
+                    );
+
+                    return stat.link ? (
+                        <Link to={stat.link} key={index} className="block h-full">
+                            {CardContent}
+                        </Link>
+                    ) : (
+                        <div key={index} className="h-full">
+                            {CardContent}
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Recent Activity Section - Placeholder for now until we have activity logs */}
