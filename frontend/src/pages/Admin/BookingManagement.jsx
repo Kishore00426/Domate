@@ -126,7 +126,7 @@ const BookingManagement = () => {
                     </button>
                     <button
                         onClick={downloadPDF}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors text-sm font-medium"
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-orange-400 rounded-xl hover:bg-amber-200 transition-colors text-sm font-medium"
                     >
                         <Download className="w-4 h-4" />
                         PDF
@@ -315,8 +315,8 @@ const BookingManagement = () => {
                             <div className="bg-gray-50 p-4 rounded-xl flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <div className={`w-3 h-3 rounded-full ${selectedBooking.status === 'completed' ? 'bg-green-500' :
-                                            selectedBooking.status === 'cancelled' || selectedBooking.status === 'rejected' ? 'bg-red-500' :
-                                                selectedBooking.status === 'accepted' ? 'bg-blue-500' : 'bg-yellow-500'
+                                        selectedBooking.status === 'cancelled' || selectedBooking.status === 'rejected' ? 'bg-red-500' :
+                                            selectedBooking.status === 'accepted' ? 'bg-blue-500' : 'bg-yellow-500'
                                         }`}></div>
                                     <span className="font-semibold text-soft-black capitalize">{selectedBooking.status.replace('_', ' ')}</span>
                                 </div>
