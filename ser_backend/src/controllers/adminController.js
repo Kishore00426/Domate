@@ -488,3 +488,50 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+// ---------------- REPORTS ----------------
+export const getUserReport = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    // Aggregate stats for this provider
+    const bookings = await Booking.find({
+      serviceProvider: userId,
+      status: { $in: ["completed", "work_completed"] }
+    });
+
+    const totalBookings = bookings.length;
+
+    // Calculate total earned from invoice.totalAmount
+    const totalEarned = bookings.reduce((sum, booking) => {
+      return sum + (booking.invoice?.totalAmount || 0);
+    }, 0);
+
+    // Get recent activity (last 5 bookings)
+    const recentActivity = await Booking.find({ serviceProvider: userId })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .populate("service", "title")
+      .populate("user", "username");
+
+    res.json({
+      success: true,
+      data: {
+        userId,
+        username: user.username,
+        totalBookings,
+        totalEarned,
+        recentActivity
+      }
+    });
+  } catch (err) {
+    console.error("Error generating report:", err);
+    res.status(500).json({ success: false, error: "Failed to generate report" });
+  }
+};
