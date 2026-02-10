@@ -1,3 +1,4 @@
+import Booking from "../models/Booking.js";
 import Privilege from "../models/Privilege.js";
 import Role from "../models/Role.js";
 import Service from "../models/Service.js";
@@ -106,10 +107,6 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 };
-
-
-
-
 
 // Get all pending providers (admin use)
 export const getPendingProviders = async (req, res) => {
@@ -453,6 +450,8 @@ export const getDashboardStats = async (req, res) => {
     const totalUsers = await User.countDocuments();
     const activeProviders = await User.countDocuments({ providerStatus: "approved" });
     const pendingVerifications = await User.countDocuments({ providerStatus: "pending" });
+    const totalServices = await Service.countDocuments();
+    const totalBookings = await Booking.countDocuments();
     const totalRevenue = 0; // Placeholder
 
     res.json({
@@ -461,6 +460,8 @@ export const getDashboardStats = async (req, res) => {
         totalUsers,
         activeProviders,
         pendingVerifications,
+        totalServices,
+        totalBookings,
         totalRevenue
       }
     });

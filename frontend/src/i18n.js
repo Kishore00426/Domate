@@ -256,11 +256,12 @@ const resources = {
                 pdf: "PDF"
             },
             admin: {
-                dashboardOverview: "Dashboard Overview",
+                dashboardOverview: "Overview",
                 welcomeMessage: "Welcome back, here's what's happening today.",
                 totalUsers: "Total Users",
                 activeProviders: "Active Providers",
                 pendingVerifications: "Pending Verifications",
+                totalBookings: "Total Bookings",
                 recentActivity: "Recent Activity",
                 systemInit: "System initialization completed",
                 justNow: "Just now",
@@ -709,11 +710,12 @@ const resources = {
                 pdf: "PDF"
             },
             admin: {
-                dashboardOverview: "டாஷ்போர்டு கண்ணோட்டம்",
+                dashboardOverview: "கண்ணோட்டம்",
                 welcomeMessage: "மீண்டும் வருக, இன்று என்ன நடக்கிறது என்பது இங்கே.",
                 totalUsers: "மொத்த பயனர்கள்",
                 activeProviders: "செயலில் உள்ள வழங்குநர்கள்",
                 pendingVerifications: "நிலுவையில் உள்ள சரிபார்ப்புகள்",
+                totalBookings: "மொத்த முன்பதிவுகள்",
                 recentActivity: "சமீபத்திய செயல்பாடுகள்",
                 systemInit: "கணினி துவக்கம் முடிந்தது",
                 justNow: "இப்போது தான்",

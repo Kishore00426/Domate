@@ -10,7 +10,9 @@ const AdminDashboard = () => {
     const [dashboardData, setDashboardData] = useState({
         totalUsers: '...',
         activeProviders: '...',
-        pendingVerifications: '...'
+        pendingVerifications: '...',
+        totalServices: '...',
+        totalBookings: '...'
     });
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +25,9 @@ const AdminDashboard = () => {
                     setDashboardData({
                         totalUsers: data.totalUsers || 0,
                         activeProviders: data.activeProviders || 0,
-                        pendingVerifications: data.pendingVerifications || 0
+                        pendingVerifications: data.pendingVerifications || 0,
+                        totalServices: data.totalServices || 0,
+                        totalBookings: data.totalBookings || 0
                     });
                 }
             } catch (error) {
@@ -40,6 +44,8 @@ const AdminDashboard = () => {
         { label: t('admin.totalUsers'), value: dashboardData.totalUsers, icon: Users, color: 'bg-blue-100 text-blue-600' },
         { label: t('admin.activeProviders'), value: dashboardData.activeProviders, icon: CheckCircle, color: 'bg-green-100 text-green-600' },
         { label: t('admin.pendingVerifications'), value: dashboardData.pendingVerifications, icon: Clock, color: 'bg-yellow-100 text-yellow-600' },
+        { label: t('admin.service'), value: dashboardData.totalServices, icon: Activity, color: 'bg-indigo-100 text-indigo-600' },
+        { label: t('admin.totalBookings'), value: dashboardData.totalBookings, icon: Plus, color: 'bg-purple-100 text-purple-600' },
     ];
 
     return (
