@@ -37,7 +37,8 @@ import {
   getPendingProviders,
   verifyProvider,
   getDashboardStats,
-  getAllBookings
+  getAllBookings,
+  getUserReport // Add this
 } from "../controllers/adminController.js";
 
 import { authenticate } from "../middleware/Authenticate.js"; // Fixed casing
@@ -101,5 +102,8 @@ router.get("/stats", getDashboardStats);
 
 // ---------------- BOOKING MANAGEMENT ----------------
 router.get("/bookings", getAllBookings);
+
+// ---------------- REPORTS ----------------
+router.get("/reports/user/:userId", getUserReport);
 
 export default router;
