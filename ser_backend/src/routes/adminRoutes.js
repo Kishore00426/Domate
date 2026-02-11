@@ -38,7 +38,8 @@ import {
   verifyProvider,
   getDashboardStats,
   getAllBookings,
-  getUserReport // Add this
+  getUserReport,
+  getReportAnalytics // Add this
 } from "../controllers/adminController.js";
 
 import { authenticate } from "../middleware/Authenticate.js"; // Fixed casing
@@ -105,5 +106,6 @@ router.get("/bookings", getAllBookings);
 
 // ---------------- REPORTS ----------------
 router.get("/reports/user/:userId", getUserReport);
+router.get("/reports/analytics", getReportAnalytics);
 
 export default router;

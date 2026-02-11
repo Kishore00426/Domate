@@ -122,3 +122,8 @@ export const getUserReport = async (userId) => {
     const response = await adminApi.get(`/admin/reports/user/${userId}`);
     return response.data;
 };
+
+export const getReportAnalytics = async (params) => {
+    const response = await adminApi.get('/admin/reports/analytics', { params });
+    return response.data;
+};

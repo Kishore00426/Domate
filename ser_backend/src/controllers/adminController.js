@@ -363,6 +363,7 @@ export const createService = async (req, res) => {
       whatIsCovered, whatIsNotCovered,
       requiredEquipment, serviceProcess, // changed neededEquipment to requiredEquipment to match Schema
       warranty,
+      commissionRate, // New field
       category, subcategory
     } = req.body;
     const imageUrl = req.file ? `/uploads/services/${req.file.filename}` : null;
@@ -375,7 +376,9 @@ export const createService = async (req, res) => {
       whatIsNotCovered: parseArrayField(whatIsNotCovered),
       requiredEquipment: parseArrayField(requiredEquipment), // matched schema name
       serviceProcess: parseArrayField(serviceProcess),
+      serviceProcess: parseArrayField(serviceProcess),
       warranty,
+      commissionRate: commissionRate || 0,
       category,
       subcategory,
       imageUrl
@@ -423,6 +426,9 @@ export const updateService = async (req, res) => {
     if (updates.whatIsNotCovered) updates.whatIsNotCovered = parseArrayField(updates.whatIsNotCovered);
     if (updates.requiredEquipment) updates.requiredEquipment = parseArrayField(updates.requiredEquipment);
     if (updates.serviceProcess) updates.serviceProcess = parseArrayField(updates.serviceProcess);
+
+    // Ensure commissionRate is updated if provided
+    if (updates.commissionRate !== undefined) updates.commissionRate = Number(updates.commissionRate);
 
     const service = await Service.findByIdAndUpdate(req.params.id, updates, { new: true })
       .populate("category")
@@ -533,5 +539,97 @@ export const getUserReport = async (req, res) => {
   } catch (err) {
     console.error("Error generating report:", err);
     res.status(500).json({ success: false, error: "Failed to generate report" });
+  }
+};
+
+export const getReportAnalytics = async (req, res) => {
+  try {
+    const { type, startDate, endDate, targetId } = req.query;
+
+    const query = {
+      status: { $in: ["completed", "work_completed"] }
+    };
+
+    if (startDate && endDate) {
+      query.createdAt = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    let reportData = {};
+
+    if (type === 'service_commission') {
+      if (targetId) query.service = targetId;
+
+      const bookings = await Booking.find(query)
+        .populate('service', 'title price')
+        .populate('serviceProvider', 'username');
+
+      const totalCommission = bookings.reduce((sum, b) => sum + (b.commission || 0), 0);
+
+      reportData = {
+        title: "Service Commission Report",
+        totalCommission,
+        bookings: bookings.map(b => ({
+          id: b._id,
+          serviceName: b.service?.title,
+          providerName: b.serviceProvider?.username,
+          commission: b.commission || 0,
+          date: b.createdAt
+        }))
+      };
+    } else if (type === 'provider') {
+      if (targetId) query.serviceProvider = targetId;
+
+      const bookings = await Booking.find(query)
+        .populate('service', 'title')
+        .populate('user', 'username');
+
+      const totalEarned = bookings.reduce((sum, b) => sum + (b.invoice?.totalAmount || 0), 0);
+      const totalCommission = bookings.reduce((sum, b) => sum + (b.commission || 0), 0);
+
+      reportData = {
+        title: "Provider Performance Report",
+        totalEarned,
+        totalCommission, // Admin view of how much commission generated from this provider
+        bookings: bookings.map(b => ({
+          id: b._id,
+          serviceName: b.service?.title,
+          customerName: b.user?.username,
+          amount: b.invoice?.totalAmount || 0,
+          commission: b.commission || 0,
+          date: b.createdAt
+        }))
+      };
+
+    } else if (type === 'total') {
+      const bookings = await Booking.find(query)
+        .populate('service', 'title');
+
+      const totalRevenue = bookings.reduce((sum, b) => sum + (b.invoice?.totalAmount || 0), 0);
+      const totalCommission = bookings.reduce((sum, b) => sum + (b.commission || 0), 0);
+      const totalBookings = bookings.length;
+
+      reportData = {
+        title: "Total System Report",
+        totalRevenue,
+        totalCommission,
+        totalBookings,
+        bookings: bookings.map(b => ({
+          id: b._id,
+          serviceName: b.service?.title, // Optional: might be too much data for total report, but useful for PDF list
+          amount: b.invoice?.totalAmount || 0,
+          commission: b.commission || 0,
+          date: b.createdAt
+        }))
+      };
+    }
+
+    res.json({ success: true, data: reportData });
+
+  } catch (err) {
+    console.error("Error generating analytics report:", err);
+    res.status(500).json({ success: false, error: "Failed to generate analytics report" });
   }
 };

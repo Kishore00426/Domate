@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DataTable from 'react-data-table-component';
-import { Search, Eye, Calendar, User, Briefcase, FileText, CheckCircle, XCircle, Clock, Download, X } from 'lucide-react';
-import { getAllBookings } from '../../api/admin';
+import { Search, Eye, Calendar, User, Briefcase, FileText, CheckCircle, XCircle, Clock, Download, X, AlertCircle } from 'lucide-react';
+import { getAllBookings, getServices } from '../../api/admin';
 import { useTranslation } from 'react-i18next';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -14,10 +14,32 @@ const BookingManagement = () => {
     const [resetPaginationToggle, setResetPaginationToggle] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedServiceFilter, setSelectedServiceFilter] = useState('');
+    const [allServices, setAllServices] = useState([]);
+
+    // Extract unique services for filter (combining existing booking services + all available services)
+    const uniqueServices = React.useMemo(() => {
+        const bookedServices = bookings.map(b => b.service?.title).filter(Boolean);
+        const availableServices = allServices.map(s => s.title).filter(Boolean);
+        // Combine and dedup
+        return [...new Set([...bookedServices, ...availableServices])].sort();
+    }, [bookings, allServices]);
 
     useEffect(() => {
         fetchBookings();
+        fetchServices();
     }, []);
+
+    const fetchServices = async () => {
+        try {
+            const response = await getServices();
+            if (response.success) {
+                setAllServices(response.services);
+            }
+        } catch (error) {
+            console.error("Failed to fetch services for filter", error);
+        }
+    }
 
     const fetchBookings = async () => {
         setLoading(true);
@@ -34,17 +56,20 @@ const BookingManagement = () => {
     };
 
     // Filter Logic
-    const filteredItems = bookings.filter(
-        item =>
-            (item.user?.username && item.user.username.toLowerCase().includes(filterText.toLowerCase())) ||
+    const filteredItems = bookings.filter(item => {
+        const matchesSearch = (item.user?.username && item.user.username.toLowerCase().includes(filterText.toLowerCase())) ||
             (item.serviceProvider?.username && item.serviceProvider.username.toLowerCase().includes(filterText.toLowerCase())) ||
             (item.service?.title && item.service.title.toLowerCase().includes(filterText.toLowerCase())) ||
-            (item._id && item._id.toLowerCase().includes(filterText.toLowerCase()))
-    );
+            (item._id && item._id.toLowerCase().includes(filterText.toLowerCase()));
+
+        const matchesService = selectedServiceFilter ? item.service?.title === selectedServiceFilter : true;
+
+        return matchesSearch && matchesService;
+    });
 
     const downloadCSV = () => {
         const csvRows = [];
-        const headers = ["Booking ID", "User", "Provider", "Service", "Status", "Date", "Created At"];
+        const headers = ["Booking ID", "User", "Provider", "Service", "Status", "Commission", "Date"];
         csvRows.push(headers.join(","));
 
         filteredItems.forEach(booking => {
@@ -54,8 +79,8 @@ const BookingManagement = () => {
                 booking.serviceProvider?.username || "N/A",
                 booking.service?.title || "Removed Service",
                 booking.status,
-                booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : "N/A",
-                booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "N/A"
+                booking.commission || 0,
+                booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : "N/A"
             ];
             // Escape double quotes and wrap in quotes to handle commas
             const escapedRow = row.map(val => `"${String(val).replace(/"/g, '""')}"`);
@@ -78,7 +103,7 @@ const BookingManagement = () => {
         const doc = new jsPDF();
         doc.text("Bookings Report", 14, 15);
 
-        const tableColumn = ["Booking ID", "User", "Provider", "Service", "Status", "Date", "Created At"];
+        const tableColumn = ["Booking ID", "User", "Provider", "Service", "Status", "Comm.", "Date"];
         const tableRows = [];
 
         filteredItems.forEach(booking => {
@@ -88,8 +113,8 @@ const BookingManagement = () => {
                 booking.serviceProvider?.username || "N/A",
                 booking.service?.title || "Removed Service",
                 booking.status,
-                booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : "N/A",
-                booking.createdAt ? new Date(booking.createdAt).toLocaleDateString() : "N/A"
+                booking.commission || 0,
+                booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : "N/A"
             ];
             tableRows.push(bookingData);
         });
@@ -106,6 +131,18 @@ const BookingManagement = () => {
     const subHeaderComponentMemo = React.useMemo(() => {
         return (
             <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto mb-4">
+                {/* Service Filter */}
+                <select
+                    value={selectedServiceFilter}
+                    onChange={(e) => setSelectedServiceFilter(e.target.value)}
+                    className="px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-soft-black outline-none bg-white text-soft-black cursor-pointer appearance-none pr-8 relative"
+                    style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.7rem top 50%', backgroundSize: '0.65rem auto' }}
+                >
+                    <option value="">All Services</option>
+                    {uniqueServices.map(service => (
+                        <option key={service} value={service}>{service}</option>
+                    ))}
+                </select>
                 <div className="relative flex-1 max-w-sm">
                     <input
                         type="text"
@@ -134,7 +171,7 @@ const BookingManagement = () => {
                 </div>
             </div>
         );
-    }, [filterText, filteredItems]);
+    }, [filterText, filteredItems, selectedServiceFilter, uniqueServices]);
 
     // Status Badge Helper
     const getStatusBadge = (status) => {
@@ -212,6 +249,12 @@ const BookingManagement = () => {
             cell: row => getStatusBadge(row.status)
         },
         {
+            name: 'Commission',
+            selector: row => row.commission,
+            sortable: true,
+            cell: row => <span className="font-medium text-green-600">₹{row.commission || 0}</span>
+        },
+        {
             name: 'Date',
             selector: row => row.scheduledDate,
             sortable: true,
@@ -221,13 +264,6 @@ const BookingManagement = () => {
                     <span>{row.scheduledDate ? new Date(row.scheduledDate).toLocaleDateString() : 'N/A'}</span>
                 </div>
             )
-        },
-        {
-            name: 'Created At',
-            selector: row => row.createdAt,
-            sortable: true,
-            hide: 'md',
-            cell: row => <span className="text-gray-400 text-xs">{new Date(row.createdAt).toLocaleDateString()}</span>
         },
         {
             name: 'Action',
@@ -267,12 +303,20 @@ const BookingManagement = () => {
         },
     };
 
+    const totalEarnings = React.useMemo(() => {
+        return filteredItems.reduce((sum, item) => sum + (Number(item.commission) || 0), 0);
+    }, [filteredItems]);
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-soft-black">Booking Management</h1>
                     <p className="text-gray-500">View and manage all service bookings.</p>
+                </div>
+                <div className="bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm flex items-center gap-2">
+                    <span className="text-sm font-medium text-gray-500">Total Commission:</span>
+                    <span className="text-lg font-bold text-green-600">₹{totalEarnings}</span>
                 </div>
             </div>
 
@@ -324,6 +368,19 @@ const BookingManagement = () => {
                                     Created: <span className="font-medium text-gray-700">{new Date(selectedBooking.createdAt).toLocaleString()}</span>
                                 </div>
                             </div>
+
+                            {/* Rejection/Cancellation Reason */}
+                            {(selectedBooking.status === 'rejected' || selectedBooking.status === 'cancelled') && selectedBooking.message && (
+                                <div className="bg-red-50 p-4 rounded-xl border border-red-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <h3 className="text-sm font-bold text-red-700 mb-1 flex items-center gap-2">
+                                        <AlertCircle className="w-4 h-4" />
+                                        Reason for {selectedBooking.status === 'rejected' ? 'Rejection' : 'Cancellation'}
+                                    </h3>
+                                    <p className="text-sm text-red-600">
+                                        "{selectedBooking.message}"
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* Service Info */}

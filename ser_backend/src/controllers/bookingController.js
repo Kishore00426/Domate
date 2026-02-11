@@ -240,6 +240,16 @@ export const completeBooking = async (req, res) => {
       totalAmount: parseFloat(total.toFixed(2))
     };
 
+    // Calculate Admin Commission
+    // Commission is a percentage of the Service Price (excluding taxes/charges)
+    const serviceDoc = await Service.findById(booking.service);
+    if (serviceDoc && serviceDoc.commissionRate > 0) {
+      const commissionAmount = (price * serviceDoc.commissionRate) / 100;
+      booking.commission = parseFloat(commissionAmount.toFixed(2));
+    } else {
+      booking.commission = 0;
+    }
+
     await booking.save();
 
     // Populate for frontend update

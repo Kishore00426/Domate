@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Users, CheckCircle, CheckSquare, Clock, TrendingUp, Activity, Plus, FileText, DollarSign, Download } from 'lucide-react';
-import { getDashboardStats, getUsers, getUserReport } from '../../api/admin';
+import { getDashboardStats, getUsers, getUserReport, getReportAnalytics, getServices } from '../../api/admin';
 import { useTranslation } from 'react-i18next';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const AdminDashboard = () => {
     const { t } = useTranslation();
@@ -20,16 +20,21 @@ const AdminDashboard = () => {
 
     // Report Generation State
     const [providers, setProviders] = useState([]);
-    const [selectedProvider, setSelectedProvider] = useState('');
+    const [services, setServices] = useState([]); // New: for service report
+    const [reportType, setReportType] = useState('total'); // New: 'total', 'provider', 'service_commission'
+    const [startDate, setStartDate] = useState(''); // New
+    const [endDate, setEndDate] = useState(''); // New
+    const [selectedTarget, setSelectedTarget] = useState(''); // New: provider ID or service ID
     const [reportData, setReportData] = useState(null);
     const [reportLoading, setReportLoading] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [statsResponse, usersResponse] = await Promise.all([
+                const [statsResponse, usersResponse, servicesResponse] = await Promise.all([
                     getDashboardStats(),
-                    getUsers()
+                    getUsers(),
+                    getServices() // Fetch services for dropdown
                 ]);
 
                 if (statsResponse.success) {
@@ -44,14 +49,16 @@ const AdminDashboard = () => {
                 }
 
                 if (usersResponse.success) {
-                    // Filter for providers only (users with role 'provider' or providerStatus not 'none')
-                    // Assuming role object has name 'provider' or checking providerStatus variable
                     const providerList = usersResponse.users.filter(u =>
                         u.role?.name === 'service_provider' ||
                         u.providerStatus === 'approved' ||
                         u.providerStatus === 'pending'
                     );
                     setProviders(providerList);
+                }
+
+                if (servicesResponse.success) {
+                    setServices(servicesResponse.services);
                 }
 
             } catch (error) {
@@ -65,10 +72,17 @@ const AdminDashboard = () => {
     }, []);
 
     const handleGenerateReport = async () => {
-        if (!selectedProvider) return;
         setReportLoading(true);
+        setReportData(null); // Clear previous
         try {
-            const response = await getUserReport(selectedProvider);
+            const params = {
+                type: reportType,
+                startDate,
+                endDate,
+                targetId: selectedTarget
+            };
+
+            const response = await getReportAnalytics(params); // Use new API
             if (response.success) {
                 setReportData(response.data);
             }
@@ -84,28 +98,66 @@ const AdminDashboard = () => {
         const doc = new jsPDF();
 
         doc.setFontSize(20);
-        doc.text(`Earnings Report: ${reportData.username}`, 14, 22);
+        doc.text(reportData.title || "Analytics Report", 14, 22);
 
-        doc.setFontSize(12);
+        doc.setFontSize(10);
         doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
-        doc.text(`Total Bookings: ${reportData.totalBookings}`, 14, 40);
-        doc.text(`Total Earned: ₹${reportData.totalEarned}`, 14, 48);
+        if (startDate && endDate) {
+            doc.text(`Period: ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`, 14, 35);
+        } else {
+            doc.text(`Period: All Time`, 14, 35);
+        }
 
-        const tableColumn = ["ID", "Service", "Date", "Status"];
+        // Summary Section
+        let yPos = 45;
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.text("Summary", 14, yPos);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        yPos += 7;
+
+        if (reportData.totalBookings !== undefined) {
+            doc.text(`Total Bookings: ${reportData.totalBookings}`, 14, yPos);
+            yPos += 5;
+        }
+        if (reportData.totalRevenue !== undefined) {
+            doc.text(`Total Revenue: ${reportData.totalRevenue}`, 14, yPos);
+            yPos += 5;
+        }
+        if (reportData.totalCommission !== undefined) {
+            doc.text(`Total Commission: ${reportData.totalCommission}`, 14, yPos);
+            yPos += 5;
+        }
+        if (reportData.totalEarned !== undefined) {
+            doc.text(`Provider Earnings: ${reportData.totalEarned}`, 14, yPos);
+            yPos += 5;
+        }
+
+        // Table
+        const tableColumn = ["ID", "Service", "Date", "Amount", "Comm."];
         const tableRows = [];
 
-        reportData.recentActivity.forEach(booking => {
-            const bookingData = [
-                booking._id.substring(0, 8) + '...',
-                booking.service?.title || 'N/A',
-                new Date(booking.createdAt).toLocaleDateString(),
-                booking.status
-            ];
-            tableRows.push(bookingData);
+        if (reportData.bookings) {
+            reportData.bookings.forEach(booking => {
+                const bookingData = [
+                    booking.id.substring(0, 8),
+                    booking.serviceName || 'N/A',
+                    new Date(booking.date).toLocaleDateString(),
+                    booking.amount || 0,
+                    booking.commission || 0
+                ];
+                tableRows.push(bookingData);
+            });
+        }
+
+        autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            startY: yPos + 5,
         });
 
-        doc.autoTable(tableColumn, tableRows, { startY: 60 });
-        doc.save(`report_${reportData.username}_${Date.now()}.pdf`);
+        doc.save(`report_${reportType}_${Date.now()}.pdf`);
     };
 
     const stats = [
@@ -178,22 +230,81 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="space-y-4">
+                        {/* Report Type Selector */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Provider</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
                             <select
                                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                                value={selectedProvider}
-                                onChange={(e) => setSelectedProvider(e.target.value)}
+                                value={reportType}
+                                onChange={(e) => {
+                                    setReportType(e.target.value);
+                                    setSelectedTarget(''); // Reset target when type changes
+                                }}
                             >
-                                <option value="">-- Choose a Provider --</option>
-                                {providers.map(p => (
-                                    <option key={p._id} value={p._id}>{p.username} ({p.email})</option>
-                                ))}
+                                <option value="total">Total System Report</option>
+                                <option value="provider">Provider Performance</option>
+                                <option value="service_commission">Service Commission</option>
                             </select>
                         </div>
+
+                        {/* Date Range Selectors */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">Start Date</label>
+                                <input
+                                    type="date"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-gray-500 mb-1">End Date</label>
+                                <input
+                                    type="date"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Conditional Selectors */}
+                        {reportType === 'provider' && (
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Provider</label>
+                                <select
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                    value={selectedTarget}
+                                    onChange={(e) => setSelectedTarget(e.target.value)}
+                                >
+                                    <option value="">-- All Providers (if supported) --</option>
+                                    {providers.map(p => (
+                                        <option key={p._id} value={p._id}>{p.username}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        {reportType === 'service_commission' && (
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Select Service</label>
+                                <select
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                    value={selectedTarget}
+                                    onChange={(e) => setSelectedTarget(e.target.value)}
+                                >
+                                    <option value="">-- All Services --</option>
+                                    {services.map(s => (
+                                        <option key={s._id} value={s._id}>{s.title}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
                         <button
                             onClick={handleGenerateReport}
-                            disabled={!selectedProvider || reportLoading}
+                            disabled={reportLoading}
                             className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {reportLoading ? (
@@ -201,7 +312,7 @@ const AdminDashboard = () => {
                             ) : (
                                 <>
                                     <TrendingUp className="w-4 h-4" />
-                                    Generate Earnings Report
+                                    Generate Report
                                 </>
                             )}
                         </button>
@@ -212,12 +323,28 @@ const AdminDashboard = () => {
                         <div className="mt-8 pt-6 border-t border-gray-100 animate-in slide-in-from-bottom-2 duration-500">
                             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Report Summary</h3>
                             <div className="bg-linear-to-br from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-100">
-                                <div className="text-center">
-                                    <p className="text-sm text-gray-600 mb-1">Total Earnings</p>
-                                    <h4 className="text-3xl font-bold text-indigo-700">₹{reportData.totalEarned.toLocaleString()}</h4>
-                                    <div className="mt-2 text-xs font-medium text-indigo-500 bg-white inline-block px-2 py-1 rounded-full border border-indigo-100 shadow-sm">
-                                        {reportData.totalBookings} Completed Bookings
+                                <div className="text-center space-y-2">
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">Total Bookings:</span>
+                                        <span className="font-bold">{reportData.totalBookings || reportData.bookings?.length || 0}</span>
                                     </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-600">Total Commission:</span>
+                                        <span className="font-bold text-green-600">₹{reportData.totalCommission || 0}</span>
+                                    </div>
+                                    {reportData.totalRevenue !== undefined && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600">Total Revenue:</span>
+                                            <span className="font-bold text-indigo-600">₹{reportData.totalRevenue || 0}</span>
+                                        </div>
+                                    )}
+                                    {reportData.totalEarned !== undefined && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600">Provider Earned:</span>
+                                            <span className="font-bold text-blue-600">₹{reportData.totalEarned || 0}</span>
+                                        </div>
+                                    )}
+
                                 </div>
                                 <button
                                     onClick={downloadPDF}
@@ -238,45 +365,42 @@ const AdminDashboard = () => {
                             <div className="p-2 bg-green-50 text-green-600 rounded-lg">
                                 <Activity className="w-5 h-5" />
                             </div>
-                            <h2 className="text-lg font-bold text-gray-900">Recent Platform Activity</h2>
+                            <h2 className="text-lg font-bold text-gray-900">
+                                {reportData ? reportData.title : "Recent Platform Activity"}
+                            </h2>
                         </div>
-                        {/* <button className="text-sm text-indigo-600 font-medium hover:text-indigo-700">View All</button> */}
                     </div>
 
-                    <div className="space-y-4">
-                        {/* If we had recent bookings globally we could show them here. For now, showing Report Data Activity if available, else generic system status */}
-                        {reportData ? (
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                        {/* Report Data List View */}
+                        {reportData && reportData.bookings && reportData.bookings.length > 0 ? (
                             <div className="space-y-3">
-                                <p className="text-sm text-gray-500 font-medium ml-1">Recent bookings for {reportData.username}:</p>
-                                {reportData.recentActivity.length > 0 ? (
-                                    reportData.recentActivity.map((activity, i) => (
-                                        <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-100 group">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm text-gray-400 group-hover:text-indigo-600 group-hover:border-indigo-200 transition-all">
-                                                    <CheckCircle className="w-5 h-5" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-bold text-gray-900">{activity.service?.title || 'Unknown Service'}</p>
-                                                    <p className="text-xs text-gray-500">Completed on {new Date(activity.createdAt).toLocaleDateString()}</p>
-                                                </div>
+                                {reportData.bookings.map((booking, i) => (
+                                    <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors border border-gray-100 group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border border-gray-200 shadow-sm text-gray-400 group-hover:text-indigo-600 group-hover:border-indigo-200 transition-all">
+                                                <CheckCircle className="w-5 h-5" />
                                             </div>
-                                            <div className="text-right">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${activity.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                                                    }`}>
-                                                    {activity.status}
-                                                </span>
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900">{booking.serviceName}</p>
+                                                <p className="text-xs text-gray-500">
+                                                    {booking.providerName ? `Provider: ${booking.providerName}` : booking.customerName ? `User: ${booking.customerName}` : new Date(booking.date).toLocaleDateString()}
+                                                </p>
                                             </div>
                                         </div>
-                                    ))
-                                ) : (
-                                    <p className="text-center text-gray-500 py-8">No recent activity found for this user.</p>
-                                )}
+                                        <div className="text-right">
+                                            <p className="text-sm font-bold text-green-600">Comm: ₹{booking.commission}</p>
+                                            {booking.amount > 0 && <p className="text-xs text-gray-500">Amt: ₹{booking.amount}</p>}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         ) : (
                             <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                                 <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                <p className="text-gray-500 font-medium">Select a provider to view specific activity details</p>
-                                <p className="text-sm text-gray-400">System overview is active.</p>
+                                <p className="text-gray-500 font-medium">
+                                    {reportData ? "No data found for the selected criteria." : "Select report criteria to view analytics."}
+                                </p>
                             </div>
                         )}
                     </div>

@@ -30,6 +30,9 @@ const ServiceManagement = () => {
         requiredEquipment: '',
         serviceProcess: '',
         warranty: '',
+        serviceProcess: '',
+        warranty: '',
+        commissionRate: '', // New field
         image: null
     });
     const [removeImage, setRemoveImage] = useState(false);
@@ -67,7 +70,9 @@ const ServiceManagement = () => {
                 whatIsNotCovered: item.whatIsNotCovered ? item.whatIsNotCovered.join(', ') : '',
                 requiredEquipment: item.requiredEquipment ? item.requiredEquipment.join(', ') : '',
                 serviceProcess: item.serviceProcess ? item.serviceProcess.join(', ') : '',
+                serviceProcess: item.serviceProcess ? item.serviceProcess.join(', ') : '',
                 warranty: item.warranty || '',
+                commissionRate: item.commissionRate || '', // New field
                 image: null
             });
         } else {
@@ -81,7 +86,9 @@ const ServiceManagement = () => {
                 whatIsNotCovered: '',
                 requiredEquipment: '',
                 serviceProcess: '',
+                serviceProcess: '',
                 warranty: '',
+                commissionRate: '', // New field
                 image: null
             });
         }
@@ -95,7 +102,7 @@ const ServiceManagement = () => {
         setFormData({
             title: '', category: '', subcategory: '', price: '',
             detailedDescription: '', whatIsCovered: '', whatIsNotCovered: '',
-            requiredEquipment: '', serviceProcess: '', warranty: '', image: null
+            requiredEquipment: '', serviceProcess: '', warranty: '', commissionRate: '', image: null
         });
     };
 
@@ -126,6 +133,7 @@ const ServiceManagement = () => {
             data.append('whatIsNotCovered', formData.whatIsNotCovered);
             data.append('requiredEquipment', formData.requiredEquipment);
             data.append('serviceProcess', formData.serviceProcess);
+            data.append('commissionRate', formData.commissionRate); // New field
 
             data.append('warranty', formData.warranty);
 
@@ -208,6 +216,8 @@ const ServiceManagement = () => {
             // Update with inline edit value
             if (inlineEdit.field === 'title') newTitle = inlineEdit.value;
             if (inlineEdit.field === 'price') newPrice = inlineEdit.value;
+            if (inlineEdit.field === 'commissionRate') data.append('commissionRate', inlineEdit.value); // Handle commissionRate
+
             if (inlineEdit.field === 'category') {
                 newCategory = inlineEdit.value;
                 // If category changes, we should ideally clear subcategory or let backend handle it.
@@ -251,6 +261,8 @@ const ServiceManagement = () => {
                         let updatedS = { ...s };
                         if (inlineEdit.field === 'title') updatedS.title = inlineEdit.value;
                         if (inlineEdit.field === 'price') updatedS.price = inlineEdit.value;
+                        if (inlineEdit.field === 'commissionRate') updatedS.commissionRate = inlineEdit.value;
+
 
                         if (inlineEdit.field === 'category') {
                             const newCatObj = categories.find(c => c._id === inlineEdit.value);
@@ -366,6 +378,7 @@ const ServiceManagement = () => {
                                     <th className="px-6 py-4">Category</th>
                                     <th className="px-6 py-4">Subcategory</th>
                                     <th className="px-6 py-4">Price</th>
+                                    <th className="px-6 py-4">Commission %</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -494,6 +507,35 @@ const ServiceManagement = () => {
                                                 </div>
                                             )}
                                         </td>
+                                        <td className="px-6 py-4 font-semibold text-soft-black">
+                                            {inlineEdit.id === service._id && inlineEdit.field === 'commissionRate' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none"
+                                                        autoFocus
+                                                        min="0"
+                                                        max="100"
+                                                    />
+                                                    <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    onClick={() => startInlineEdit(service, 'commissionRate')}
+                                                    className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1 -ml-1 rounded px-2 w-fit transition-colors"
+                                                    title="Click to edit commission rate"
+                                                >
+                                                    {service.commissionRate || 0}%
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button onClick={() => handleOpenModal(service)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
@@ -512,7 +554,7 @@ const ServiceManagement = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
                             <h2 className="text-xl font-bold text-soft-black">
                                 {editingItem ? 'Edit' : 'Create'} Service
                             </h2>
@@ -578,7 +620,7 @@ const ServiceManagement = () => {
                                             {!formData.category && <p className="text-xs text-gray-400 mt-1">Select a category first.</p>}
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) <span className="text-red-500">*</span></label>
                                                 <input
@@ -601,6 +643,19 @@ const ServiceManagement = () => {
                                                     onChange={handleInputChange}
                                                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all text-soft-black"
                                                     placeholder="e.g. 30 Days"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Commission (%)</label>
+                                                <input
+                                                    type="number"
+                                                    name="commissionRate"
+                                                    value={formData.commissionRate}
+                                                    onChange={handleInputChange}
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all text-soft-black"
+                                                    placeholder="e.g. 10"
+                                                    min="0"
+                                                    max="100"
                                                 />
                                             </div>
                                         </div>
