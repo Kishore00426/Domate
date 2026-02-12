@@ -19,6 +19,7 @@ import UserManagement from './pages/Admin/UserManagement';
 import AdminSettings from './pages/Admin/AdminSettings';
 import PrivilegeManagement from './pages/Admin/PrivilegeManagement';
 import BookingManagement from './pages/Admin/BookingManagement';
+import AdminReports from './pages/Admin/AdminReports';
 import MyBookings from './pages/MyBookings';
 import Settings from './pages/Settings';
 import SavedAddresses from './pages/SavedAddresses';
@@ -79,6 +80,7 @@ function App() {
             <Route path="users" element={<UserManagement />} />
             <Route path="privileges" element={<PrivilegeManagement />} />
             <Route path="bookings" element={<BookingManagement />} />
+            <Route path="reports" element={<AdminReports />} />
             <Route path="settings" element={<AdminSettings />} />
             {/* Add other admin routes here */}
           </Route>

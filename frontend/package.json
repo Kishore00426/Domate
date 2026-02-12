@@ -27,6 +27,7 @@
     "react-pdf": "^10.3.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.11.0",
+    "recharts": "^3.7.0",
     "redux-toolkit": "^1.1.2",
     "styled-components": "^6.3.8",
     "tailwind": "^4.0.0",

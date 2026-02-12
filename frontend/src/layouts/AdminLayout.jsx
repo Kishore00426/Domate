@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Menu, X, LayoutGrid, FileText, Shield, Calendar } from 'lucide-react';
+import { LayoutDashboard, Users, CheckSquare, Settings, LogOut, Menu, X, LayoutGrid, FileText, Shield, Calendar, TrendingUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import LanguageDropdown from '../components/LanguageDropdown';
 
@@ -19,6 +19,7 @@ const AdminLayout = () => {
         { path: '/admin/categories', label: t('admin.category'), icon: LayoutGrid },
         { path: '/admin/services', label: t('admin.service'), icon: FileText },
         { path: '/admin/bookings', label: t('admin.bookings'), icon: Calendar },
+        { path: '/admin/reports', label: 'Reports', icon: TrendingUp },
         { path: '/admin/users', label: t('admin.users'), icon: Users },
         { path: '/admin/privileges', label: t('admin.privileges'), icon: Shield },
         { path: '/admin/settings', label: t('admin.settings'), icon: Settings },
