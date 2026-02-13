@@ -386,58 +386,9 @@ const AdminReports = () => {
                 </div>
             </div>
 
-            {/* 2. Stats Section (Middle) */}
-            {
-                reportData && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-bottom-2 duration-500">
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                            <p className="text-gray-500 text-sm font-medium">Total Bookings</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{reportData.totalBookings || reportData.bookings?.length || 0}</p>
-                        </div>
-
-                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                            <p className="text-gray-500 text-sm font-medium">Total Commission</p>
-                            <p className="text-2xl font-bold text-green-600 mt-1">₹{reportData.totalCommission || 0}</p>
-                        </div>
-
-                        {reportData.totalRevenue !== undefined && (
-                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                                <p className="text-gray-500 text-sm font-medium">Total Revenue</p>
-                                <p className="text-2xl font-bold text-indigo-600 mt-1">₹{reportData.totalRevenue || 0}</p>
-                            </div>
-                        )}
-
-                        {reportData.totalEarned !== undefined && (
-                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                                <p className="text-gray-500 text-sm font-medium">Provider Earned</p>
-                                <p className="text-2xl font-bold text-blue-600 mt-1">₹{reportData.totalEarned || 0}</p>
-                            </div>
-                        )}
-
-                        {/* Export Actions */}
-                        <div className="flex flex-col sm:flex-row lg:flex-col gap-3 h-full">
-                            <button
-                                onClick={downloadPDF}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl border border-indigo-200 transition-colors text-sm font-medium"
-                            >
-                                <Download className="w-4 h-4" />
-                                Export PDF
-                            </button>
-                            <button
-                                onClick={downloadCSV}
-                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl border border-green-200 transition-colors text-sm font-medium"
-                            >
-                                <FileText className="w-4 h-4" />
-                                Export CSV
-                            </button>
-                        </div>
-                    </div>
-                )
-            }
-
             {/* 3. List Section (Bottom) */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-green-50 text-green-600 rounded-lg">
                             <Activity className="w-5 h-5" />
@@ -446,7 +397,56 @@ const AdminReports = () => {
                             {reportData ? reportData.title : "Report Results"}
                         </h2>
                     </div>
+
+                    {/* Export Actions (Moved Next to Title) */}
+                    {reportData && (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={downloadPDF}
+                                className="flex items-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl border border-indigo-200 transition-colors text-sm font-medium"
+                            >
+                                <Download className="w-4 h-4" />
+                                Export PDF
+                            </button>
+                            <button
+                                onClick={downloadCSV}
+                                className="flex items-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl border border-green-200 transition-colors text-sm font-medium"
+                            >
+                                <FileText className="w-4 h-4" />
+                                Export CSV
+                            </button>
+                        </div>
+                    )}
                 </div>
+
+                {/* Stats Section (Moved Inside) */}
+                {reportData && (
+                    <div className="flex flex-wrap gap-4 mb-6">
+                        <div className="flex-1 min-w-[200px] bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Total Bookings</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{reportData.totalBookings || reportData.bookings?.length || 0}</p>
+                        </div>
+
+                        <div className="flex-1 min-w-[200px] bg-gray-50 p-4 rounded-xl border border-gray-100">
+                            <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Total Commission</p>
+                            <p className="text-2xl font-bold text-green-600 mt-1">₹{reportData.totalCommission || 0}</p>
+                        </div>
+
+                        {reportData.totalRevenue !== undefined && (
+                            <div className="flex-1 min-w-[200px] bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Total Revenue</p>
+                                <p className="text-2xl font-bold text-indigo-600 mt-1">₹{reportData.totalRevenue || 0}</p>
+                            </div>
+                        )}
+
+                        {reportData.totalEarned !== undefined && (
+                            <div className="flex-1 min-w-[200px] bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider">Provider Earned</p>
+                                <p className="text-2xl font-bold text-blue-600 mt-1">₹{reportData.totalEarned || 0}</p>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                     {/* Report Data List View */}
@@ -509,7 +509,7 @@ const AdminReports = () => {
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 
