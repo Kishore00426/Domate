@@ -15,9 +15,49 @@ const AdminReports = () => {
     const [reportType, setReportType] = useState('total'); // 'total', 'provider', 'service_commission'
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [dateRange, setDateRange] = useState('last_30_days'); // Default to last 30 days
     const [selectedTarget, setSelectedTarget] = useState(''); // provider ID or service ID
     const [reportData, setReportData] = useState(null);
     const [reportLoading, setReportLoading] = useState(false);
+
+    // Handle Date Range Presets
+    useEffect(() => {
+        const today = new Date();
+        let start = new Date();
+        let end = new Date();
+
+        switch (dateRange) {
+            case 'today':
+                // start and end are already today
+                break;
+            case 'yesterday':
+                start.setDate(today.getDate() - 1);
+                end.setDate(today.getDate() - 1);
+                break;
+            case 'last_7_days':
+                start.setDate(today.getDate() - 6);
+                break;
+            case 'last_30_days':
+                start.setDate(today.getDate() - 29);
+                break;
+            case 'this_month':
+                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                break;
+            case 'last_month':
+                start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+                end = new Date(today.getFullYear(), today.getMonth(), 0);
+                break;
+            case 'custom':
+                return; // Don't update dates, let user pick
+            default:
+                break;
+        }
+
+        if (dateRange !== 'custom') {
+            setStartDate(start.toISOString().split('T')[0]);
+            setEndDate(end.toISOString().split('T')[0]);
+        }
+    }, [dateRange]);
 
     useEffect(() => {
         const fetchDropdownData = async () => {
@@ -257,27 +297,47 @@ const AdminReports = () => {
                         </select>
                     </div>
 
-                    {/* Start Date */}
+                    {/* Date Range Select */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                        <input
-                            type="date"
-                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                        />
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                        <select
+                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                            value={dateRange}
+                            onChange={(e) => setDateRange(e.target.value)}
+                        >
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="last_7_days">Last 7 Days</option>
+                            <option value="last_30_days">Last 30 Days</option>
+                            <option value="this_month">This Month</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
                     </div>
 
-                    {/* End Date */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                        <input
-                            type="date"
-                            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
-                        />
-                    </div>
+                    {/* Custom Start/End Date (Conditional) */}
+                    {dateRange === 'custom' && (
+                        <>
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                                <input
+                                    type="date"
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                                <input
+                                    type="date"
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                />
+                            </div>
+                        </>
+                    )}
 
                     {/* Conditional Select */}
                     {(reportType === 'user' || reportType === 'provider' || reportType === 'service_commission') && (
@@ -307,7 +367,7 @@ const AdminReports = () => {
                     )}
 
                     {/* Generate Button */}
-                    <div className={(reportType === 'total') ? "md:col-span-2 lg:col-span-2" : ""}>
+                    <div>
                         <button
                             onClick={handleGenerateReport}
                             disabled={reportLoading}
@@ -327,51 +387,53 @@ const AdminReports = () => {
             </div>
 
             {/* 2. Stats Section (Middle) */}
-            {reportData && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-bottom-2 duration-500">
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                        <p className="text-gray-500 text-sm font-medium">Total Bookings</p>
-                        <p className="text-2xl font-bold text-gray-900 mt-1">{reportData.totalBookings || reportData.bookings?.length || 0}</p>
-                    </div>
-
-                    <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                        <p className="text-gray-500 text-sm font-medium">Total Commission</p>
-                        <p className="text-2xl font-bold text-green-600 mt-1">₹{reportData.totalCommission || 0}</p>
-                    </div>
-
-                    {reportData.totalRevenue !== undefined && (
+            {
+                reportData && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-in slide-in-from-bottom-2 duration-500">
                         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                            <p className="text-gray-500 text-sm font-medium">Total Revenue</p>
-                            <p className="text-2xl font-bold text-indigo-600 mt-1">₹{reportData.totalRevenue || 0}</p>
+                            <p className="text-gray-500 text-sm font-medium">Total Bookings</p>
+                            <p className="text-2xl font-bold text-gray-900 mt-1">{reportData.totalBookings || reportData.bookings?.length || 0}</p>
                         </div>
-                    )}
 
-                    {reportData.totalEarned !== undefined && (
                         <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
-                            <p className="text-gray-500 text-sm font-medium">Provider Earned</p>
-                            <p className="text-2xl font-bold text-blue-600 mt-1">₹{reportData.totalEarned || 0}</p>
+                            <p className="text-gray-500 text-sm font-medium">Total Commission</p>
+                            <p className="text-2xl font-bold text-green-600 mt-1">₹{reportData.totalCommission || 0}</p>
                         </div>
-                    )}
 
-                    {/* Export Actions */}
-                    <div className="flex flex-col sm:flex-row lg:flex-col gap-3 h-full">
-                        <button
-                            onClick={downloadPDF}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl border border-indigo-200 transition-colors text-sm font-medium"
-                        >
-                            <Download className="w-4 h-4" />
-                            Export PDF
-                        </button>
-                        <button
-                            onClick={downloadCSV}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl border border-green-200 transition-colors text-sm font-medium"
-                        >
-                            <FileText className="w-4 h-4" />
-                            Export CSV
-                        </button>
+                        {reportData.totalRevenue !== undefined && (
+                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                                <p className="text-gray-500 text-sm font-medium">Total Revenue</p>
+                                <p className="text-2xl font-bold text-indigo-600 mt-1">₹{reportData.totalRevenue || 0}</p>
+                            </div>
+                        )}
+
+                        {reportData.totalEarned !== undefined && (
+                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
+                                <p className="text-gray-500 text-sm font-medium">Provider Earned</p>
+                                <p className="text-2xl font-bold text-blue-600 mt-1">₹{reportData.totalEarned || 0}</p>
+                            </div>
+                        )}
+
+                        {/* Export Actions */}
+                        <div className="flex flex-col sm:flex-row lg:flex-col gap-3 h-full">
+                            <button
+                                onClick={downloadPDF}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl border border-indigo-200 transition-colors text-sm font-medium"
+                            >
+                                <Download className="w-4 h-4" />
+                                Export PDF
+                            </button>
+                            <button
+                                onClick={downloadCSV}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl border border-green-200 transition-colors text-sm font-medium"
+                            >
+                                <FileText className="w-4 h-4" />
+                                Export CSV
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* 3. List Section (Bottom) */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
@@ -447,7 +509,7 @@ const AdminReports = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
