@@ -603,6 +603,30 @@ export const getReportAnalytics = async (req, res) => {
         }))
       };
 
+    } else if (type === 'user') {
+      if (targetId) query.user = targetId;
+
+      const bookings = await Booking.find(query)
+        .populate('service', 'title')
+        .populate('serviceProvider', 'username');
+
+      const totalSpent = bookings.reduce((sum, b) => sum + (b.invoice?.totalAmount || 0), 0);
+      const totalCommission = bookings.reduce((sum, b) => sum + (b.commission || 0), 0);
+
+      reportData = {
+        title: "User Activity Report",
+        totalRevenue: totalSpent, // Total amount user spent
+        totalCommission,
+        bookings: bookings.map(b => ({
+          id: b._id,
+          serviceName: b.service?.title,
+          providerName: b.serviceProvider?.username,
+          amount: b.invoice?.totalAmount || 0,
+          commission: b.commission || 0,
+          date: b.createdAt
+        }))
+      };
+
     } else if (type === 'total') {
       const bookings = await Booking.find(query)
         .populate('service', 'title');
