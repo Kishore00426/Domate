@@ -3,7 +3,7 @@ import axios from 'axios';
 
 async function fetchDetails(name) {
     try {
-        const url = `http://localhost:4000/api/services/categories/${encodeURIComponent(name)}`;
+        const url = `https://domate.onrender.com/api/services/categories/${encodeURIComponent(name)}`;
         const res = await axios.get(url);
         console.log(`${name} Subcats:`, res.data.category?.subcategories?.map(s => s.name));
     } catch (error) {
