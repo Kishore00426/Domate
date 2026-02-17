@@ -30,8 +30,6 @@ const ServiceManagement = () => {
         requiredEquipment: '',
         serviceProcess: '',
         warranty: '',
-        serviceProcess: '',
-        warranty: '',
         commissionRate: '', // New field
         image: null
     });
@@ -70,7 +68,6 @@ const ServiceManagement = () => {
                 whatIsNotCovered: item.whatIsNotCovered ? item.whatIsNotCovered.join(', ') : '',
                 requiredEquipment: item.requiredEquipment ? item.requiredEquipment.join(', ') : '',
                 serviceProcess: item.serviceProcess ? item.serviceProcess.join(', ') : '',
-                serviceProcess: item.serviceProcess ? item.serviceProcess.join(', ') : '',
                 warranty: item.warranty || '',
                 commissionRate: item.commissionRate || '', // New field
                 image: null
@@ -85,7 +82,6 @@ const ServiceManagement = () => {
                 whatIsCovered: '',
                 whatIsNotCovered: '',
                 requiredEquipment: '',
-                serviceProcess: '',
                 serviceProcess: '',
                 warranty: '',
                 commissionRate: '', // New field
