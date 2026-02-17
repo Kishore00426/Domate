@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getImageUrl } from '../utils/imageUrl';
 
 const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -26,7 +28,7 @@ const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
                 setServices(response.data.services);
             } catch (err) {
                 console.error("Failed to fetch services", err);
-                setError("Failed to load services. Please try again later.");
+                setError(t('common.error')); // Or a more specific error key if available
             } finally {
                 setLoading(false);
             }
@@ -54,7 +56,7 @@ const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
     if (services.length === 0) {
         return (
             <div className="text-center py-20">
-                <p className="text-gray-500 text-lg">No services found{selectedCategory ? ` for "${selectedCategory}"` : ''}.</p>
+                <p className="text-gray-500 text-lg">{t('services.noServices')}{selectedCategory ? ` ${t('services.servicesFor', { category: selectedCategory })}` : ''}</p>
             </div>
         );
     }
@@ -90,7 +92,7 @@ const ServiceList = ({ selectedCategory, selectedSubcategory }) => {
                                     onClick={() => navigate(`/services/${service._id}`)}
                                     className="px-4 py-2 bg-black text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors"
                                 >
-                                    View Details
+                                    {t('userBookings.actions.view')}
                                 </button>
                             </div>
                         </div>

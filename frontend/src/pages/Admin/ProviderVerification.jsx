@@ -54,11 +54,39 @@ const ProviderVerification = () => {
         }
     };
 
+    const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
+
+    const uniqueCategories = React.useMemo(() => {
+        const categories = pendingProviders.map(p => p.services?.[0]?.category?.name || p.category).filter(Boolean);
+        return [...new Set(categories)].sort();
+    }, [pendingProviders]);
+
+    const filteredProviders = pendingProviders.filter(provider => {
+        const category = provider.services?.[0]?.category?.name || provider.category;
+        return selectedCategoryFilter ? category === selectedCategoryFilter : true;
+    });
+
     return (
         <div className="space-y-6 animate-in fade-in duration-500 relative">
-            <div>
-                <h1 className="text-2xl font-bold text-soft-black">Provider Verification</h1>
-                <p className="text-gray-500">Review and approve service provider applications.</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-soft-black">Provider Verification</h1>
+                    <p className="text-gray-500">Review and approve service provider applications.</p>
+                </div>
+                {/* Category Filter */}
+                <div className="flex gap-2">
+                    <select
+                        value={selectedCategoryFilter}
+                        onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                        className="px-4 py-2 rounded-xl border border-gray-200 text-sm focus:border-soft-black outline-none bg-white text-soft-black cursor-pointer appearance-none pr-8 relative"
+                        style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.7rem top 50%', backgroundSize: '0.65rem auto' }}
+                    >
+                        <option value="">All Categories</option>
+                        {uniqueCategories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* List */}
@@ -68,10 +96,10 @@ const ProviderVerification = () => {
                         <div className="flex items-center justify-center h-64 text-gray-400">Loading pending applications...</div>
                     ) : error ? (
                         <div className="flex items-center justify-center h-64 text-red-500">{error}</div>
-                    ) : pendingProviders.length === 0 ? (
+                    ) : filteredProviders.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-64 text-gray-400">
                             <FileText className="w-12 h-12 mb-2 opacity-20" />
-                            <p>No pending verifications</p>
+                            <p>No pending verifications found</p>
                         </div>
                     ) : (
                         <table className="w-full text-left text-sm">
@@ -85,7 +113,7 @@ const ProviderVerification = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {pendingProviders.map((provider) => (
+                                {filteredProviders.map((provider) => (
                                     <tr key={provider._id} className="hover:bg-gray-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-soft-black">
                                             <div className="flex items-center gap-3">

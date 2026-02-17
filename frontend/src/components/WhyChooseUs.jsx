@@ -1,17 +1,25 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+
 const WhyChooseUs = () => {
+    const { t } = useTranslation();
+
     return (
         <section className="py-24">
             <div className="max-w-6xl mx-auto px-6">
                 <div className="grid md:grid-cols-2 gap-16 items-center">
                     <div className="space-y-8">
-                        <h2 className="text-4xl font-bold text-soft-black leading-tight">Why DoMate is the <br /> safest choice</h2>
+                        <h2
+                            className="text-4xl font-bold text-soft-black leading-tight"
+                            dangerouslySetInnerHTML={{ __html: t('whyChooseUs.title') }}
+                        >
+                        </h2>
 
                         <div className="space-y-6">
                             {[
-                                { title: 'Verified Professionals', desc: 'Background checked and trained experts.' },
-                                { title: 'Transparent Pricing', desc: 'Upfront quotes. No hidden fees.' },
-                                { title: 'Satisfaction Guarantee', desc: 'If you are not happy, we will make it right.' }
+                                { title: t('whyChooseUs.verifiedTitle'), desc: t('whyChooseUs.verifiedDesc') },
+                                { title: t('whyChooseUs.pricingTitle'), desc: t('whyChooseUs.pricingDesc') },
+                                { title: t('whyChooseUs.guaranteeTitle'), desc: t('whyChooseUs.guaranteeDesc') }
                             ].map((item, i) => (
                                 <div key={i} className="flex gap-4">
                                     <div className="w-12 h-12 bg-beige rounded-xl flex-shrink-0 flex items-center justify-center">
@@ -39,7 +47,11 @@ const WhyChooseUs = () => {
                         <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-2xl shadow-xl max-w-xs">
                             <div className="flex items-center gap-4">
                                 <div className="text-4xl font-bold text-soft-black">4.8</div>
-                                <div className="text-sm text-gray-500">Average Rating <br /> from 1M+ users</div>
+                                <div
+                                    className="text-sm text-gray-500"
+                                    dangerouslySetInnerHTML={{ __html: t('whyChooseUs.rating') }}
+                                >
+                                </div>
                             </div>
                         </div>
                     </div>

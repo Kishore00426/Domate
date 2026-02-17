@@ -174,11 +174,14 @@ export const deleteBooking = async (req, res) => {
 // ---------------- PROVIDER UPDATES BOOKING STATUS ----------------
 export const updateBookingStatus = async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, message } = req.body;
 
-    // Allow more statuses: 'accepted', 'rejected', 'in_progress', 'arrived'
     if (!["accepted", "rejected", "in_progress", "arrived"].includes(status)) {
       return res.status(400).json({ success: false, error: "Invalid status" });
+    }
+
+    if (status === "rejected" && !message) {
+      return res.status(400).json({ success: false, error: "Reason is required for rejection" });
     }
 
     const booking = await Booking.findById(req.params.id);
@@ -188,6 +191,7 @@ export const updateBookingStatus = async (req, res) => {
     }
 
     booking.status = status;
+    if (message) booking.message = message;
     await booking.save();
 
     // Populate for frontend update
@@ -235,6 +239,16 @@ export const completeBooking = async (req, res) => {
       gst: parseFloat(gst.toFixed(2)),
       totalAmount: parseFloat(total.toFixed(2))
     };
+
+    // Calculate Admin Commission
+    // Commission is a percentage of the Service Price (excluding taxes/charges)
+    const serviceDoc = await Service.findById(booking.service);
+    if (serviceDoc && serviceDoc.commissionRate > 0) {
+      const commissionAmount = (price * serviceDoc.commissionRate) / 100;
+      booking.commission = parseFloat(commissionAmount.toFixed(2));
+    } else {
+      booking.commission = 0;
+    }
 
     await booking.save();
 
@@ -301,6 +315,62 @@ export const rateBooking = async (req, res) => {
 
     // Populate for frontend update
     await booking.populate("serviceProvider", "username email");
+    await booking.populate("service", "title");
+
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- USER UPDATES BOOKING DETAILS ----------------
+export const updateBookingDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledDate, notes } = req.body;
+
+    const booking = await Booking.findOne({ _id: id, user: req.user._id });
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found" });
+    }
+
+    // Only allow editing if pending
+    if (booking.status !== "pending") {
+      return res.status(400).json({ success: false, error: "Cannot edit booking details once processed" });
+    }
+
+    if (scheduledDate) booking.scheduledDate = scheduledDate;
+    if (notes !== undefined) booking.notes = notes;
+
+    await booking.save();
+
+    // Populate for frontend
+    await booking.populate("serviceProvider", "username email");
+    await booking.populate("service", "title");
+
+    res.json({ success: true, booking });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+// ---------------- PROVIDER UPDATES BOOKING DETAILS ----------------
+export const updateBookingDetailsProvider = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledDate } = req.body;
+
+    const booking = await Booking.findOne({ _id: id, serviceProvider: req.user._id });
+    if (!booking) {
+      return res.status(404).json({ success: false, error: "Booking not found" });
+    }
+
+    if (scheduledDate) booking.scheduledDate = scheduledDate;
+
+    await booking.save();
+
+    // Populate for frontend
+    await booking.populate("user", "username email contactNumber");
     await booking.populate("service", "title");
 
     res.json({ success: true, booking });

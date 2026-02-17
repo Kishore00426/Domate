@@ -3,8 +3,10 @@ import { Star, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAllServices } from '../api/services';
 import { getImageUrl } from '../utils/imageUrl';
+import { useTranslation } from 'react-i18next';
 
 const CategoryServiceRow = ({ category }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -52,17 +54,17 @@ const CategoryServiceRow = ({ category }) => {
                 <div className="mb-8 pl-2 flex justify-between items-end">
                     <div>
                         <h2 className="text-2xl font-bold text-soft-black flex items-center gap-2">
-                            {category.name} Services
+                            {t('services.categoryServices', { category: category.name })}
                         </h2>
                         <p className="text-gray-500 mt-2 text-sm">
-                            Explore top-rated {category.name.toLowerCase()} services
+                            {t('services.exploreTopRated', { category: category.name.toLowerCase() })}
                         </p>
                     </div>
                     <button
                         onClick={() => navigate(`/services?category=${category.name}`)}
                         className="text-sm font-semibold text-black hover:underline hidden sm:block"
                     >
-                        View All
+                        {t('services.viewAll')}
                     </button>
                 </div>
 
@@ -83,7 +85,7 @@ const CategoryServiceRow = ({ category }) => {
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                        No Image
+                                        {t('services.noImage')}
                                     </div>
                                 )}
 
@@ -91,15 +93,15 @@ const CategoryServiceRow = ({ category }) => {
 
                             {/* Content */}
                             <div className="pt-4 px-2 pb-4">
-                                <h3 className="font-bold text-soft-black mb-1 text-lg truncate" title={service.title}>
+                                <h3 className="font-bold text-soft-black mb-1 text-lg line-clamp-2 min-h-14" title={service.title}>
                                     {service.title}
                                 </h3>
                                 <p className="text-sm text-gray-500 mb-3 line-clamp-2 h-10">
                                     {service.description || service.detailedDescription}
                                 </p>
                                 <div className="text-sm font-medium text-gray-900 flex items-center justify-between">
-                                    <div>Starts at <span className="font-bold">₹{service.price}</span></div>
-                                    <span className="text-xs text-blue-600 font-semibold group-hover:underline">Book Now &rarr;</span>
+                                    <div>{t('services.startsAt')} <span className="font-bold">₹{service.price}</span></div>
+                                    <span className="text-xs text-blue-600 font-semibold group-hover:underline">{t('services.bookNow')} &rarr;</span>
                                 </div>
                             </div>
                         </div>
@@ -113,7 +115,7 @@ const CategoryServiceRow = ({ category }) => {
                         <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
                             <Sparkles className="w-6 h-6 text-gray-400" />
                         </div>
-                        <span className="text-sm font-semibold text-gray-500">View All {category.name}</span>
+                        <span className="text-sm font-semibold text-gray-500">{t('services.viewAll')} {category.name}</span>
                     </div>
                 </div>
             </div>

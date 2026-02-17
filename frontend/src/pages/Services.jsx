@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import HomeLayout from '../layouts/HomeLayout';
 import ServiceCategories from '../components/ServiceCategories';
 import ServiceList from '../components/ServiceList';
@@ -9,6 +10,7 @@ import CategoryServiceRow from '../components/CategoryServiceRow';
 import { getCategoryDetails, getAllCategories } from '../api/services';
 
 const Services = () => {
+    const { t } = useTranslation();
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
 
@@ -124,7 +126,10 @@ const Services = () => {
 
                         <div className="max-w-6xl mx-auto px-6 mb-8">
                             <h2 className="text-xl font-bold text-soft-black">
-                                {selectedSubcategory ? `Services for ${selectedSubcategory}` : `All ${selectedCategory} Services`}
+                                {selectedSubcategory
+                                    ? t('services.servicesFor', { category: selectedSubcategory })
+                                    : t('services.servicesFor', { category: selectedCategory })
+                                }
                             </h2>
                             <ServiceList selectedCategory={selectedCategory} selectedSubcategory={selectedSubcategory} />
                         </div>

@@ -57,6 +57,12 @@ export const linkSubcategory = async (categoryId, subcategoryId) => {
     return response.data;
 };
 
+// --- Bookings ---
+export const getAllBookings = async () => {
+    const response = await adminApi.get('/admin/bookings');
+    return response.data;
+};
+
 // --- Dashboard ---
 export const getDashboardStats = async () => {
     const response = await adminApi.get('/admin/stats');
@@ -108,5 +114,16 @@ export const updateService = async (id, formData) => {
 
 export const deleteService = async (id) => {
     const response = await adminApi.delete(`/admin/services/${id}`);
+    return response.data;
+};
+
+// --- Reports ---
+export const getUserReport = async (userId) => {
+    const response = await adminApi.get(`/admin/reports/user/${userId}`);
+    return response.data;
+};
+
+export const getReportAnalytics = async (params) => {
+    const response = await adminApi.get('/admin/reports/analytics', { params });
     return response.data;
 };

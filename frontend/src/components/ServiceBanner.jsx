@@ -1,11 +1,13 @@
 import React from 'react';
 import { getImageUrl } from '../utils/imageUrl';
+import { useTranslation } from 'react-i18next';
 
 const ServiceBanner = ({ name, description, imageUrl }) => {
+    const { t } = useTranslation();
     return (
-        <div className="bg-soft-black rounded-3xl overflow-hidden shadow-lg p-8 md:p-12 mb-10 flex flex-col md:flex-row items-center gap-8 relative max-w-6xl mx-auto md:mt-12">
+        <div className="bg-soft-black rounded-3xl overflow-hidden shadow-lg p-8 md:p-12 mb-10 flex flex-col md:flex-row items-center gap-8 relative max-w-6xl mx-auto md:mt-12 min-h-[300px] md:min-h-[350px]">
             {/* Background Pattern/Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-soft-black via-soft-black/90 to-transparent z-10"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-soft-black via-soft-black/90 to-transparent z-10"></div>
 
             {/* Content */}
             <div className="relative z-20 flex-1 text-center md:text-left space-y-4">
@@ -19,7 +21,7 @@ const ServiceBanner = ({ name, description, imageUrl }) => {
                 )}
                 <div className="pt-4">
                     <span className="inline-block bg-white text-soft-black px-6 py-2 rounded-full font-bold text-sm uppercase tracking-wider">
-                        Best in Class
+                        {t('services.bestInClass')}
                     </span>
                 </div>
             </div>

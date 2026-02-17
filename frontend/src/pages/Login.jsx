@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { login } from '../api/auth';
 
 const Login = () => {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const role = searchParams.get('role') || 'user';
@@ -18,15 +20,15 @@ const Login = () => {
     const validate = () => {
         let tempErrors = {};
         if (!formData.email) {
-            tempErrors.email = 'Email is required';
+            tempErrors.email = t('login.errors.emailRequired');
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            tempErrors.email = 'Email is invalid';
+            tempErrors.email = t('login.errors.emailInvalid');
         }
 
         if (!formData.password) {
-            tempErrors.password = 'Password is required';
+            tempErrors.password = t('login.errors.passwordRequired');
         } else if (formData.password.length < 6) {
-            tempErrors.password = 'Password must be at least 6 characters';
+            tempErrors.password = t('login.errors.passwordLength');
         }
 
         setErrors(tempErrors);
@@ -38,9 +40,8 @@ const Login = () => {
         if (validate()) {
             try {
                 const data = await login({ email: formData.email, password: formData.password });
-                console.log('Logged in successfully', data);
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
+                sessionStorage.setItem('token', data.token);
+                sessionStorage.setItem('user', JSON.stringify(data.user));
 
                 if (data.user.role === 'admin') {
                     navigate('/admin');
@@ -51,10 +52,10 @@ const Login = () => {
                 }
             } catch (err) {
                 console.error("Login failed", err);
-                let errorMessage = 'Login failed. Please try again.';
+                let errorMessage = t('login.errors.loginFailed');
 
                 if (err.code === 'ERR_NETWORK') {
-                    errorMessage = 'Unable to connect to the server. Please check your internet connection or try again later.';
+                    errorMessage = t('login.errors.networkError');
                 } else if (err.response?.data?.error) {
                     errorMessage = err.response.data.error;
                 }
@@ -78,7 +79,16 @@ const Login = () => {
             <div className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-300">
 
 
-                <Link to="/" className="absolute top-4 right-4 p-2 text-gray-400 hover:text-soft-black transition-colors">
+                <div className="absolute top-4 right-14 p-2 z-10">
+                    <button
+                        onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ta' : 'en')}
+                        className="text-sm font-bold text-gray-400 hover:text-soft-black transition-colors uppercase"
+                    >
+                        {i18n.language === 'en' ? 'TA' : 'EN'}
+                    </button>
+                </div>
+
+                <Link to="/" className="absolute top-4 right-4 p-2 text-gray-400 hover:text-soft-black transition-colors z-10">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -86,34 +96,34 @@ const Login = () => {
 
                 <div className="p-8 md:p-10">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold text-soft-black mb-2">Welcome Back</h2>
-                        <p className="text-gray-500">Login to your DoMate account.</p>
+                        <h2 className="text-3xl font-bold text-soft-black mb-2">{t('login.welcome')}</h2>
+                        <p className="text-gray-500">{t('login.subtitle')}</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         {errors.form && <div className="p-3 bg-red-100 text-red-700 rounded-lg text-sm">{errors.form}</div>}
                         <div>
-                            <label className="block text-sm font-semibold text-soft-black mb-2">Email Address</label>
+                            <label className="block text-sm font-semibold text-soft-black mb-2">{t('login.emailLabel')}</label>
                             <input
                                 type="email"
                                 name="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                placeholder="name@example.com"
+                                placeholder={t('login.emailPlaceholder')}
                                 className={`w-full px-4 py-3 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-soft-black ${errors.email ? 'border-red-500' : ''}`}
                             />
                             {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-soft-black mb-2">Password</label>
+                            <label className="block text-sm font-semibold text-soft-black mb-2">{t('login.passwordLabel')}</label>
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     name="password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    placeholder="••••••••"
+                                    placeholder={t('login.passwordPlaceholder')}
                                     className={`w-full px-4 py-3 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-soft-black ${errors.password ? 'border-red-500' : ''}`}
                                 />
                                 <button
@@ -137,13 +147,13 @@ const Login = () => {
                         </div>
 
                         <button type="submit" className="w-full bg-soft-black text-white py-4 rounded-xl font-bold text-lg hover:bg-black transition-transform active:scale-95 duration-200 shadow-lg mt-4 cursor-pointer">
-                            Login
+                            {t('login.loginButton')}
                         </button>
                     </form>
 
                     <div className="mt-8 text-center text-sm text-gray-500">
-                        Don't have an account? {' '}
-                        <Link to={isProvider ? "/register?role=service_provider" : "/register"} className="font-bold text-soft-black hover:underline">Sign up</Link>
+                        {t('login.noAccount')} {' '}
+                        <Link to={isProvider ? "/register?role=service_provider" : "/register"} className="font-bold text-soft-black hover:underline">{t('login.signUp')}</Link>
                     </div>
                 </div>
             </div>

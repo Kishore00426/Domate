@@ -13,9 +13,11 @@ export const getProviderBookings = async () => {
     }
 };
 
-export const updateBookingStatus = async (id, status) => {
+export const updateBookingStatus = async (id, status, message) => {
     try {
-        const response = await api.put(`/bookings/${id}/status`, { status });
+        const payload = { status };
+        if (message) payload.message = message;
+        const response = await api.put(`/bookings/${id}/status`, payload);
         return response.data;
     } catch (error) {
         console.error("Error updating booking status:", error);
@@ -100,5 +102,31 @@ export const confirmBooking = async (bookingId) => {
     } catch (error) {
         console.error("Error confirming booking:", error);
         return { success: false, error: error.response?.data?.error || "Failed to confirm booking" };
+    }
+};
+
+export const updateBookingDetails = async (id, data) => {
+    try {
+        const response = await api.put(`/bookings/${id}`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating booking details:", error);
+        return {
+            success: false,
+            error: error.response?.data?.error || "Failed to update booking"
+        };
+    }
+};
+
+export const updateBookingDetailsProvider = async (id, data) => {
+    try {
+        const response = await api.put(`/bookings/${id}/provider-update`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating provider booking details:", error);
+        return {
+            success: false,
+            error: error.response?.data?.error || "Failed to update booking"
+        };
     }
 };

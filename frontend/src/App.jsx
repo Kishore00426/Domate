@@ -18,11 +18,19 @@ import ServiceManagement from './pages/Admin/ServiceManagement';
 import UserManagement from './pages/Admin/UserManagement';
 import AdminSettings from './pages/Admin/AdminSettings';
 import PrivilegeManagement from './pages/Admin/PrivilegeManagement';
+import BookingManagement from './pages/Admin/BookingManagement';
+import AdminReports from './pages/Admin/AdminReports';
 import MyBookings from './pages/MyBookings';
 import Settings from './pages/Settings';
 import SavedAddresses from './pages/SavedAddresses';
 import MyPlans from './pages/MyPlans';
 import Notifications from './pages/Notifications';
+import UserLayout from './layouts/UserLayout';
+import ProviderLayout from './layouts/ProviderLayout';
+import ProviderProfile from './pages/Provider/ProviderProfile';
+import ProviderServices from './pages/Provider/ProviderServices';
+import ProviderBookings from './pages/Provider/ProviderBookings';
+import ProviderDocuments from './pages/Provider/ProviderDocuments';
 
 
 function App() {
@@ -36,18 +44,27 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           <Route path="/services" element={<Services />} />
-          <Route path="/account" element={<Account />} />
           <Route path="/services/:id" element={<ServiceDetail />} />
 
-          {/* User Routes */}
-          <Route path="/user/bookings" element={<MyBookings />} />
-          <Route path="/user/addresses" element={<SavedAddresses />} />
-          <Route path="/user/plans" element={<MyPlans />} />
-          <Route path="/user/settings" element={<Settings />} />
+          {/* User Dashboard Routes - Wrapped in UserLayout */}
+          <Route element={<UserLayout />}>
+            <Route path="/account" element={<Account />} />
+            <Route path="/user/bookings" element={<MyBookings />} />
+            <Route path="/user/addresses" element={<SavedAddresses />} />
+            <Route path="/user/plans" element={<MyPlans />} />
+            <Route path="/user/settings" element={<Settings />} />
+          </Route>
+
           <Route path="/notifications" element={<Notifications />} />
 
           {/* Provider Dashboard */}
-          <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+          <Route element={<ProviderLayout />}>
+            <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+            <Route path="/provider/profile" element={<ProviderProfile />} />
+            <Route path="/provider/services" element={<ProviderServices />} />
+            <Route path="/provider/bookings" element={<ProviderBookings />} />
+            <Route path="/provider/documents" element={<ProviderDocuments />} />
+          </Route>
 
 
           {/* Admin Auth Routes */}
@@ -62,6 +79,8 @@ function App() {
             <Route path="services" element={<ServiceManagement />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="privileges" element={<PrivilegeManagement />} />
+            <Route path="bookings" element={<BookingManagement />} />
+            <Route path="reports" element={<AdminReports />} />
             <Route path="settings" element={<AdminSettings />} />
             {/* Add other admin routes here */}
           </Route>

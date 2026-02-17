@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { register } from '../api/auth';
 
 const Register = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const role = searchParams.get('role') || 'user';
@@ -66,24 +68,24 @@ const Register = () => {
 
     const validateStep1 = () => {
         let tempErrors = {};
-        if (!formData.name) tempErrors.name = 'Full name is required';
-        if (!formData.mobile) tempErrors.mobile = 'Mobile number is required';
-        else if (!/^\d{10}$/.test(formData.mobile)) tempErrors.mobile = 'Invalid mobile number (10 digits)';
+        if (!formData.name) tempErrors.name = t('register.errors.nameRequired');
+        if (!formData.mobile) tempErrors.mobile = t('register.errors.mobileRequired');
+        else if (!/^\d{10}$/.test(formData.mobile)) tempErrors.mobile = t('register.errors.mobileInvalid');
 
         if (!formData.email) {
-            tempErrors.email = 'Email is required';
+            tempErrors.email = t('register.errors.emailRequired');
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            tempErrors.email = 'Email is invalid';
+            tempErrors.email = t('register.errors.emailInvalid');
         }
 
         if (!formData.password) {
-            tempErrors.password = 'Password is required';
+            tempErrors.password = t('register.errors.passwordRequired');
         } else if (formData.password.length < 6) {
-            tempErrors.password = 'Password must be at least 6 characters';
+            tempErrors.password = t('register.errors.passwordLength');
         }
 
         if (formData.confirmPassword !== formData.password) {
-            tempErrors.confirmPassword = 'Passwords do not match';
+            tempErrors.confirmPassword = t('register.errors.passwordMatch');
         }
 
         setErrors(tempErrors);
@@ -92,26 +94,26 @@ const Register = () => {
 
     const validateStep2 = () => {
         let tempErrors = {};
-        if (!formData.serviceCategory) tempErrors.serviceCategory = 'Service Category is required';
-        if (!formData.experience) tempErrors.experience = 'Experience is required';
+        if (!formData.serviceCategory) tempErrors.serviceCategory = t('register.serviceCategory') + ' is required'; // TODO: proper key
+        if (!formData.experience) tempErrors.experience = t('register.experience') + ' is required';
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     };
 
     const validateStep3 = () => {
         let tempErrors = {};
-        if (!formData.workLocation) tempErrors.workLocation = 'Work Location (City) is required';
-        if (!formData.pincode) tempErrors.pincode = 'Pincode is required';
+        if (!formData.workLocation) tempErrors.workLocation = t('register.workCity') + ' is required';
+        if (!formData.pincode) tempErrors.pincode = t('register.pincode') + ' is required';
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     };
 
     const validateStep4 = () => {
         let tempErrors = {};
-        if (!formData.idProof) tempErrors.idProof = 'ID Proof is required';
-        if (!formData.addressProof) tempErrors.addressProof = 'Address Proof is required';
-        if (!formData.profilePhoto) tempErrors.profilePhoto = 'Profile Photo is required';
-        if (!formData.agreedToTerms) tempErrors.agreedToTerms = 'You must agree to the terms';
+        if (!formData.idProof) tempErrors.idProof = t('register.idProof') + ' is required';
+        if (!formData.addressProof) tempErrors.addressProof = t('register.addressProof') + ' is required';
+        if (!formData.profilePhoto) tempErrors.profilePhoto = t('register.profilePhoto') + ' is required';
+        if (!formData.agreedToTerms) tempErrors.agreedToTerms = t('register.errors.agreeTerms');
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
     };
@@ -194,10 +196,10 @@ const Register = () => {
                         <div className={`p-6 md:p-8 w-full ${showAddress && !isProvider ? 'md:w-1/2' : 'w-full'} transition-all duration-500`}>
                             <div className="text-center mb-6">
                                 <h2 className="text-2xl font-bold text-soft-black mb-2">
-                                    {isProvider ? 'Professional Registration' : 'Join DoMate'}
+                                    {isProvider ? t('register.providerTitle') : t('register.title')}
                                 </h2>
                                 <p className="text-gray-500 text-sm">
-                                    {isProvider ? 'Create your professional account.' : 'Create an account to book professionals.'}
+                                    {isProvider ? t('register.providerSubtitle') : t('register.subtitle')}
                                 </p>
                             </div>
 
@@ -205,20 +207,20 @@ const Register = () => {
                             {(step === 1) && (
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Full Name</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.fullName')}</label>
                                         <input
                                             type="text"
                                             name="name"
                                             value={formData.name}
                                             onChange={handleChange}
-                                            placeholder="Name"
+                                            placeholder={t('register.fullName')}
                                             className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-sm text-black ${errors.name ? 'border-red-500' : ''}`}
                                         />
                                         {errors.name && <p className="text-red-500 text-xs mt-1 ml-1">{errors.name}</p>}
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Mobile Number</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.mobile')}</label>
                                         <input
                                             type="tel"
                                             name="mobile"
@@ -231,20 +233,20 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Email Address</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.email')}</label>
                                         <input
                                             type="email"
                                             name="email"
                                             value={formData.email}
                                             onChange={handleChange}
-                                            placeholder="name@example.com"
+                                            placeholder={t('register.email')}
                                             className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white placeholder-gray-400 text-sm text-black ${errors.email ? 'border-red-500' : ''}`}
                                         />
                                         {errors.email && <p className="text-red-500 text-xs mt-1 ml-1">{errors.email}</p>}
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Password</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.password')}</label>
                                         <div className="relative">
                                             <input
                                                 type={showPassword ? "text" : "password"}
@@ -270,7 +272,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Confirm Password</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.confirmPassword')}</label>
                                         <div className="relative">
                                             <input
                                                 type={showConfirmPassword ? "text" : "password"}
@@ -302,7 +304,7 @@ const Register = () => {
                                                 onClick={() => setShowAddress(true)}
                                                 className="text-xs font-semibold text-soft-black hover:underline flex items-center gap-1 transition-all"
                                             >
-                                                Add Address (optional)
+                                                {t('register.addAddress')}
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                             </button>
                                         </div>
@@ -314,7 +316,7 @@ const Register = () => {
                             {isProvider && step === 2 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Service Category</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.serviceCategory')}</label>
                                         <div className="relative">
                                             <select
                                                 name="serviceCategory"
@@ -322,7 +324,7 @@ const Register = () => {
                                                 onChange={handleChange}
                                                 className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white text-sm text-black appearance-none ${errors.serviceCategory ? 'border-red-500' : ''}`}
                                             >
-                                                <option value="">Select Category</option>
+                                                <option value="">{t('dashboard.selectServicesInstruction')}</option>
                                                 {serviceCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                                             </select>
                                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -333,7 +335,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Experience (Years)</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.experience')}</label>
                                         <input
                                             type="number"
                                             name="experience"
@@ -352,7 +354,7 @@ const Register = () => {
                             {isProvider && step === 3 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Work City</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.workCity')}</label>
                                         <div className="relative">
                                             <select
                                                 name="workLocation"
@@ -360,7 +362,7 @@ const Register = () => {
                                                 onChange={handleChange}
                                                 className={`w-full px-4 py-2.5 rounded-xl border border-black focus:border-soft-black focus:ring-0 outline-none transition-all bg-white text-sm text-black appearance-none ${errors.workLocation ? 'border-red-500' : ''}`}
                                             >
-                                                <option value="">Select City</option>
+                                                <option value="">{t('dashboard.city')}</option>
                                                 {workLocations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
                                             </select>
                                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
@@ -371,7 +373,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Pincode</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.pincode')}</label>
                                         <input
                                             type="text"
                                             name="workPincode"
@@ -384,7 +386,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Radius (km) <span className="text-gray-400 font-normal">(Optional)</span></label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.radius')} <span className="text-gray-400 font-normal">{t('register.optional')}</span></label>
                                         <input
                                             type="number"
                                             name="radius"
@@ -401,7 +403,7 @@ const Register = () => {
                             {isProvider && step === 4 && (
                                 <div className="space-y-4 animate-in slide-in-from-right-4 duration-300">
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">ID Proof</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.idProof')}</label>
                                         <input
                                             type="file"
                                             name="idProof"
@@ -412,7 +414,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Address Proof</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.addressProof')}</label>
                                         <input
                                             type="file"
                                             name="addressProof"
@@ -423,7 +425,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Profile Photo</label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.profilePhoto')}</label>
                                         <input
                                             type="file"
                                             name="profilePhoto"
@@ -434,7 +436,7 @@ const Register = () => {
                                     </div>
 
                                     <div>
-                                        <label className="block text-xs font-semibold text-soft-black mb-1">Certificates <span className="text-gray-400 font-normal">(Optional)</span></label>
+                                        <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.certificates')} <span className="text-gray-400 font-normal">{t('register.optional')}</span></label>
                                         <input
                                             type="file"
                                             name="certificates"
@@ -452,7 +454,7 @@ const Register = () => {
                                                 onChange={handleChange}
                                                 className="w-4 h-4 rounded text-soft-black focus:ring-soft-black"
                                             />
-                                            <span className="text-xs text-gray-600">I agree to the Terms and Conditions</span>
+                                            <span className="text-xs text-gray-600">{t('register.agreeTerms')}</span>
                                         </label>
                                         {errors.agreedToTerms && <p className="text-red-500 text-xs mt-1 ml-1">{errors.agreedToTerms}</p>}
                                     </div>
@@ -465,13 +467,13 @@ const Register = () => {
                                     type="submit"
                                     className="w-full bg-soft-black text-white py-3 rounded-xl font-bold text-base hover:bg-black transition-transform active:scale-95 duration-200 shadow-lg cursor-pointer"
                                 >
-                                    {isProvider ? 'Register as Professional' : 'Register'}
+                                    {isProvider ? t('register.registerProfessional') : t('register.register')}
                                 </button>
                             </div>
 
                             <div className="mt-6 text-center text-xs text-gray-500">
-                                Already have an account? {' '}
-                                <Link to={isProvider ? "/login?role=service_provider" : "/login"} className="font-bold text-lg text-soft-black hover:underline"> &nbsp;Log in</Link>
+                                {t('register.alreadyHaveAccount')} {' '}
+                                <Link to={isProvider ? "/login?role=service_provider" : "/login"} className="font-bold text-lg text-soft-black hover:underline"> &nbsp;{t('register.login')}</Link>
                             </div>
                         </div>
 
@@ -479,16 +481,16 @@ const Register = () => {
 
                         {showAddress && !isProvider && (
                             <>
-                                <div className="hidden md:block w-[1px] bg-black my-10 opacity-20 h-4/5 self-center"></div>
-                                <div className="md:hidden h-[1px] bg-black opacity-20 w-4/5 mx-auto my-4"></div>
+                                <div className="hidden md:block w-px bg-black my-10 opacity-20 h-4/5 self-center"></div>
+                                <div className="md:hidden h-px bg-black opacity-20 w-4/5 mx-auto my-4"></div>
 
                                 <div className="transition-all duration-500 ease-in-out overflow-hidden max-h-[1000px] opacity-100 p-6 md:w-1/2 md:max-h-full md:p-8">
                                     <div className="h-full flex flex-col justify-center space-y-3">
-                                        <h3 className="text-lg font-bold text-soft-black mb-2">Address Details</h3>
+                                        <h3 className="text-lg font-bold text-soft-black mb-2">{t('dashboard.address')}</h3>
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="col-span-1">
-                                                <label className="block text-xs font-semibold text-soft-black mb-1">Door No / Building</label>
+                                                <label className="block text-xs font-semibold text-soft-black mb-1">{t('dashboard.houseFlatStreet')}</label>
                                                 <input
                                                     type="text"
                                                     name="doorNo"
@@ -498,7 +500,7 @@ const Register = () => {
                                                 />
                                             </div>
                                             <div className="col-span-1">
-                                                <label className="block text-xs font-semibold text-soft-black mb-1">Pincode</label>
+                                                <label className="block text-xs font-semibold text-soft-black mb-1">{t('dashboard.pincode')}</label>
                                                 <input
                                                     type="text"
                                                     name="pincode"
@@ -510,7 +512,7 @@ const Register = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-semibold text-soft-black mb-1">Street Name</label>
+                                            <label className="block text-xs font-semibold text-soft-black mb-1">{t('dashboard.streetAddress')}</label>
                                             <input
                                                 type="text"
                                                 name="street"
@@ -522,7 +524,7 @@ const Register = () => {
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-xs font-semibold text-soft-black mb-1">Town / City / Village</label>
+                                                <label className="block text-xs font-semibold text-soft-black mb-1">{t('dashboard.city')}</label>
                                                 <input
                                                     type="text"
                                                     name="town"
@@ -532,7 +534,7 @@ const Register = () => {
                                                 />
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-semibold text-soft-black mb-1">District</label>
+                                                <label className="block text-xs font-semibold text-soft-black mb-1">{t('dashboard.city')}</label>
                                                 <input
                                                     type="text"
                                                     name="district"
@@ -545,14 +547,14 @@ const Register = () => {
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-xs font-semibold text-soft-black mb-1">State</label>
+                                                <label className="block text-xs font-semibold text-soft-black mb-1">{t('dashboard.state')}</label>
                                                 <select
                                                     name="state"
                                                     value={formData.state}
                                                     onChange={handleChange}
                                                     className="w-full px-3 py-2 rounded-lg border border-black focus:border-soft-black outline-none transition-all bg-white text-sm appearance-none text-black"
                                                 >
-                                                    <option value="">Select State</option>
+                                                    <option value="">{t('dashboard.state')}</option>
                                                     <optgroup label="Union Territories">
                                                         {unionTerritories.map(ut => <option key={ut} value={ut}>{ut}</option>)}
                                                     </optgroup>
@@ -562,7 +564,7 @@ const Register = () => {
                                                 </select>
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-semibold text-soft-black mb-1">Country</label>
+                                                <label className="block text-xs font-semibold text-soft-black mb-1">{t('register.country')}</label>
                                                 <input
                                                     type="text"
                                                     name="country"
@@ -578,7 +580,7 @@ const Register = () => {
                                             onClick={() => setShowAddress(false)}
                                             className="text-xs text-red-500 hover:underline mt-2 self-end"
                                         >
-                                            Remove Address
+                                            {t('register.removeAddress')}
                                         </button>
                                     </div>
                                 </div>
@@ -586,8 +588,8 @@ const Register = () => {
                         )}
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 

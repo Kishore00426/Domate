@@ -36,7 +36,10 @@ import {
   deleteUser,
   getPendingProviders,
   verifyProvider,
-  getDashboardStats
+  getDashboardStats,
+  getAllBookings,
+  getUserReport,
+  getReportAnalytics // Add this
 } from "../controllers/adminController.js";
 
 import { authenticate } from "../middleware/Authenticate.js"; // Fixed casing
@@ -97,5 +100,12 @@ router.delete("/users/:id", deleteUser);
 
 // ---------------- DASHBOARD STATS ----------------
 router.get("/stats", getDashboardStats);
+
+// ---------------- BOOKING MANAGEMENT ----------------
+router.get("/bookings", getAllBookings);
+
+// ---------------- REPORTS ----------------
+router.get("/reports/user/:userId", getUserReport);
+router.get("/reports/analytics", getReportAnalytics);
 
 export default router;

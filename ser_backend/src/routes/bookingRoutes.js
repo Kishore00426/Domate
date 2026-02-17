@@ -10,8 +10,10 @@ import {
   getProviderContact,
   deleteBooking,
   completeBooking,
-  confirmBooking, // ✅ Import new controller
-  rateBooking
+  confirmBooking,
+  rateBooking,
+  updateBookingDetails,
+  updateBookingDetailsProvider
 } from "../controllers/bookingController.js";
 
 const router = express.Router();
@@ -90,6 +92,22 @@ router.put(
   authenticate,
   authorize(["user"]),
   confirmBooking
+);
+
+// User updates booking details (Date/Notes) - Only if Pending
+router.put(
+  "/:id",
+  authenticate,
+  authorize(["user"]),
+  updateBookingDetails
+);
+
+// Provider updates booking details (Date - Reschedule)
+router.put(
+  "/:id/provider-update",
+  authenticate,
+  authorize(["service_provider"]),
+  updateBookingDetailsProvider
 );
 
 export default router;

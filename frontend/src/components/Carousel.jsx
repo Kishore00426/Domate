@@ -1,36 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-
-const slides = [
-    {
-        id: 1,
-        image: 'https://plus.unsplash.com/premium_photo-1667509213002-f15f1c9eaac8?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        title: 'Expert Home Services',
-        subtitle: 'From cleaning to repairs, we have you covered.'
-    },
-    {
-        id: 2,
-        image: 'https://images.unsplash.com/photo-1606570424625-6fcfae3b1259?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        title: 'Festive Season begins',
-        subtitle: 'We are here to make your festive season a healthy & memorable one.'
-    },
-    {
-        id: 3,
-        image: 'https://plus.unsplash.com/premium_photo-1678766819153-b3f7307c5127?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        title: 'Skilled Electricians',
-        subtitle: 'Safe and reliable electrical repairs.'
-    }
-];
+import { useTranslation } from 'react-i18next';
 
 const Carousel = () => {
+    const { t, i18n } = useTranslation();
+    const isCompactLang = ['ta', 'hi'].includes(i18n.language);
     const [current, setCurrent] = useState(0);
+
+    const slides = [
+        {
+            id: 1,
+            image: 'https://plus.unsplash.com/premium_photo-1667509213002-f15f1c9eaac8?q=80&w=1172&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+            title: t('home.carousel.slide1.title'),
+            subtitle: t('home.carousel.slide1.subtitle'),
+            link: '/services'
+        },
+        {
+            id: 2,
+            image: 'https://images.unsplash.com/photo-1606570424625-6fcfae3b1259?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+            title: t('home.carousel.slide2.title'),
+            subtitle: t('home.carousel.slide2.subtitle'),
+            link: '/services'
+        },
+        {
+            id: 3,
+            image: 'https://plus.unsplash.com/premium_photo-1678766819153-b3f7307c5127?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+            title: t('home.carousel.slide3.title'),
+            subtitle: t('home.carousel.slide3.subtitle'),
+            link: '/services?category=Electrician'
+        }
+    ];
 
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrent((prev) => (prev + 1) % slides.length);
         }, 5000);
         return () => clearInterval(timer);
-    }, []);
+    }, [slides.length]);
 
     return (
         <div className="relative h-[600px] w-full overflow-hidden">
@@ -51,28 +57,19 @@ const Carousel = () => {
 
                     {/* Content */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-white px-4">
-                        <h1 className="text-5xl md:text-7xl font-bold mb-4 tracking-tight drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <h1 className={`${isCompactLang ? 'text-3xl md:text-5xl' : 'text-5xl md:text-7xl'} font-bold mb-4 tracking-tight drop-shadow-lg animate-in fade-in slide-in-from-bottom-4 duration-700`}>
                             {slide.title}
                         </h1>
-                        <p className="text-xl md:text-2xl font-light mb-8 max-w-2xl drop-shadow-md animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+                        <p className={`${isCompactLang ? 'text-lg md:text-xl' : 'text-xl md:text-2xl'} font-light mb-8 max-w-2xl drop-shadow-md animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100`}>
                             {slide.subtitle}
                         </p>
 
-                        {slide.title === 'Skilled Electricians' ? (
-                            <Link
-                                to="/services?category=Electrician"
-                                className="bg-white text-soft-black px-8 py-3 rounded-full font-bold hover:bg-beige transition-colors shadow-xl animate-in fade-in zoom-in duration-500 delay-200"
-                            >
-                                Book Now
-                            </Link>
-                        ) : (
-                            <Link
-                                to="/services"
-                                className="bg-white text-soft-black px-8 py-3 rounded-full font-bold hover:bg-beige transition-colors shadow-xl animate-in fade-in zoom-in duration-500 delay-200"
-                            >
-                                Book Now
-                            </Link>
-                        )}
+                        <Link
+                            to={slide.link}
+                            className="bg-white text-soft-black px-8 py-3 rounded-full font-bold hover:bg-beige transition-colors shadow-xl animate-in fade-in zoom-in duration-500 delay-200"
+                        >
+                            {t('home.carousel.bookNow')}
+                        </Link>
                     </div>
                 </div>
             ))}

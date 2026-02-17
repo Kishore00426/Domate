@@ -14,7 +14,10 @@ const serviceSchema = new mongoose.Schema({
   subcategory: { type: mongoose.Schema.Types.ObjectId, ref: "Subcategory" },
 
   // 🔑 New field: multiple providers linked to this service
-  providers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
+  providers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+  // Commission Rate (Percentage) - Admin set
+  commissionRate: { type: Number, default: 0 }
 }, { timestamps: true });
 
 export default mongoose.models.Service ||

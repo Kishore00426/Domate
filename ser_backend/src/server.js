@@ -20,8 +20,19 @@ const app = express();
 
 
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    "http://localhost:5173",
+    "https://domate-frontend.onrender.com"
+  ],
+  credentials: true
+}));
 app.use(express.json());
+
+// Health check route
+app.get("/", (req, res) => {
+  res.send("Backend Service is Running");
+});
 
 // Health check route (optional)
 app.get("/api/ping", (req, res) => {

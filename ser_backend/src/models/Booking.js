@@ -12,6 +12,11 @@ const bookingSchema = new mongoose.Schema(
     },
     scheduledDate: { type: Date },
     notes: { type: String },
+    message: { type: String }, // Reason for rejection or cancellation
+
+    // Admin Commission (Calculated based on Service Price * Commission Rate)
+    // Stored separately from invoice to keep it admin-only internal record
+    commission: { type: Number, default: 0 },
 
     // Invoice Details (Provider fills this)
     invoice: {

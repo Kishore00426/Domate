@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getServiceById } from '../api/services';
 import { getProvidersByService } from '../api/providers';
 import { createBooking } from '../api/bookings';
@@ -9,6 +10,7 @@ import { getImageUrl } from '../utils/imageUrl';
 
 
 const ServiceDetail = () => {
+    const { t } = useTranslation();
     const { id } = useParams();
     const navigate = useNavigate();
     const [service, setService] = useState(null);
@@ -33,7 +35,7 @@ const ServiceDetail = () => {
                 if (serviceResponse.success) {
                     setService(serviceResponse.service);
                 } else {
-                    setError('Service not found or failed to load.');
+                    setError(t('services.noServices')); // Using generic 'No services found' or add 'serviceNotFound' key
                     setLoading(false);
                     return;
                 }
@@ -48,7 +50,7 @@ const ServiceDetail = () => {
                 }
 
             } catch (err) {
-                setError('An error occurred while fetching details.');
+                setError(t('common.error')); // Generic error
             } finally {
                 setLoading(false);
             }
@@ -76,7 +78,7 @@ const ServiceDetail = () => {
 
     const handleConfirmBooking = async () => {
         if (!bookingDate || !bookingTime) {
-            setBookingError("Please select both date and time.");
+            setBookingError(t('serviceDetail.errors.dateTimeRequired'));
             return;
         }
 
@@ -102,7 +104,7 @@ const ServiceDetail = () => {
                 setBookingError(response.error);
             }
         } catch (err) {
-            setBookingError("Failed to book service. Please try again.");
+            setBookingError(t('serviceDetail.errors.bookingFailed'));
             console.error(err);
         } finally {
             setBookingLoading(false);
@@ -130,13 +132,13 @@ const ServiceDetail = () => {
         return (
             <HomeLayout>
                 <div className="max-w-4xl mx-auto px-6 py-20 text-center">
-                    <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-                    <p className="text-gray-600 mb-8">{error || "Service not found."}</p>
+                    <h2 className="text-2xl font-bold text-red-600 mb-4">{t('common.error')}</h2>
+                    <p className="text-gray-600 mb-8">{error || t('services.noServices')}</p>
                     <button
                         onClick={() => navigate('/services')}
                         className="text-soft-black font-medium hover:underline flex items-center justify-center gap-2"
                     >
-                        Back to Services
+                        {t('services.backToServices')}
                     </button>
                 </div>
             </HomeLayout>
@@ -163,7 +165,7 @@ const ServiceDetail = () => {
                                         />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                            No Image Available
+                                            {t('services.noImage')}
                                         </div>
                                     )}
                                     <div className="absolute top-4 left-4">
@@ -182,7 +184,7 @@ const ServiceDetail = () => {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-2xl font-bold text-soft-black">₹{service.price}</div>
-                                            <div className="text-xs text-gray-500">Starting from</div>
+                                            <div className="text-xs text-gray-500">{t('services.startsAt')}</div>
                                         </div>
                                     </div>
                                     <p className="text-gray-600 leading-relaxed bg-gray-50 p-4 rounded-xl">
@@ -192,7 +194,7 @@ const ServiceDetail = () => {
                                     {service.warranty && (
                                         <div className="mt-4 flex items-center gap-2 text-green-700 bg-green-50 px-4 py-2 rounded-lg w-fit text-sm font-medium">
                                             <CheckCircle2 className="w-4 h-4" />
-                                            Warranty: {service.warranty}
+                                            {t('serviceDetail.warranty')}: {service.warranty}
                                         </div>
                                     )}
                                 </div>
@@ -202,7 +204,7 @@ const ServiceDetail = () => {
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                     <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
                                         <CheckCircle2 className="w-5 h-5 text-green-600" />
-                                        What is Covered
+                                        {t('serviceDetail.whatCovered')}
                                     </h3>
                                     <ul className="list-disc list-inside grid grid-cols-1 gap-3 text-sm text-gray-700">
                                         {parseList(service.whatIsCovered).map((item, index) => (
@@ -218,7 +220,7 @@ const ServiceDetail = () => {
                                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                     <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
                                         <XCircle className="w-5 h-5 text-red-600" />
-                                        What is Not Covered
+                                        {t('serviceDetail.whatNotCovered')}
                                     </h3>
                                     <ul className="list-disc list-inside grid grid-cols-1 gap-3 text-sm text-gray-700">
                                         {parseList(service.whatIsNotCovered).map((item, index) => (
@@ -235,12 +237,12 @@ const ServiceDetail = () => {
                                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                         <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
                                             <Wrench className="w-5 h-5 text-amber-600" />
-                                            Required Equipment
+                                            {t('serviceDetail.requiredEquipment')}
                                         </h3>
                                         <ul className="space-y-3">
                                             {parseList(service.requiredEquipment).map((item, index) => (
                                                 <li key={index} className="flex items-center gap-2 text-sm text-gray-700">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"></span>
                                                     {item}
                                                 </li>
                                             ))}
@@ -252,7 +254,7 @@ const ServiceDetail = () => {
                                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                                         <h3 className="text-lg font-bold text-soft-black mb-4 flex items-center gap-2">
                                             <FileText className="w-5 h-5 text-blue-600" />
-                                            Service Process
+                                            {t('serviceDetail.serviceProcess')}
                                         </h3>
                                         <div className="space-y-3">
                                             {parseList(service.serviceProcess).map((item, index) => (
@@ -269,7 +271,7 @@ const ServiceDetail = () => {
 
                         <div className="w-full lg:w-[40%]">
                             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 sticky top-24">
-                                <h2 className="text-xl font-bold text-soft-black mb-6">Book an Expert Today</h2>
+                                <h2 className="text-xl font-bold text-soft-black mb-6">{t('serviceDetail.bookExpert')}</h2>
 
                                 {providers.length > 0 ? (
                                     <div className="space-y-4 max-h-[calc(100vh-250px)] overflow-y-auto pr-2 custom-scrollbar">
@@ -281,15 +283,15 @@ const ServiceDetail = () => {
                                                 onClick={() => handleOpenBooking(provider)}
                                             >
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-full bg-soft-black text-white flex items-center justify-center text-lg font-bold flex-shrink-0 group-hover:bg-black transition-colors">
+                                                    <div className="w-12 h-12 rounded-full bg-soft-black text-white flex items-center justify-center text-lg font-bold shrink-0 group-hover:bg-black transition-colors">
                                                         {provider.user?.username ? provider.user.username.charAt(0).toUpperCase() : <User className="w-6 h-6" />}
                                                     </div>
 
                                                     <div className="flex-1 min-w-0">
-                                                        <h3 className="font-bold text-soft-black truncate">{provider.user?.username || 'Service Provider'}</h3>
+                                                        <h3 className="font-bold text-soft-black truncate">{provider.user?.username || t('serviceDetail.provider')}</h3>
                                                         <div className="flex items-center gap-3 text-sm mt-1">
                                                             <span className="text-gray-500 text-xs px-2 py-0.5 bg-gray-100 rounded-md">
-                                                                {provider.experience ? `${provider.experience} exp` : 'Trained'}
+                                                                {provider.experience ? `${provider.experience} exp` : t('serviceDetail.trained')}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -305,13 +307,13 @@ const ServiceDetail = () => {
                                     </div>
                                 ) : (
                                     <div className="text-center py-10 bg-gray-50 rounded-xl">
-                                        <p className="text-gray-500 text-sm">No experts currently available for this service.</p>
+                                        <p className="text-gray-500 text-sm">{t('serviceDetail.noExperts')}</p>
                                     </div>
                                 )}
 
                                 <div className="mt-6 pt-6 border-t border-gray-100 text-center">
                                     <p className="text-xs text-gray-500">
-                                        All our experts are verified and background checked.
+                                        {t('serviceDetail.verifiedExperts')}
                                     </p>
                                 </div>
                             </div>
@@ -326,7 +328,7 @@ const ServiceDetail = () => {
                         <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl p-6 md:p-8 animate-in zoom-in-95">
 
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-2xl font-bold text-soft-black">Confirm Booking</h3>
+                                <h3 className="text-2xl font-bold text-soft-black">{t('serviceDetail.confirmBooking')}</h3>
                                 <button
                                     onClick={handleCloseBooking}
                                     className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -348,7 +350,7 @@ const ServiceDetail = () => {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('serviceDetail.date')}</label>
                                         <input
                                             type="date"
                                             value={bookingDate}
@@ -358,7 +360,7 @@ const ServiceDetail = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('serviceDetail.time')}</label>
                                         <input
                                             type="time"
                                             value={bookingTime}
@@ -369,11 +371,11 @@ const ServiceDetail = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Additional Notes (Optional)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">{t('serviceDetail.notes')}</label>
                                     <textarea
                                         value={bookingNotes}
                                         onChange={(e) => setBookingNotes(e.target.value)}
-                                        placeholder="Any specific instructions or requirements..."
+                                        placeholder={t('serviceDetail.notesPlaceholder')}
                                         rows={3}
                                         className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-black resize-none"
                                     />
@@ -385,19 +387,19 @@ const ServiceDetail = () => {
                                     </div>
                                 )}
 
-                                <div className="flex gap-3 mt-4">
+                                <div className="flex flex-col sm:flex-row gap-3 mt-4">
                                     <button
                                         onClick={handleCloseBooking}
                                         className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
                                     >
-                                        Cancel
+                                        {t('serviceDetail.cancel')}
                                     </button>
                                     <button
                                         onClick={handleConfirmBooking}
                                         disabled={bookingLoading}
                                         className="flex-1 py-3 bg-black text-white font-bold rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center"
                                     >
-                                        {bookingLoading ? <Loader className="w-5 h-5 animate-spin" /> : "Confirm & Book"}
+                                        {bookingLoading ? <Loader className="w-5 h-5 animate-spin" /> : t('serviceDetail.confirmAndBook')}
                                     </button>
                                 </div>
                             </div>

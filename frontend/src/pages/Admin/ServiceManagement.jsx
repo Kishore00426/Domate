@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, Filter, MoreVertical, FileText, X, Upload, Save, AlertCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, Filter, MoreVertical, FileText, X, Upload, Save, AlertCircle, Check } from 'lucide-react';
 import { getServices, createService, updateService, deleteService, getCategories, getSubcategories } from '../../api/admin';
 import { getImageUrl } from '../../utils/imageUrl';
 
@@ -11,6 +11,10 @@ const ServiceManagement = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+
+    // Inline Edit State
+    const [inlineEdit, setInlineEdit] = useState({ id: null, field: null, value: '' });
+    const [inlineLoading, setInlineLoading] = useState(false);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +30,9 @@ const ServiceManagement = () => {
         requiredEquipment: '',
         serviceProcess: '',
         warranty: '',
+        serviceProcess: '',
+        warranty: '',
+        commissionRate: '', // New field
         image: null
     });
     const [removeImage, setRemoveImage] = useState(false);
@@ -63,7 +70,9 @@ const ServiceManagement = () => {
                 whatIsNotCovered: item.whatIsNotCovered ? item.whatIsNotCovered.join(', ') : '',
                 requiredEquipment: item.requiredEquipment ? item.requiredEquipment.join(', ') : '',
                 serviceProcess: item.serviceProcess ? item.serviceProcess.join(', ') : '',
+                serviceProcess: item.serviceProcess ? item.serviceProcess.join(', ') : '',
                 warranty: item.warranty || '',
+                commissionRate: item.commissionRate || '', // New field
                 image: null
             });
         } else {
@@ -77,7 +86,9 @@ const ServiceManagement = () => {
                 whatIsNotCovered: '',
                 requiredEquipment: '',
                 serviceProcess: '',
+                serviceProcess: '',
                 warranty: '',
+                commissionRate: '', // New field
                 image: null
             });
         }
@@ -91,7 +102,7 @@ const ServiceManagement = () => {
         setFormData({
             title: '', category: '', subcategory: '', price: '',
             detailedDescription: '', whatIsCovered: '', whatIsNotCovered: '',
-            requiredEquipment: '', serviceProcess: '', warranty: '', image: null
+            requiredEquipment: '', serviceProcess: '', warranty: '', commissionRate: '', image: null
         });
     };
 
@@ -122,6 +133,7 @@ const ServiceManagement = () => {
             data.append('whatIsNotCovered', formData.whatIsNotCovered);
             data.append('requiredEquipment', formData.requiredEquipment);
             data.append('serviceProcess', formData.serviceProcess);
+            data.append('commissionRate', formData.commissionRate); // New field
 
             data.append('warranty', formData.warranty);
 
@@ -163,6 +175,128 @@ const ServiceManagement = () => {
             alert('Failed to delete service');
         }
     };
+
+    // Inline Edit Functions
+    const startInlineEdit = (item, field) => {
+        let value = item[field];
+        if (field === 'category') {
+            value = typeof item.category === 'object' ? item.category._id : item.category;
+        } else if (field === 'subcategory') {
+            value = typeof item.subcategory === 'object' ? item.subcategory._id : item.subcategory;
+            // Handle case where subcategory might be undefined/null
+            if (!value) value = '';
+        }
+        setInlineEdit({
+            id: item._id,
+            field: field,
+            value: value
+        });
+    };
+
+    const cancelInlineEdit = () => {
+        setInlineEdit({ id: null, field: null, value: '' });
+    };
+
+    const saveInlineEdit = async () => {
+        if (!inlineEdit.id) return;
+        setInlineLoading(true);
+
+        try {
+            const service = services.find(s => s._id === inlineEdit.id);
+            if (!service) return;
+
+            const data = new FormData();
+
+            // Determine the new values
+            let newTitle = service.title;
+            let newPrice = service.price;
+            let newCategory = typeof service.category === 'object' ? service.category?._id : service.category;
+            let newSubcategory = typeof service.subcategory === 'object' ? service.subcategory?._id : service.subcategory;
+
+            // Update with inline edit value
+            if (inlineEdit.field === 'title') newTitle = inlineEdit.value;
+            if (inlineEdit.field === 'price') newPrice = inlineEdit.value;
+            if (inlineEdit.field === 'commissionRate') data.append('commissionRate', inlineEdit.value); // Handle commissionRate
+
+            if (inlineEdit.field === 'category') {
+                newCategory = inlineEdit.value;
+                // If category changes, we should ideally clear subcategory or let backend handle it.
+                // For now, we'll keep the existing subcategory logic but strictly it might not belong to the new category.
+                // A safer approach for inline edit of category is to reset subcategory if it doesn't match, 
+                // but checking that here is complex. We will send it as is.
+            }
+            if (inlineEdit.field === 'subcategory') newSubcategory = inlineEdit.value;
+
+            // Append fields (Single Source of Truth)
+            data.append('title', newTitle);
+            data.append('price', newPrice);
+            if (newCategory) data.append('category', newCategory);
+            // Only append subcategory if it has a value
+            if (newSubcategory) data.append('subcategory', newSubcategory);
+
+            // Append other required fields that might be cleared if missing (though updateService usually does partial updates, 
+            // the backend code looks like it spreads req.body, so we should be safe to only send what changed ideally, 
+            // BUT the backend also seems to re-parse array fields if provided.
+            // To be safe and avoid side effects of "missing" fields in a PUT request (depending on backend implementation),
+            // let's send the preserved values for the other complex fields.
+
+            data.append('detailedDescription', service.detailedDescription || '');
+            data.append('whatIsCovered', service.whatIsCovered ? service.whatIsCovered.join(', ') : '');
+            data.append('whatIsNotCovered', service.whatIsNotCovered ? service.whatIsNotCovered.join(', ') : '');
+            data.append('requiredEquipment', service.requiredEquipment ? service.requiredEquipment.join(', ') : '');
+            data.append('serviceProcess', service.serviceProcess ? service.serviceProcess.join(', ') : '');
+            data.append('warranty', service.warranty || '');
+
+            const response = await updateService(inlineEdit.id, data);
+
+            if (response.success) {
+                // Update local state optimistically
+                setServices(prev => prev.map(s => {
+                    if (s._id === inlineEdit.id) {
+                        // We need to be careful with Category/Subcategory objects vs IDs in local state
+                        // If we changed category, we might want to refetch or manually construct the object if possible.
+                        // For string fields (title, price), it's easy.
+                        // For Category, we have the ID, we can try to find the object from 'categories' state.
+
+                        let updatedS = { ...s };
+                        if (inlineEdit.field === 'title') updatedS.title = inlineEdit.value;
+                        if (inlineEdit.field === 'price') updatedS.price = inlineEdit.value;
+                        if (inlineEdit.field === 'commissionRate') updatedS.commissionRate = inlineEdit.value;
+
+
+                        if (inlineEdit.field === 'category') {
+                            const newCatObj = categories.find(c => c._id === inlineEdit.value);
+                            updatedS.category = newCatObj || inlineEdit.value;
+                        }
+                        if (inlineEdit.field === 'subcategory') {
+                            // Find subcategory object from all categories? 
+                            // We have 'categories' which contains 'subcategories' array.
+                            let newSubObj = null;
+                            categories.forEach(c => {
+                                if (c.subcategories) {
+                                    const found = c.subcategories.find(sub => sub._id === inlineEdit.value);
+                                    if (found) newSubObj = found;
+                                }
+                            });
+                            updatedS.subcategory = newSubObj || inlineEdit.value;
+                        }
+                        return updatedS;
+                    }
+                    return s;
+                }));
+                setInlineEdit({ id: null, field: null, value: '' });
+                // Optional: fetchData(); // Uncomment if optimistic updates verify to be problematic
+            } else {
+                alert(response.error || 'Failed to update');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Update failed');
+        } finally {
+            setInlineLoading(false);
+        }
+    };
+
 
     const getCategoryName = (catId) => {
         if (!catId) return 'N/A';
@@ -242,13 +376,15 @@ const ServiceManagement = () => {
                                 <tr>
                                     <th className="px-6 py-4">Service Title</th>
                                     <th className="px-6 py-4">Category</th>
+                                    <th className="px-6 py-4">Subcategory</th>
                                     <th className="px-6 py-4">Price</th>
+                                    <th className="px-6 py-4">Commission %</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredServices.map((service) => (
-                                    <tr key={service._id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={service._id} className="hover:bg-gray-50 transition-colors group">
                                         <td className="px-6 py-4 font-medium text-soft-black flex items-center gap-3">
                                             {service.imageUrl ? (
                                                 <img src={getImageUrl(service.imageUrl)} alt={service.title} className="w-8 h-8 rounded-lg object-cover bg-gray-100" />
@@ -257,10 +393,149 @@ const ServiceManagement = () => {
                                                     <FileText className="w-4 h-4" />
                                                 </div>
                                             )}
-                                            {service.title}
+                                            {inlineEdit.id === service._id && inlineEdit.field === 'title' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="text"
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        className="w-32 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span
+                                                    onClick={() => startInlineEdit(service, 'title')}
+                                                    className="cursor-pointer hover:underline decoration-dashed underline-offset-4"
+                                                    title="Click to edit title"
+                                                >
+                                                    {service.title}
+                                                </span>
+                                            )}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-600">{getCategoryName(service.category)}</td>
-                                        <td className="px-6 py-4 font-semibold text-soft-black">₹{service.price}</td>
+                                        <td className="px-6 py-4 text-gray-600">
+                                            {inlineEdit.id === service._id && inlineEdit.field === 'category' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <select
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        className="w-32 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none bg-white"
+                                                        autoFocus
+                                                    >
+                                                        {categories.map(cat => (
+                                                            <option key={cat._id} value={cat._id}>{cat.name}</option>
+                                                        ))}
+                                                    </select>
+                                                    <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span
+                                                    onClick={() => startInlineEdit(service, 'category')}
+                                                    className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-colors"
+                                                    title="Click to edit category"
+                                                >
+                                                    {getCategoryName(service.category)}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 text-gray-600">
+                                            {inlineEdit.id === service._id && inlineEdit.field === 'subcategory' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <select
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        className="w-32 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none bg-white"
+                                                        autoFocus
+                                                    >
+                                                        <option value="">Select Subcategory</option>
+                                                        {categories.find(c => c._id === (typeof service.category === 'object' ? service.category._id : service.category))?.subcategories?.map(sub => (
+                                                            <option key={sub._id} value={sub._id}>{sub.name}</option>
+                                                        ))}
+                                                    </select>
+                                                    <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <span
+                                                    onClick={() => startInlineEdit(service, 'subcategory')}
+                                                    className="cursor-pointer hover:bg-gray-100 px-2 py-1 rounded transition-colors min-w-[20px] inline-block h-6"
+                                                    title="Click to edit subcategory"
+                                                >
+                                                    {service.subcategory ? (typeof service.subcategory === 'object' ? service.subcategory.name : 'Unknown') : '—'}
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 font-semibold text-soft-black">
+                                            {inlineEdit.id === service._id && inlineEdit.field === 'price' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        className="w-24 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    onClick={() => startInlineEdit(service, 'price')}
+                                                    className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1 -ml-1 rounded px-2 w-fit transition-colors"
+                                                    title="Click to edit price"
+                                                >
+                                                    ₹{service.price}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="px-6 py-4 font-semibold text-soft-black">
+                                            {inlineEdit.id === service._id && inlineEdit.field === 'commissionRate' ? (
+                                                <div className="flex items-center gap-1">
+                                                    <input
+                                                        type="number"
+                                                        value={inlineEdit.value}
+                                                        onChange={(e) => setInlineEdit({ ...inlineEdit, value: e.target.value })}
+                                                        className="w-20 px-2 py-1 border border-gray-300 rounded-md text-sm focus:border-soft-black outline-none"
+                                                        autoFocus
+                                                        min="0"
+                                                        max="100"
+                                                    />
+                                                    <button onClick={saveInlineEdit} disabled={inlineLoading} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                        <Check className="w-4 h-4" />
+                                                    </button>
+                                                    <button onClick={cancelInlineEdit} className="p-1 text-red-500 hover:bg-red-50 rounded">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div
+                                                    onClick={() => startInlineEdit(service, 'commissionRate')}
+                                                    className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1 -ml-1 rounded px-2 w-fit transition-colors"
+                                                    title="Click to edit commission rate"
+                                                >
+                                                    {service.commissionRate || 0}%
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button onClick={() => handleOpenModal(service)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"><Edit2 className="w-4 h-4" /></button>
@@ -279,7 +554,7 @@ const ServiceManagement = () => {
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
                     <div className="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 flex-shrink-0">
+                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 shrink-0">
                             <h2 className="text-xl font-bold text-soft-black">
                                 {editingItem ? 'Edit' : 'Create'} Service
                             </h2>
@@ -345,7 +620,7 @@ const ServiceManagement = () => {
                                             {!formData.category && <p className="text-xs text-gray-400 mt-1">Select a category first.</p>}
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) <span className="text-red-500">*</span></label>
                                                 <input
@@ -368,6 +643,19 @@ const ServiceManagement = () => {
                                                     onChange={handleInputChange}
                                                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all text-soft-black"
                                                     placeholder="e.g. 30 Days"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-1">Commission (%)</label>
+                                                <input
+                                                    type="number"
+                                                    name="commissionRate"
+                                                    value={formData.commissionRate}
+                                                    onChange={handleInputChange}
+                                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-soft-black outline-none transition-all text-soft-black"
+                                                    placeholder="e.g. 10"
+                                                    min="0"
+                                                    max="100"
                                                 />
                                             </div>
                                         </div>
