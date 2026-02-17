@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const adminApi = axios.create({
-    baseURL: '/api',
+    baseURL: `${import.meta.env.VITE_API_TARGET}/api`, // Use environment variable!
     headers: {
         'Content-Type': 'application/json',
     },
