@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   if (!target) {
     console.warn('WARNING: VITE_API_TARGET is not set in .env. API calls will fail.');
   }
-
+  //trigger new build
   return {
     plugins: [react(), tailwindcss()],
     server: {
