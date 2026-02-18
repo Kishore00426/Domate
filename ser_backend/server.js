@@ -5,12 +5,12 @@ dotenv.config();
 import path from "path";
 import cors from "cors";
 
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
-import serviceRoutes from "./routes/serviceRoutes.js";
-import serviceProviderRoutes from "./routes/serviceProviderRoutes.js";
-import bookingRoutes from "./routes/bookingRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import adminRoutes from "./src/routes/adminRoutes.js";
+import serviceRoutes from "./src/routes/serviceRoutes.js";
+import serviceProviderRoutes from "./src/routes/serviceProviderRoutes.js";
+import bookingRoutes from "./src/routes/bookingRoutes.js";
 
 
 
