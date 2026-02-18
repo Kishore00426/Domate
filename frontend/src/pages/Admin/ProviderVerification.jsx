@@ -216,7 +216,7 @@ const ProviderVerification = () => {
                                                 {selectedProvider.certificates.map((doc, index) => (
                                                     <a
                                                         key={`cert-${index}`}
-                                                        href={`http://localhost:4000${doc}`}
+                                                        href={`${import.meta.env.VITE_API_TARGET}${doc}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer"
@@ -236,7 +236,7 @@ const ProviderVerification = () => {
                                                 {selectedProvider.idProofs.map((doc, index) => (
                                                     <a
                                                         key={`id-${index}`}
-                                                        href={`http://localhost:4000${doc}`}
+                                                        href={`${import.meta.env.VITE_API_TARGET}${doc}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer"
@@ -256,7 +256,7 @@ const ProviderVerification = () => {
                                                 {selectedProvider.addressProofs.map((doc, index) => (
                                                     <a
                                                         key={`addr-${index}`}
-                                                        href={`http://localhost:4000${doc}`}
+                                                        href={`${import.meta.env.VITE_API_TARGET}${doc}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 text-sm text-blue-600 hover:underline cursor-pointer"
