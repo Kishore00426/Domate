@@ -237,15 +237,15 @@ const AdminReports = () => {
         }
 
         if (reportData.totalCommission !== undefined) {
-            drawCard("Total Commission", `₹${reportData.totalCommission}`, colors.success);
+            drawCard("Total Commission", `Rs. ${reportData.totalCommission}`, colors.success);
         }
 
         if (reportData.totalRevenue !== undefined) {
-            drawCard("Total Revenue", `₹${reportData.totalRevenue}`, colors.primary);
+            drawCard("Total Revenue", `Rs. ${reportData.totalRevenue}`, colors.primary);
         }
 
         if (reportData.totalEarned !== undefined) {
-            drawCard("Provider Earned", `₹${reportData.totalEarned}`, [37, 99, 235]); // Blue 600
+            drawCard("Provider Earned", `Rs. ${reportData.totalEarned}`, [37, 99, 235]); // Blue 600
         }
 
         // --- Table Section ---
@@ -262,8 +262,8 @@ const AdminReports = () => {
         if (reportData.bookings) {
             reportData.bookings.forEach(booking => {
                 let row = [];
-                const amount = booking.amount ? `₹${booking.amount}` : '-';
-                const comm = booking.commission ? `₹${booking.commission}` : '₹0';
+                const amount = booking.amount ? `Rs. ${booking.amount}` : '-';
+                const comm = booking.commission ? `Rs. ${booking.commission}` : 'Rs. 0';
 
                 if (reportType === 'user') {
                     row = [
