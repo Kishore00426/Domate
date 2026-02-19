@@ -1,8 +1,8 @@
 import adminApi from './adminAxios';
 
 // --- Categories ---
-export const getCategories = async () => {
-    const response = await adminApi.get('/admin/categories');
+export const getCategories = async (params = {}) => {
+    const response = await adminApi.get('/admin/categories', { params });
     return response.data;
 };
 
@@ -93,8 +93,12 @@ export const verifyProvider = async (id, action) => {
 };
 
 // --- Services ---
-export const getServices = async () => {
-    const response = await adminApi.get('/admin/services');
+export const getServices = async (page, limit) => {
+    const params = {};
+    if (page) params.page = page;
+    if (limit) params.limit = limit;
+
+    const response = await adminApi.get('/admin/services', { params });
     return response.data;
 };
 

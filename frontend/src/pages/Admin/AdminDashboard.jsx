@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, CheckCircle, CheckSquare, Clock, Activity } from 'lucide-react';
+import { Users, CheckCircle, CheckSquare, Clock, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getDashboardStats, getReportAnalytics } from '../../api/admin';
 import { useTranslation } from 'react-i18next';
 import {
@@ -29,10 +29,12 @@ const AdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [chartData, setChartData] = useState([]);
     const [pieData, setPieData] = useState([]);
+    const [currentDate, setCurrentDate] = useState(new Date()); // Fix for ReferenceError
 
     useEffect(() => {
         const fetchData = async () => {
             try {
+                setLoading(true);
                 const [statsResponse, analyticsResponse] = await Promise.all([
                     getDashboardStats(),
                     getReportAnalytics({ type: 'total' }) // Default fetch for overview
@@ -51,29 +53,50 @@ const AdminDashboard = () => {
 
                 if (analyticsResponse.success && analyticsResponse.data.bookings) {
                     // Process data for charts
-                    // 1. Monthly Bookings (Bar Chart)
+                    // 1. Weekly User Activity (Bar Chart)
                     const bookings = analyticsResponse.data.bookings;
-                    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-                    const monthlyCounts = new Array(12).fill(0);
-                    const monthlyRevenue = new Array(12).fill(0);
 
-                    bookings.forEach(b => {
-                        const date = new Date(b.date);
-                        const monthIndex = date.getMonth();
-                        monthlyCounts[monthIndex]++;
-                        monthlyRevenue[monthIndex] += (b.commission || 0);
+                    // Filter for the selected week based on currentDate
+                    const dateRange = getDateRange(currentDate);
+
+                    const weeklyBookings = bookings.filter(b => {
+                        const bookingDate = new Date(b.date);
+                        return bookingDate >= dateRange.startObj && bookingDate <= dateRange.endObj;
                     });
 
-                    const barData = months.map((month, index) => ({
-                        name: month,
-                        bookings: monthlyCounts[index],
-                        revenue: monthlyRevenue[index]
+                    // Group by User
+                    const userMap = {};
+
+                    weeklyBookings.forEach(b => {
+                        const userName = b.userName || 'Unknown';
+                        if (!userMap[userName]) {
+                            userMap[userName] = {
+                                name: userName,
+                                services: 0,
+                                providers: new Set()
+                            };
+                        }
+                        userMap[userName].services += 1;
+                        if (b.providerName) {
+                            userMap[userName].providers.add(b.providerName);
+                        }
+                    });
+
+                    // Transform to array
+                    const barData = Object.values(userMap).map(u => ({
+                        name: u.name,
+                        services: u.services,
+                        providers: u.providers.size
                     }));
+
                     setChartData(barData);
 
                     // 2. Service Distribution (Pie Chart) - Simplified logic
                     const serviceCounts = {};
-                    bookings.forEach(b => {
+                    // Use bookings from the current window or all? 
+                    // Requirement implies viewing history, so pie chart should probably look at the same window
+                    // Or keep it global? Let's keep filters consistent.
+                    weeklyBookings.forEach(b => {
                         const service = b.serviceName || 'Unknown';
                         serviceCounts[service] = (serviceCounts[service] || 0) + 1;
                     });
@@ -93,7 +116,29 @@ const AdminDashboard = () => {
         };
 
         fetchData();
-    }, []);
+    }, [currentDate]);
+
+    // Helper functions for date navigation
+    const navigateWeek = (direction) => {
+        const newDate = new Date(currentDate);
+        newDate.setDate(newDate.getDate() + (direction * 7));
+        setCurrentDate(newDate);
+    };
+
+    const getDateRange = (date) => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+        const start = new Date(d);
+        start.setDate(diff);
+        start.setHours(0, 0, 0, 0);
+
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+
+        return { start, end, startObj: start, endObj: end };
+    };
 
     const stats = [
         { label: t('admin.users'), value: dashboardData.totalUsers, icon: Users, color: 'bg-blue-50 text-blue-600', border: 'border-blue-100', link: '/admin/users' },
@@ -156,9 +201,33 @@ const AdminDashboard = () => {
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Monthly Bookings Bar Chart */}
+                {/* Weekly User Activity Bar Chart */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-bold text-gray-900 mb-6">Monthly Bookings & Revenue</h2>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-lg font-bold text-gray-900">Weekly User Activity</h2>
+                        <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
+                            <button
+                                onClick={() => navigateWeek(-1)}
+                                className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600"
+                                title="Previous Week"
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            <span className="text-xs font-semibold text-gray-500 px-2 min-w-[120px] text-center">
+                                {getDateRange(currentDate).startObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                {' - '}
+                                {getDateRange(currentDate).endObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                            </span>
+                            <button
+                                onClick={() => navigateWeek(1)}
+                                className="p-1 hover:bg-white hover:shadow-sm rounded-md transition-all text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={new Date(getDateRange(currentDate).end) >= new Date().setHours(0, 0, 0, 0)}
+                                title="Next Week"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
@@ -172,14 +241,13 @@ const AdminDashboard = () => {
                             >
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                                <YAxis yAxisId="left" orientation="left" axisLine={false} tickLine={false} />
-                                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
+                                <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
                                 <Tooltip
                                     contentStyle={{ borderRadius: '10px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                 />
                                 <Legend />
-                                <Bar yAxisId="left" dataKey="bookings" fill="#4f46e5" radius={[4, 4, 0, 0]} name="Bookings" />
-                                <Bar yAxisId="right" dataKey="revenue" fill="#10b981" radius={[4, 4, 0, 0]} name="Commission (₹)" />
+                                <Bar dataKey="services" fill="#8884d8" radius={[4, 4, 0, 0]} name="Services Booked" />
+                                <Bar dataKey="providers" fill="#82ca9d" radius={[4, 4, 0, 0]} name="Providers Engaged" />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>

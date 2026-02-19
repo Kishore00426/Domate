@@ -12,6 +12,10 @@ const ServiceManagement = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
     // Inline Edit State
     const [inlineEdit, setInlineEdit] = useState({ id: null, field: null, value: '' });
     const [inlineLoading, setInlineLoading] = useState(false);
@@ -36,14 +40,29 @@ const ServiceManagement = () => {
     const [removeImage, setRemoveImage] = useState(false);
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchData(currentPage);
+    }, [currentPage]);
 
-    const fetchData = async () => {
+    const fetchData = async (page = 1) => {
         setLoading(true);
         try {
-            const [servRes, catRes, subCatRes] = await Promise.all([getServices(), getCategories(), getSubcategories()]);
-            setServices(servRes.success ? servRes.services : []);
+            // Fetch Services (Paginated), Categories (All for dropdowns), Subcategories (All)
+            const [servRes, catRes, subCatRes] = await Promise.all([
+                getServices(page, 7),
+                getCategories({ page: 1, limit: 1000 }),
+                getSubcategories()
+            ]);
+
+            if (servRes.success) {
+                setServices(servRes.services);
+                if (servRes.pagination) {
+                    setTotalPages(servRes.pagination.totalPages);
+                    setCurrentPage(servRes.pagination.currentPage);
+                }
+            } else {
+                setServices([]);
+            }
+
             setCategories(catRes.success ? catRes.categories : []);
             setSubcategories(subCatRes.success ? subCatRes.subcategories : []);
             setError(null);
@@ -54,6 +73,16 @@ const ServiceManagement = () => {
             setLoading(false);
         }
     };
+
+    // ... (rest of functions handleOpenModal, handleCloseModal, handleInputChange, handleSubmit, handleDelete, inline edit functions)
+    // Preserving all existing helper functions...
+
+    // NOTE: To apply this change efficiently without repeating 500 lines of unchanged code, 
+    // I am relying on the tool to replace the top section correctly. 
+    // However, since I need to insert pagination controls at the bottom, I will split this into two edits if I can't match the middle.
+    // But replace_file_content requires a single contiguous block or multi tool.
+    // I will use two replace_file_content calls. One for the top logic, one for the bottom UI.
+    // This tool call is ONLY for the top logic (imports to fetchData).
 
     const handleOpenModal = (item = null) => {
         setEditingItem(item);
@@ -69,7 +98,7 @@ const ServiceManagement = () => {
                 requiredEquipment: item.requiredEquipment ? item.requiredEquipment.join(', ') : '',
                 serviceProcess: item.serviceProcess ? item.serviceProcess.join(', ') : '',
                 warranty: item.warranty || '',
-                commissionRate: item.commissionRate || '', // New field
+                commissionRate: item.commissionRate || '',
                 image: null
             });
         } else {
@@ -84,13 +113,16 @@ const ServiceManagement = () => {
                 requiredEquipment: '',
                 serviceProcess: '',
                 warranty: '',
-                commissionRate: '', // New field
+                commissionRate: '',
                 image: null
             });
         }
         setRemoveImage(false);
         setIsModalOpen(true);
     };
+
+    // ... existing code ...
+
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
@@ -545,6 +577,28 @@ const ServiceManagement = () => {
                     )}
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-center items-center gap-4 mt-6">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                    Page <span className="font-semibold text-soft-black">{currentPage}</span> of <span className="font-semibold text-soft-black">{totalPages}</span>
+                </span>
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    Next
+                </button>
+            </div>
+
 
             {/* Modal */}
             {isModalOpen && (

@@ -203,12 +203,34 @@ export const createCategory = async (req, res) => {
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find().populate("subcategories");
-    res.json({ success: true, categories });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 7;
+    const skip = (page - 1) * limit;
+
+    const totalCategories = await Category.countDocuments();
+    const categories = await Category.find()
+      .populate("subcategories")
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      success: true,
+      categories,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalCategories / limit),
+        totalCategories,
+        limit
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+// ... (existing code for updateCategory, deleteCategory etc.)
+
+
 
 export const updateCategory = async (req, res) => {
   try {
@@ -391,10 +413,27 @@ export const createService = async (req, res) => {
 
 export const getServices = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 7;
+    const skip = (page - 1) * limit;
+
+    const totalServices = await Service.countDocuments();
     const services = await Service.find()
       .populate("category")
-      .populate("subcategory");
-    res.json({ success: true, services });
+      .populate("subcategory")
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      success: true,
+      services,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalServices / limit),
+        totalServices,
+        limit
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -629,7 +668,9 @@ export const getReportAnalytics = async (req, res) => {
 
     } else if (type === 'total') {
       const bookings = await Booking.find(query)
-        .populate('service', 'title');
+        .populate('service', 'title')
+        .populate('user', 'username') // Added populate user
+        .populate('serviceProvider', 'username'); // Added populate provider
 
       const totalRevenue = bookings.reduce((sum, b) => sum + (b.invoice?.totalAmount || 0), 0);
       const totalCommission = bookings.reduce((sum, b) => sum + (b.commission || 0), 0);
@@ -642,7 +683,9 @@ export const getReportAnalytics = async (req, res) => {
         totalBookings,
         bookings: bookings.map(b => ({
           id: b._id,
-          serviceName: b.service?.title, // Optional: might be too much data for total report, but useful for PDF list
+          serviceName: b.service?.title,
+          userName: b.user?.username || 'Unknown User', // Added mapping
+          providerName: b.serviceProvider?.username || 'Unknown Provider', // Added mapping
           amount: b.invoice?.totalAmount || 0,
           commission: b.commission || 0,
           date: b.createdAt

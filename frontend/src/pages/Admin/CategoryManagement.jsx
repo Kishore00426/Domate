@@ -15,6 +15,10 @@ const CategoryManagement = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
     // Inline Edit State
     const [inlineEdit, setInlineEdit] = useState({ id: null, field: null, value: '' });
     const [inlineLoading, setInlineLoading] = useState(false);
@@ -31,15 +35,48 @@ const CategoryManagement = () => {
     const [removeImage, setRemoveImage] = useState(false);
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        fetchData(currentPage);
+    }, [currentPage, activeTab]);
 
-    const fetchData = async () => {
+    const fetchData = async (page = 1) => {
         setLoading(true);
         try {
-            const [cats, subCats] = await Promise.all([getCategories(), getSubcategories()]);
-            setCategories(cats.success ? cats.categories : []);
-            setSubcategories(subCats.success ? subCats.subcategories : []);
+            // Only paginating categories for now as per plan, subcategories might need it too if list grows
+            // But let's check API for subcategories first. 
+            // The plan said "Admin Categories & Services". Subcategories usually fetched all for selection.
+            // Let's assume pagination for the main list view.
+
+            if (activeTab === 'categories') {
+                const response = await getCategories({ page, limit: 7 });
+                if (response.success) {
+                    setCategories(response.categories);
+                    if (response.pagination) {
+                        setTotalPages(response.pagination.totalPages);
+                        setCurrentPage(response.pagination.currentPage);
+                    }
+                }
+            } else {
+                // For subcategories, we might need all for filtering or parent selection
+                // If backend doesn't support subcategory pagination yet, we fetch all.
+                // adminController getSubcategories didn't seem to have pagination added in last step?
+                // Re-checking task... Implementation plan said "Admin Categories".
+                const response = await getSubcategories();
+                if (response.success) {
+                    setSubcategories(response.subcategories);
+                }
+                // Fetch categories for dropdowns (needed for subcat creation)
+                // We might need a separate call for "all categories" if we paginate the main list
+                // But typically for dropdowns we need all. 
+                // Let's assume for now we use the paginated list or need a separate "all" endpoint.
+                // adminController getCategories now *requires* pagination or defaults to page 1 limit 10.
+                // This is a potential issue for dropdowns.
+                // We might need to pass limit=1000 for dropdowns or selection.
+
+                // For the "Parent Category" dropdown in Subcategory tab, we need ALL categories.
+                const allCats = await getCategories({ limit: 1000 }); // value to get all
+                if (allCats.success) setCategories(allCats.categories);
+            }
+
             setError(null);
         } catch (err) {
             setError('Failed to load data. Please try again.');
@@ -48,6 +85,21 @@ const CategoryManagement = () => {
             setLoading(false);
         }
     };
+
+    // ... (rest of the functions: handleOpenModal, handleCloseModal, etc.)
+
+    // We need to update fetchData logic to key off activeTab correctly and handle the "All Categories" need.
+    // Let's refine fetchData above.
+
+    /* 
+       Refined logic:
+       When activeTab is 'categories': Fetch paginated categories.
+       When activeTab is 'subcategories': Fetch all subcategories (no pagination yet on backend for sub?) AND all categories for dropdown.
+    */
+
+    // ...
+
+
 
     const handleOpenModal = (item = null) => {
         setEditingItem(item);
@@ -450,6 +502,27 @@ const CategoryManagement = () => {
                         </table>
                     )}
                 </div>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex justify-center items-center gap-4 mt-6">
+                <button
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    Previous
+                </button>
+                <span className="text-sm text-gray-600">
+                    Page <span className="font-semibold text-soft-black">{currentPage}</span> of <span className="font-semibold text-soft-black">{totalPages}</span>
+                </span>
+                <button
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                    Next
+                </button>
             </div>
 
             {/* Modal */}
