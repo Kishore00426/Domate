@@ -15,7 +15,7 @@ const AdminReports = () => {
     const [reportType, setReportType] = useState('total'); // 'total', 'provider', 'service_commission'
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [dateRange, setDateRange] = useState('last_30_days'); // Default to last 30 days
+    const [dateRange, setDateRange] = useState('this_month'); // Default to this month
     const [selectedTarget, setSelectedTarget] = useState(''); // provider ID or service ID
     const [reportData, setReportData] = useState(null);
     const [reportLoading, setReportLoading] = useState(false);
@@ -37,9 +37,7 @@ const AdminReports = () => {
             case 'last_7_days':
                 start.setDate(today.getDate() - 6);
                 break;
-            case 'last_30_days':
-                start.setDate(today.getDate() - 29);
-                break;
+
             case 'this_month':
                 start = new Date(today.getFullYear(), today.getMonth(), 1);
                 break;
@@ -376,7 +374,7 @@ const AdminReports = () => {
                             <option value="today">Today</option>
                             <option value="yesterday">Yesterday</option>
                             <option value="last_7_days">Last 7 Days</option>
-                            <option value="last_30_days">Last 30 Days</option>
+
                             <option value="this_month">This Month</option>
                             <option value="last_month">Last Month</option>
                             <option value="custom">Custom Range</option>
