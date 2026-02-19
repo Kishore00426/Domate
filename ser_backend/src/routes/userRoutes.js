@@ -10,6 +10,7 @@ import {
   addUserAddress,
   updateUserAddress,
   deleteUserAddress,
+  getUserStats,
   //getAllUsers
 } from "../controllers/userController.js";
 
@@ -22,6 +23,9 @@ router.get("/profile", authenticate, getUserProfile);
 
 // Update profile + address (combined)
 router.put("/profile-address", authenticate, updateUserProfileAndAddress);
+
+// Get User Stats (Charts)
+router.get("/bookings/stats", authenticate, getUserStats);
 
 // ---------------- ADDRESS ROUTES ----------------
 router.get("/addresses", authenticate, getUserAddresses);

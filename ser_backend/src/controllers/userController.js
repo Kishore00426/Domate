@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import Address from "../models/Address.js";
 import ServiceProvider from "../models/ServiceProvider.js";
+import Booking from "../models/Booking.js";
 
 export const getUserProfile = async (req, res) => {
   try {
@@ -203,6 +204,60 @@ export const deleteUserAddress = async (req, res) => {
 
     res.json({ success: true, message: "Address deleted successfully" });
   } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+export const getUserStats = async (req, res) => {
+  try {
+    const Booking = (await import("../models/Booking.js")).default; // Dynamic import to avoid top-level if simpler to append
+    // Actually, better to add top-level import. Let's do that in a separate step.
+    // Re-writing to use standard import if I can edit top.
+    // For now, let's just append the function body.
+
+    // START FUNCTION BODY
+    const bookings = await Booking.find({ user: req.user._id, status: 'completed' })
+      .populate({
+        path: 'service',
+        populate: { path: 'category' } // Deep populate category
+      });
+
+    const spendingMap = {};
+    const categoryMap = {};
+
+    bookings.forEach(booking => {
+      if (!booking.service) return;
+
+      const serviceName = booking.service.title || 'Unknown Service';
+      const categoryName = booking.service.category?.title || 'Other';
+      const amount = booking.invoice?.totalAmount || 0;
+
+      // 1. Spending per Service
+      spendingMap[serviceName] = (spendingMap[serviceName] || 0) + amount;
+
+      // 2. Usage per Category
+      categoryMap[categoryName] = (categoryMap[categoryName] || 0) + 1;
+    });
+
+    const spendingData = Object.keys(spendingMap).map(key => ({
+      name: key,
+      value: spendingMap[key]
+    }));
+
+    const categoryData = Object.keys(categoryMap).map(key => ({
+      name: key,
+      value: categoryMap[key]
+    }));
+
+    res.json({
+      success: true,
+      stats: {
+        spending: spendingData,
+        categories: categoryData
+      }
+    });
+  } catch (err) {
+    console.error("Error in getUserStats:", err);
     res.status(500).json({ success: false, error: err.message });
   }
 };
