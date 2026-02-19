@@ -173,90 +173,158 @@ const AdminReports = () => {
         if (!reportData) return;
         const doc = new jsPDF();
 
-        doc.setFontSize(20);
-        doc.text(reportData.title || "Analytics Report", 14, 22);
+        // --- Colors ---
+        const colors = {
+            primary: [79, 70, 229], // Indigo 600
+            success: [34, 197, 94], // Green 500
+            text: [17, 24, 39],     // Gray 900
+            textLight: [107, 114, 128], // Gray 500
+            bg: [249, 250, 251],    // Gray 50
+            border: [229, 231, 235] // Gray 200
+        };
 
+        // --- Header Section ---
+        doc.setFontSize(22);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...colors.text);
+        doc.text(reportData.title || "Analytics Report", 14, 20);
+
+        // Subtitle (Date Range)
         doc.setFontSize(10);
-        doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 30);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...colors.textLight);
+        const dateStr = `Generated on: ${new Date().toLocaleDateString()}`;
+        let periodStr = "Period: All Time";
         if (startDate && endDate) {
-            doc.text(`Period: ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`, 14, 35);
-        } else {
-            doc.text(`Period: All Time`, 14, 35);
+            periodStr = `Period: ${new Date(startDate).toLocaleDateString()} - ${new Date(endDate).toLocaleDateString()}`;
         }
+        doc.text(`${dateStr}  |  ${periodStr}`, 14, 27);
 
-        // Summary Section
-        let yPos = 45;
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text("Summary", 14, yPos);
-        doc.setFont(undefined, 'normal');
-        doc.setFontSize(10);
-        yPos += 7;
+        // --- Stats Cards Section ---
+        let startY = 40;
+        const cardWidth = 55;
+        const cardHeight = 24;
+        const gap = 10;
+        let currentX = 14;
 
+        // Helper to draw a single stat card
+        const drawCard = (label, value, valueColor = colors.text) => {
+            // Draw background/border
+            doc.setDrawColor(...colors.border);
+            doc.setFillColor(...colors.bg);
+            doc.roundedRect(currentX, startY, cardWidth, cardHeight, 3, 3, 'FD');
+
+            // Draw Label
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...colors.textLight);
+            doc.text(label.toUpperCase(), currentX + 4, startY + 8);
+
+            // Draw Value
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(...valueColor);
+            doc.text(value.toString(), currentX + 4, startY + 18);
+
+            currentX += cardWidth + gap;
+        };
+
+        // Draw cards based on available data
         if (reportData.totalBookings !== undefined) {
-            doc.text(`Total Bookings: ${reportData.totalBookings}`, 14, yPos);
-            yPos += 5;
+            drawCard("Total Bookings", reportData.totalBookings);
+        } else if (reportData.bookings) {
+            drawCard("Total Bookings", reportData.bookings.length);
         }
-        if (reportData.totalRevenue !== undefined) {
-            doc.text(`Total Revenue: ${reportData.totalRevenue}`, 14, yPos);
-            yPos += 5;
-        }
+
         if (reportData.totalCommission !== undefined) {
-            doc.text(`Total Commission: ${reportData.totalCommission}`, 14, yPos);
-            yPos += 5;
+            drawCard("Total Commission", `₹${reportData.totalCommission}`, colors.success);
         }
+
+        if (reportData.totalRevenue !== undefined) {
+            drawCard("Total Revenue", `₹${reportData.totalRevenue}`, colors.primary);
+        }
+
         if (reportData.totalEarned !== undefined) {
-            doc.text(`Provider Earnings: ${reportData.totalEarned}`, 14, yPos);
-            yPos += 5;
+            drawCard("Provider Earned", `₹${reportData.totalEarned}`, [37, 99, 235]); // Blue 600
         }
 
-        // Table
-        let tableColumn = ["ID", "Service", "Date", "Amount", "Comm."];
+        // --- Table Section ---
+        // Define columns based on report type
+        let tableHead = [["ID", "Service", "Date", "Amount", "Commission"]];
         if (reportType === 'user') {
-            tableColumn = ["ID", "Service", "Provider", "Date", "Amount"];
+            tableHead = [["ID", "Service", "Provider", "Date", "Amount"]];
         } else if (reportType === 'provider') {
-            tableColumn = ["ID", "Service", "User", "Date", "Amount", "Comm."];
+            tableHead = [["ID", "Service", "User", "Date", "Amount", "Commission"]];
         }
 
-        const tableRows = [];
-
+        // Prepare rows
+        const tableBody = [];
         if (reportData.bookings) {
             reportData.bookings.forEach(booking => {
-                let bookingData = [];
+                let row = [];
+                const amount = booking.amount ? `₹${booking.amount}` : '-';
+                const comm = booking.commission ? `₹${booking.commission}` : '₹0';
+
                 if (reportType === 'user') {
-                    bookingData = [
-                        booking.id.substring(0, 8),
+                    row = [
+                        booking.id.substring(0, 8).toUpperCase(),
                         booking.serviceName || 'N/A',
                         booking.providerName || 'N/A',
                         new Date(booking.date).toLocaleDateString(),
-                        booking.amount || 0
+                        amount
                     ];
                 } else if (reportType === 'provider') {
-                    bookingData = [
-                        booking.id.substring(0, 8),
+                    row = [
+                        booking.id.substring(0, 8).toUpperCase(),
                         booking.serviceName || 'N/A',
                         booking.customerName || 'N/A',
                         new Date(booking.date).toLocaleDateString(),
-                        booking.amount || 0,
-                        booking.commission || 0
+                        amount,
+                        comm
                     ];
                 } else {
-                    bookingData = [
-                        booking.id.substring(0, 8),
+                    row = [
+                        booking.id.substring(0, 8).toUpperCase(),
                         booking.serviceName || 'N/A',
                         new Date(booking.date).toLocaleDateString(),
-                        booking.amount || 0,
-                        booking.commission || 0
+                        amount,
+                        comm
                     ];
                 }
-                tableRows.push(bookingData);
+                tableBody.push(row);
             });
         }
 
+        // Calculate table-specific styling indices
+        const amountColIndex = tableHead[0].indexOf("Amount");
+        const commColIndex = tableHead[0].indexOf("Commission");
+
         autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: yPos + 5,
+            startY: startY + cardHeight + 15, // Start below cards
+            head: tableHead,
+            body: tableBody,
+            theme: 'grid',
+            headStyles: {
+                fillColor: [249, 250, 251], // Gray 50 header bg
+                textColor: [107, 114, 128], // Gray 500 header text
+                fontStyle: 'bold',
+                halign: 'left',
+                lineWidth: 0,
+            },
+            styles: {
+                fontSize: 9,
+                cellPadding: 4,
+                textColor: [55, 65, 81], // Gray 700 body text
+                lineColor: [229, 231, 235], // Gray 200 borders
+                lineWidth: 0.1,
+            },
+            columnStyles: {
+                [amountColIndex]: { halign: 'right', fontStyle: 'bold' },
+                [commColIndex]: { halign: 'right', textColor: [22, 163, 74], fontStyle: 'bold' } // Green for commission
+            },
+            didDrawPage: (data) => {
+                // Optional: Footer or page numbers
+            }
         });
 
         doc.save(`report_${reportType}_${Date.now()}.pdf`);
