@@ -133,8 +133,8 @@ export const getReportAnalytics = async (params) => {
 };
 
 // --- Privileges ---
-export const getPrivileges = async () => {
-    const response = await adminApi.get('/admin/privileges');
+export const getPrivileges = async (params = {}) => {
+    const response = await adminApi.get('/admin/privileges', { params });
     return response.data;
 };
 
