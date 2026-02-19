@@ -131,3 +131,35 @@ export const getReportAnalytics = async (params) => {
     const response = await adminApi.get('/admin/reports/analytics', { params });
     return response.data;
 };
+
+// --- Privileges ---
+export const getPrivileges = async () => {
+    const response = await adminApi.get('/admin/privileges');
+    return response.data;
+};
+
+export const createPrivilege = async (data) => {
+    const response = await adminApi.post('/admin/privileges', data);
+    return response.data;
+};
+
+export const updatePrivilege = async (id, data) => {
+    const response = await adminApi.put(`/admin/privileges/${id}`, data);
+    return response.data;
+};
+
+export const deletePrivilege = async (id) => {
+    const response = await adminApi.delete(`/admin/privileges/${id}`);
+    return response.data;
+};
+
+export const getRolePrivileges = async (roleName) => {
+    const response = await adminApi.get(`/admin/roles/${roleName}/privileges`);
+    return response.data;
+};
+
+export const assignRolePrivileges = async (roleName, privilegeIds) => {
+    const response = await adminApi.put('/admin/roles/privileges', { roleName, privilegeIds });
+    return response.data;
+};
+

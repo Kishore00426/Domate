@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Plus, Edit2, Trash2, Save, X, Check } from 'lucide-react';
+import {
+    getPrivileges,
+    createPrivilege,
+    updatePrivilege,
+    deletePrivilege,
+    getRolePrivileges,
+    assignRolePrivileges
+} from '../../api/admin';
 
 const PrivilegeManagement = () => {
     const [privileges, setPrivileges] = useState([]);
@@ -19,8 +27,6 @@ const PrivilegeManagement = () => {
     const [selectedPrivileges, setSelectedPrivileges] = useState([]);
     const [assignmentLoading, setAssignmentLoading] = useState(false);
 
-    const API_BASE = `${import.meta.env.VITE_API_TARGET}/api/admin`;
-
     useEffect(() => {
         fetchPrivileges();
     }, []);
@@ -31,21 +37,10 @@ const PrivilegeManagement = () => {
         }
     }, [selectedRole]);
 
-    const getAuthHeaders = () => {
-        const token = localStorage.getItem('token');
-        return {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        };
-    };
-
     const fetchPrivileges = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE}/privileges`, {
-                headers: getAuthHeaders()
-            });
-            const data = await response.json();
+            const data = await getPrivileges();
             if (data.success) {
                 setPrivileges(data.privileges);
             } else {
@@ -61,10 +56,7 @@ const PrivilegeManagement = () => {
     const fetchRolePrivileges = async (roleName) => {
         try {
             setAssignmentLoading(true);
-            const response = await fetch(`${API_BASE}/roles/${roleName}/privileges`, {
-                headers: getAuthHeaders()
-            });
-            const data = await response.json();
+            const data = await getRolePrivileges(roleName);
             if (data.success) {
                 setRolePrivileges(data.privileges || []);
                 setSelectedPrivileges(data.privileges.map(p => p._id) || []);
@@ -79,18 +71,13 @@ const PrivilegeManagement = () => {
     const handleCreateOrUpdate = async (e) => {
         e.preventDefault();
         try {
-            const url = editingPrivilege
-                ? `${API_BASE}/privileges/${editingPrivilege._id}`
-                : `${API_BASE}/privileges`;
-            const method = editingPrivilege ? 'PUT' : 'POST';
+            let data;
+            if (editingPrivilege) {
+                data = await updatePrivilege(editingPrivilege._id, formData);
+            } else {
+                data = await createPrivilege(formData);
+            }
 
-            const response = await fetch(url, {
-                method,
-                headers: getAuthHeaders(),
-                body: JSON.stringify(formData)
-            });
-
-            const data = await response.json();
             if (data.success) {
                 setSuccessMessage(editingPrivilege ? 'Privilege updated successfully!' : 'Privilege created successfully!');
                 setTimeout(() => setSuccessMessage(''), 3000);
@@ -108,12 +95,7 @@ const PrivilegeManagement = () => {
         if (!confirm('Are you sure you want to delete this privilege?')) return;
 
         try {
-            const response = await fetch(`${API_BASE}/privileges/${id}`, {
-                method: 'DELETE',
-                headers: getAuthHeaders()
-            });
-
-            const data = await response.json();
+            const data = await deletePrivilege(id);
             if (data.success) {
                 setSuccessMessage('Privilege deleted successfully!');
                 setTimeout(() => setSuccessMessage(''), 3000);
@@ -129,16 +111,8 @@ const PrivilegeManagement = () => {
     const handleAssignPrivileges = async () => {
         try {
             setAssignmentLoading(true);
-            const response = await fetch(`${API_BASE}/roles/privileges`, {
-                method: 'PUT',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({
-                    roleName: selectedRole,
-                    privilegeIds: selectedPrivileges
-                })
-            });
+            const data = await assignRolePrivileges(selectedRole, selectedPrivileges);
 
-            const data = await response.json();
             if (data.success) {
                 setSuccessMessage(`Privileges updated for ${selectedRole} role!`);
                 setTimeout(() => setSuccessMessage(''), 3000);
