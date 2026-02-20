@@ -11,6 +11,7 @@ import { getMe, updateProfile } from '../api/auth';
 import { getProviderBookings, updateBookingStatus, completeBooking } from '../api/bookings';
 import { getAllServices } from '../api/services';
 import { ProviderDateCell, ProviderStatusCell } from '../components/ProviderBookingCells';
+import ProviderOverview from '../components/dashboard/ProviderOverview';
 
 const ProviderDashboard = () => {
     const { t, i18n } = useTranslation();
@@ -573,80 +574,92 @@ const ProviderDashboard = () => {
                 </div>
             </div>
 
-            {/* Mobile Navigation Menu - Visible only on mobile and in 'overview' tab */}
+            {/* Dashboard Overview Content */}
             {activeTab === 'overview' && (
-                <div className="md:hidden grid grid-cols-2 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4">
-                    {mobileNavItems.map(item => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className="flex flex-col items-center justify-center p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95"
-                        >
-                            <span className="text-2xl mb-2">{item.icon}</span>
-                            <span className="font-bold text-soft-black text-sm">{item.label}</span>
-                        </button>
-                    ))}
-                </div>
-            )}
-
-            {/* Pending Requests Section - HIDDEN ON MOBILE (md:block) */}
-            <div className="hidden md:block bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[400px]">
-                <h3 className="font-semibold text-lg mb-6 text-amber-600 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5" /> {t('dashboard.pendingRequests')}
-                </h3>
-
-                {bookings.filter(b => b.status === 'pending').length > 0 ? (
-                    <div className="space-y-4">
-                        {bookings.filter(b => b.status === 'pending').map(booking => (
-                            <div key={booking._id} className="border border-amber-100 bg-amber-50 rounded-2xl p-6">
-                                <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
-                                    <div>
-                                        <h4 className="font-bold text-soft-black mb-1">{booking.service?.title || 'Unknown Service'}</h4>
-                                        <p className="text-sm text-gray-700 font-medium mb-1">{t('dashboard.customer')}: {booking.user?.username || 'Guest'}</p>
-                                        <p className="text-sm text-gray-600 mb-2">
-                                            {t('dashboard.date')}: {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
-                                            {' '}
-                                            {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-                                        </p>
-                                        {booking.notes && (
-                                            <p className="text-sm text-gray-500 bg-white/60 p-3 rounded-lg border border-amber-100 italic">" {booking.notes} "</p>
-                                        )}
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={async () => {
-                                                if (!window.confirm('Accept this booking?')) return;
-                                                const res = await updateBookingStatus(booking._id, 'accepted');
-                                                if (res.success) {
-                                                    setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, status: 'accepted' } : b));
-                                                } else {
-                                                    alert(res.error);
-                                                }
-                                            }}
-                                            className="bg-green-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-green-700 shadow-md transition-colors"
-                                        >
-                                            {t('dashboard.accept')}
-                                        </button>
-                                        <button
-                                            onClick={() => handleRejectClick(booking)}
-                                            className="bg-red-50 text-red-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-red-100 border border-red-100 transition-colors"
-                                        >
-                                            {t('dashboard.reject')}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                <div className="space-y-8 animate-in fade-in">
+                    {/* Mobile Navigation Menu - Visible only on mobile */}
+                    <div className="md:hidden grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4">
+                        {mobileNavItems.map(item => (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    if (item.id === 'profile') navigate('/provider/profile');
+                                    else if (item.id === 'services') navigate('/provider/services');
+                                    else if (item.id === 'bookings') navigate('/provider/bookings');
+                                    else if (item.id === 'documents') navigate('/provider/documents');
+                                    else setActiveTab(item.id);
+                                }}
+                                className="flex flex-col items-center justify-center p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95"
+                            >
+                                <span className="text-2xl mb-2">{item.icon}</span>
+                                <span className="font-bold text-soft-black text-sm">{item.label}</span>
+                            </button>
                         ))}
                     </div>
-                ) : (
-                    <div className="flex flex-col items-center justify-center py-10 text-gray-300">
-                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                            <AlertCircle className="w-8 h-8 text-gray-300" />
+
+                    {/* Charts & Analytics */}
+                    <ProviderOverview bookings={bookings} providerDetails={providerDetails} />
+
+                    {/* Pending Requests Section */}
+                    {bookings.filter(b => b.status === 'pending').length > 0 ? (
+                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 min-h-[400px]">
+                            <h3 className="font-semibold text-lg mb-6 text-amber-600 flex items-center gap-2">
+                                <AlertCircle className="w-5 h-5" /> {t('dashboard.pendingRequests')}
+                            </h3>
+
+                            <div className="space-y-4">
+                                {bookings.filter(b => b.status === 'pending').map(booking => (
+                                    <div key={booking._id} className="border border-amber-100 bg-amber-50 rounded-2xl p-6">
+                                        <div className="flex flex-col md:flex-row justify-between md:items-start gap-4">
+                                            <div>
+                                                <h4 className="font-bold text-soft-black mb-1">{booking.service?.title || 'Unknown Service'}</h4>
+                                                <p className="text-sm text-gray-700 font-medium mb-1">{t('dashboard.customer')}: {booking.user?.username || 'Guest'}</p>
+                                                <p className="text-sm text-gray-600 mb-2">
+                                                    {t('dashboard.date')}: {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleDateString() : 'TBD'}
+                                                    {' '}
+                                                    {booking.scheduledDate ? new Date(booking.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                </p>
+                                                {booking.notes && (
+                                                    <p className="text-sm text-gray-500 bg-white/60 p-3 rounded-lg border border-amber-100 italic">" {booking.notes} "</p>
+                                                )}
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={async () => {
+                                                        if (!window.confirm('Accept this booking?')) return;
+                                                        const res = await updateBookingStatus(booking._id, 'accepted');
+                                                        if (res.success) {
+                                                            setBookings(prev => prev.map(b => b._id === booking._id ? { ...b, status: 'accepted' } : b));
+                                                        } else {
+                                                            alert(res.error);
+                                                        }
+                                                    }}
+                                                    className="bg-green-600 text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-green-700 shadow-md transition-colors"
+                                                >
+                                                    {t('dashboard.accept')}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRejectClick(booking)}
+                                                    className="bg-red-50 text-red-600 px-6 py-2 rounded-xl text-sm font-bold hover:bg-red-100 border border-red-100 transition-colors"
+                                                >
+                                                    {t('dashboard.reject')}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <p className="font-medium">{t('dashboard.noPendingRequests')}</p>
-                    </div>
-                )}
-            </div>
+                    ) : (
+                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center justify-center py-20 text-gray-300">
+                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                                <AlertCircle className="w-8 h-8 text-gray-300" />
+                            </div>
+                            <p className="font-medium">{t('dashboard.noPendingRequests')}</p>
+                        </div>
+                    )}
+                </div>
+            )}
 
 
 
