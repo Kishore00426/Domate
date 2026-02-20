@@ -253,8 +253,18 @@ const resources = {
                 enterServicePrice: "Please enter service price",
                 searchPlaceholder: "Search Customer, Title...",
                 excel: "Excel",
-                pdf: "PDF"
+                pdf: "PDF",
+                statusOverview: "Status Overview",
+                bookingActivity: "Booking Activity",
+                spendingTrend: "Spending Trend",
+                servicesBooked: "Services Booked",
+                providerBreakdown: "Provider & Service Breakdown",
+                totalBookings: "Total Bookings",
+                accepted: "Accepted",
+                rejected: "Rejected",
+                totalSpent: "Total Spent"
             },
+
             admin: {
                 dashboardOverview: "Overview",
                 welcomeMessage: "Welcome back, here's what's happening today.",
@@ -709,8 +719,18 @@ const resources = {
                 enterServicePrice: "தயவுசெய்து சேவை விலையை உள்ளிடவும்",
                 searchPlaceholder: "வாடிக்கையாளர், தலைப்பு தேடுக...",
                 excel: "Excel",
-                pdf: "PDF"
+                pdf: "PDF",
+                statusOverview: "நிலை கண்ணோட்டம்",
+                bookingActivity: "முன்பதிவு செயல்பாடு",
+                spendingTrend: "செலவு போக்கு",
+                servicesBooked: "முன்பதிவு செய்யப்பட்ட சேவைகள்",
+                providerBreakdown: "வழங்குநர் மற்றும் சேவை முறிவு",
+                totalBookings: "மொத்த முன்பதிவுகள்",
+                accepted: "ஏற்கப்பட்டது",
+                rejected: "நிராகரிக்கப்பட்டது",
+                totalSpent: "மொத்த செலவு"
             },
+
             admin: {
                 dashboardOverview: "கண்ணோட்டம்",
                 welcomeMessage: "மீண்டும் வருக, இன்று என்ன நடக்கிறது என்பது இங்கே.",
