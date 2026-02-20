@@ -155,11 +155,12 @@ const Account = () => {
             {/* Mobile Navigation Grid */}
             <div className="md:hidden grid grid-cols-2 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-4">
                 {[
+                    { path: '/account', label: 'Overview', icon: '📊' },
                     { path: '/user/bookings', label: t('account.myBookings'), icon: '📅' },
                     { path: '/user/addresses', label: t('account.addresses'), icon: '📍' },
                     { path: '/user/plans', label: t('account.myPlans'), icon: '📄' },
-                    { path: '/user/settings', label: t('account.settings'), icon: '⚙️' },
                 ].map((item) => (
+
                     <button
                         key={item.path}
                         onClick={() => navigate(item.path)}
@@ -171,8 +172,8 @@ const Account = () => {
                 ))}
             </div>
 
-            {/* Desktop / Tablet View (or Mobile Content below menu if desired) */}
-            <div className="hidden md:block">
+            {/* Desktop & Mobile View */}
+            <div className="block">
                 <UserDashboard
                     user={user}
                     bookings={bookings}
@@ -185,6 +186,7 @@ const Account = () => {
                     addressTags={addressTags}
                 />
             </div>
+
             {/* On Mobile, we might want to hide the standard dashboard if we ONLY want the menu. 
                  The user said "display the menu content... as a page". 
                  So I hid UserDashboard on mobile (`hidden md:block`).
